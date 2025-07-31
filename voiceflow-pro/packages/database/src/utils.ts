@@ -21,7 +21,7 @@ export const handlePrismaError = (error: unknown): string => {
   return 'An unexpected database error occurred.';
 };
 
-export const paginate = <T>(
+export const paginate = (
   page: number = 1,
   limit: number = 20,
 ): { skip: number; take: number } => {

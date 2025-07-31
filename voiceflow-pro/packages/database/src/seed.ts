@@ -80,7 +80,7 @@ async function main() {
   });
 
   // Create another transcript in processing
-  const processingTranscript = await prisma.transcript.create({
+  await prisma.transcript.create({
     data: {
       userId: demoUser.id,
       title: 'Podcast Episode - Tech Trends 2024',
@@ -92,7 +92,7 @@ async function main() {
   });
 
   // Create a failed transcript
-  const failedTranscript = await prisma.transcript.create({
+  await prisma.transcript.create({
     data: {
       userId: proUser.id,
       title: 'Corrupted Audio File',
@@ -106,15 +106,22 @@ async function main() {
   console.log('📝 Created sample transcripts');
 
   // Add some comments
-  await prisma.transcriptComment.create({
-    data: {
-      transcriptId: sampleTranscript.id,
-      userId: proUser.id,
-      segmentId: sampleTranscript.segments[0].id,
-      content: 'Great opening! Very clear introduction.',
-      timestampPosition: 2.5,
-    },
+  const segments = await prisma.transcriptSegment.findMany({
+    where: { transcriptId: sampleTranscript.id },
+    take: 1,
   });
+
+  if (segments.length > 0) {
+    await prisma.transcriptComment.create({
+      data: {
+        transcriptId: sampleTranscript.id,
+        userId: proUser.id,
+        segmentId: segments[0].id,
+        content: 'Great opening! Very clear introduction.',
+        timestampPosition: 2.5,
+      },
+    });
+  }
 
   await prisma.transcriptComment.create({
     data: {

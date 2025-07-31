@@ -64,7 +64,7 @@ async function start() {
     await server.register(userRoutes, { prefix: '/api/users' });
 
     // Start server
-    const port = parseInt(process.env.PORT || '3001');
+    const port = parseInt(process.env.PORT || '3002');
     const host = process.env.NODE_ENV === 'production' ? '0.0.0.0' : 'localhost';
 
     await server.listen({ port, host });
