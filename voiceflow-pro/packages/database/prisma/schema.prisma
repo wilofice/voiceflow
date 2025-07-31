@@ -1,0 +1,129 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum TranscriptStatus {
+  QUEUED
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+enum SubscriptionTier {
+  FREE
+  PRO
+  ENTERPRISE
+}
+
+enum AccessLevel {
+  READ
+  COMMENT
+  EDIT
+}
+
+model User {
+  id               String           @id @default(uuid())
+  email            String           @unique
+  name             String
+  subscriptionTier SubscriptionTier @default(FREE)
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  deletedAt        DateTime?
+
+  transcripts      Transcript[]
+  comments         TranscriptComment[]
+  sharedBy         TranscriptShare[]   @relation("SharedBy")
+  sharedWith       TranscriptShare[]   @relation("SharedWith")
+
+  @@index([email])
+  @@index([createdAt])
+}
+
+model Transcript {
+  id        String           @id @default(uuid())
+  userId    String
+  title     String
+  duration  Int              @default(0) // Duration in seconds
+  language  String           @default("en")
+  status    TranscriptStatus @default(QUEUED)
+  audioUrl  String?
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+  deletedAt DateTime?
+
+  user      User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  segments  TranscriptSegment[]
+  comments  TranscriptComment[]
+  shares    TranscriptShare[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([userId, status])
+}
+
+model TranscriptSegment {
+  id           String   @id @default(uuid())
+  transcriptId String
+  startTime    Float    // Start time in seconds
+  endTime      Float    // End time in seconds
+  text         String   @db.Text
+  speakerId    String?
+  confidence   Float    @default(0.0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  transcript Transcript          @relation(fields: [transcriptId], references: [id], onDelete: Cascade)
+  comments   TranscriptComment[]
+
+  @@index([transcriptId])
+  @@index([startTime, endTime])
+}
+
+model TranscriptComment {
+  id                String    @id @default(uuid())
+  transcriptId      String
+  userId            String
+  segmentId         String?
+  content           String    @db.Text
+  timestampPosition Float?    // Position in seconds for time-based comments
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  deletedAt         DateTime?
+
+  transcript Transcript         @relation(fields: [transcriptId], references: [id], onDelete: Cascade)
+  user       User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  segment    TranscriptSegment? @relation(fields: [segmentId], references: [id], onDelete: Cascade)
+
+  @@index([transcriptId])
+  @@index([userId])
+  @@index([segmentId])
+  @@index([createdAt])
+}
+
+model TranscriptShare {
+  id           String      @id @default(uuid())
+  transcriptId String
+  sharedById   String
+  sharedWithId String?     // Null for public/link shares
+  accessLevel  AccessLevel @default(READ)
+  shareToken   String?     @unique // For link sharing
+  expiresAt    DateTime?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  transcript   Transcript @relation(fields: [transcriptId], references: [id], onDelete: Cascade)
+  sharedBy     User       @relation("SharedBy", fields: [sharedById], references: [id], onDelete: Cascade)
+  sharedWith   User?      @relation("SharedWith", fields: [sharedWithId], references: [id], onDelete: Cascade)
+
+  @@unique([transcriptId, sharedWithId])
+  @@index([shareToken])
+  @@index([transcriptId])
+  @@index([sharedById])
+  @@index([sharedWithId])
+}
