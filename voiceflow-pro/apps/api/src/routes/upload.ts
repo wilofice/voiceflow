@@ -2,6 +2,7 @@ import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { z } from 'zod';
 import { prisma } from '@voiceflow-pro/database';
 import { authenticate, AuthenticatedRequest } from '../middleware/auth';
+import { uploadFile, getSignedUrl, AUDIO_BUCKET } from '../lib/supabase';
 
 const ALLOWED_MIME_TYPES = [
   'audio/mpeg',
@@ -70,15 +71,20 @@ export async function uploadRoutes(fastify: FastifyInstance) {
         language: fields?.language?.value,
       });
 
-      // Generate a unique filename
+      // Generate a unique filename with user folder
       const fileExtension = filename?.split('.').pop() || 'mp3';
-      const uniqueFilename = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExtension}`;
+      const uniqueFilename = `${request.user.id}/${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExtension}`;
 
-      // In a real implementation, you would:
-      // 1. Upload to Supabase Storage
-      // 2. Get the public URL
-      // For now, we'll simulate this
-      const audioUrl = `https://storage.example.com/${uniqueFilename}`;
+      // Upload to Supabase Storage
+      const uploadResult = await uploadFile(
+        AUDIO_BUCKET,
+        uniqueFilename,
+        buffer,
+        mimetype
+      );
+
+      // Get signed URL for the file (valid for 1 hour)
+      const signedUrl = await getSignedUrl(AUDIO_BUCKET, uniqueFilename, 3600);
 
       // Create transcript record
       const transcript = await prisma.transcript.create({
@@ -87,7 +93,7 @@ export async function uploadRoutes(fastify: FastifyInstance) {
           title: metadata.title || filename || 'Untitled',
           language: metadata.language,
           status: 'QUEUED',
-          audioUrl,
+          audioUrl: uniqueFilename, // Store the path, not the full URL
           duration: 0, // Will be updated after processing
         },
         select: {

@@ -2,6 +2,8 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
+import { useAuth } from '@/lib/auth-context';
+import { useRouter } from 'next/navigation';
 
 interface NavigationProps {
   user?: {
@@ -12,6 +14,17 @@ interface NavigationProps {
 
 export function Navigation({ user }: NavigationProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { signOut } = useAuth();
+  const router = useRouter();
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      router.push('/');
+    } catch (error) {
+      console.error('Sign out error:', error);
+    }
+  };
 
   return (
     <nav className="bg-white border-b border-gray-200">
@@ -66,6 +79,7 @@ export function Navigation({ user }: NavigationProps) {
                         Settings
                       </Link>
                       <button
+                        onClick={handleSignOut}
                         className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                       >
                         Sign out

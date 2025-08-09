@@ -2,7 +2,6 @@ import 'dotenv/config';
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import multipart from '@fastify/multipart';
-import jwt from '@fastify/jwt';
 import rateLimit from '@fastify/rate-limit';
 
 // Routes
@@ -14,6 +13,9 @@ import { userRoutes } from './routes/users';
 // Middleware
 import { errorHandler } from './middleware/errorHandler';
 import { authenticate } from './middleware/auth';
+
+// Supabase setup
+import { createStorageBucket } from './lib/supabase';
 
 const server = Fastify({
   logger: {
@@ -40,14 +42,18 @@ async function start() {
       },
     });
 
-    await server.register(jwt, {
-      secret: process.env.JWT_SECRET || 'fallback-secret-change-in-production',
-    });
-
     await server.register(rateLimit, {
       max: parseInt(process.env.RATE_LIMIT_MAX || '100'),
       timeWindow: process.env.RATE_LIMIT_WINDOW || '15 minutes',
     });
+
+    // Initialize Supabase storage bucket
+    try {
+      await createStorageBucket();
+      console.log('✅ Storage bucket initialized');
+    } catch (error) {
+      console.error('⚠️  Storage bucket initialization failed:', error);
+    }
 
     // Global error handler
     server.setErrorHandler(errorHandler);
