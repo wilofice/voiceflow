@@ -53,9 +53,18 @@ export async function getUserById(userId: string) {
 export const AUDIO_BUCKET = 'audio-files';
 
 export async function createStorageBucket() {
+  // First check if bucket exists
+  const { data: buckets } = await supabaseAdmin.storage.listBuckets();
+  const bucketExists = buckets?.some(bucket => bucket.name === AUDIO_BUCKET);
+  
+  if (bucketExists) {
+    console.log(`✅ Storage bucket '${AUDIO_BUCKET}' already exists`);
+    return;
+  }
+
+  // Create bucket without file size limit (will use Supabase dashboard default)
   const { data, error } = await supabaseAdmin.storage.createBucket(AUDIO_BUCKET, {
     public: false,
-    fileSizeLimit: 2147483648, // 2GB
     allowedMimeTypes: [
       'audio/mpeg',
       'audio/wav',
@@ -67,10 +76,11 @@ export async function createStorageBucket() {
     ],
   });
 
-  if (error && !error.message.includes('already exists')) {
+  if (error) {
     throw error;
   }
 
+  console.log(`✅ Created storage bucket '${AUDIO_BUCKET}'`);
   return data;
 }
 
