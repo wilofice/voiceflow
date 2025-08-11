@@ -3,6 +3,8 @@ import { z } from 'zod';
 import { prisma } from '@voiceflow-pro/database';
 import { authenticate, AuthenticatedRequest } from '../middleware/auth';
 import { uploadFile, getSignedUrl, AUDIO_BUCKET } from '../lib/supabase';
+import { TranscriptionService } from '../services/transcription';
+import { transcriptionQueue } from '../services/queue';
 
 const ALLOWED_MIME_TYPES = [
   'audio/mpeg',
@@ -35,7 +37,7 @@ export async function uploadRoutes(fastify: FastifyInstance) {
       });
     }
 
-    const { filename, mimetype, file } = data;
+    const { filename, mimetype } = data;
 
     // Validate file type
     if (!ALLOWED_MIME_TYPES.includes(mimetype)) {
@@ -66,9 +68,12 @@ export async function uploadRoutes(fastify: FastifyInstance) {
     try {
       // Parse additional metadata from fields
       const fields = data.fields;
+      const titleField = Array.isArray(fields.title) ? fields.title[0] : fields.title;
+      const languageField = Array.isArray(fields.language) ? fields.language[0] : fields.language;
+      
       const metadata = uploadMetadataSchema.parse({
-        title: fields?.title?.value,
-        language: fields?.language?.value,
+        title: titleField && 'value' in titleField ? titleField.value : undefined,
+        language: languageField && 'value' in languageField ? languageField.value : 'en',
       });
 
       // Generate a unique filename with user folder
@@ -76,7 +81,7 @@ export async function uploadRoutes(fastify: FastifyInstance) {
       const uniqueFilename = `${request.user.id}/${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExtension}`;
 
       // Upload to Supabase Storage
-      const uploadResult = await uploadFile(
+      await uploadFile(
         AUDIO_BUCKET,
         uniqueFilename,
         buffer,
@@ -105,7 +110,15 @@ export async function uploadRoutes(fastify: FastifyInstance) {
         },
       });
 
-      // TODO: Queue for transcription processing
+      // Validate audio file for transcription
+      const validation = TranscriptionService.validateAudioFile(buffer, filename || 'audio');
+      if (!validation.valid) {
+        // Still allow upload but warn about transcription
+        request.log.warn(`Audio validation warning: ${validation.error}`);
+      }
+
+      // Queue for transcription processing
+      await transcriptionQueue.addJob(transcript.id, uniqueFilename);
 
       return reply.send({
         uploadId: transcript.id,
@@ -113,7 +126,8 @@ export async function uploadRoutes(fastify: FastifyInstance) {
         fileSize: buffer.length,
         status: 'QUEUED',
         transcriptId: transcript.id,
-        audioUrl: transcript.audioUrl,
+        audioUrl: signedUrl,
+        validationWarning: validation.error,
       });
 
     } catch (error) {

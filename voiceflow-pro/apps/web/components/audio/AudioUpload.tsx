@@ -25,13 +25,13 @@ const ACCEPTED_TYPES = {
 
 export function AudioUpload({
   onUpload,
-  onProgress,
+  onProgress: _onProgress,
   maxSize = 2 * 1024 * 1024 * 1024, // 2GB
   multiple = false,
   disabled = false,
 }: AudioUploadProps) {
   const [isDragActive, setIsDragActive] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState<UploadProgress[]>([]);
+  const [uploadProgress] = useState<UploadProgress[]>([]);
 
   const onDrop = useCallback(
     (acceptedFiles: File[], rejectedFiles: any[]) => {

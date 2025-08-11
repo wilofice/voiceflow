@@ -12,7 +12,6 @@ import { userRoutes } from './routes/users';
 
 // Middleware
 import { errorHandler } from './middleware/errorHandler';
-import { authenticate } from './middleware/auth';
 
 // Supabase setup
 import { createStorageBucket } from './lib/supabase';

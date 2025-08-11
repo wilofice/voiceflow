@@ -2,6 +2,8 @@ import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { z } from 'zod';
 import { prisma } from '@voiceflow-pro/database';
 import { authenticate, AuthenticatedRequest } from '../middleware/auth';
+import { TranscriptionService } from '../services/transcription';
+import { transcriptionQueue } from '../services/queue';
 
 const createTranscriptSchema = z.object({
   uploadId: z.string().uuid(),
@@ -286,6 +288,102 @@ export async function transcriptRoutes(fastify: FastifyInstance) {
       status: transcript.status,
       duration: transcript.duration,
       updatedAt: transcript.updatedAt,
+    });
+  });
+
+  // Retry failed transcription
+  fastify.post('/:id/retry', {
+    preHandler: authenticate,
+  }, async (request: AuthenticatedRequest, reply: FastifyReply) => {
+    const { id } = request.params as { id: string };
+
+    // Verify transcript exists and belongs to user
+    const transcript = await prisma.transcript.findFirst({
+      where: {
+        id,
+        userId: request.user.id,
+        deletedAt: null,
+        status: 'FAILED',
+      },
+    });
+
+    if (!transcript) {
+      return reply.status(404).send({
+        error: {
+          code: 'NOT_FOUND',
+          message: 'Failed transcript not found',
+        },
+      });
+    }
+
+    try {
+      // Queue for retry
+      await transcriptionQueue.addJob(transcript.id, transcript.audioUrl!);
+      
+      // Update status to queued
+      await prisma.transcript.update({
+        where: { id },
+        data: { status: 'QUEUED' },
+      });
+
+      return reply.send({
+        message: 'Transcription retry queued',
+        transcriptId: id,
+      });
+    } catch (error) {
+      return reply.status(500).send({
+        error: {
+          code: 'RETRY_FAILED',
+          message: 'Failed to retry transcription',
+        },
+      });
+    }
+  });
+
+  // Get transcription cost estimate
+  fastify.get('/cost/estimate', {
+    preHandler: authenticate,
+  }, async (request: AuthenticatedRequest, reply: FastifyReply) => {
+    const { duration } = request.query as { duration?: string };
+
+    if (!duration) {
+      return reply.status(400).send({
+        error: {
+          code: 'MISSING_DURATION',
+          message: 'Duration parameter is required',
+        },
+      });
+    }
+
+    const durationInSeconds = parseInt(duration);
+    if (isNaN(durationInSeconds) || durationInSeconds <= 0) {
+      return reply.status(400).send({
+        error: {
+          code: 'INVALID_DURATION',
+          message: 'Duration must be a positive number',
+        },
+      });
+    }
+
+    const cost = TranscriptionService.estimateCost(durationInSeconds);
+
+    return reply.send({
+      durationInSeconds,
+      estimatedCost: cost,
+      currency: 'USD',
+      pricePerMinute: 0.006,
+    });
+  });
+
+  // Get queue status (admin endpoint in production)
+  fastify.get('/queue/status', {
+    preHandler: authenticate,
+  }, async (request: AuthenticatedRequest, reply: FastifyReply) => {
+    const queueStatus = transcriptionQueue.getQueueStatus();
+    
+    return reply.send({
+      queue: queueStatus,
+      timestamp: new Date().toISOString(),
     });
   });
 }
