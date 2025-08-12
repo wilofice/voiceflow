@@ -1,0 +1,3 @@
+[submodule "voiceflow-pro/libs/whisper.cpp"]
+	path = voiceflow-pro/libs/whisper.cpp
+	url = https://github.com/ggerganov/whisper.cpp.git
