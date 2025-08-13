@@ -30,6 +30,13 @@ export type { AnalyticsEvent, ErrorLog, PerformanceMetric } from './analytics';
 // Utility functions
 export { checkBrowserCompatibility, formatFileSize } from './utils';
 
+// Import types for use in default export
+import { WhisperWebEngine } from './whisperEngine';
+import { TranscriptionRouter } from './transcriptionRouter';
+import { WhisperModelManager, type WhisperModel } from './modelManager';
+import { WhisperAnalytics } from './analytics';
+import { SecurityValidator } from './security';
+
 // Default exports for common use cases
 export default {
   /**

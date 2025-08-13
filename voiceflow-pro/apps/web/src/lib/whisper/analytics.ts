@@ -316,20 +316,16 @@ export class WhisperAnalytics {
         }
       });
 
-      // Catch WASM errors
-      const originalError = window.Error;
-      window.Error = class extends originalError {
-        constructor(message?: string) {
-          super(message);
-          if (message?.includes('WebAssembly') || message?.includes('wasm')) {
-            WhisperAnalytics.getInstance().logError(
-              this,
-              { type: 'wasm_error' },
-              'high'
-            );
-          }
+      // Catch WASM errors through error event listener
+      window.addEventListener('error', (event) => {
+        if (event.message?.includes('WebAssembly') || event.message?.includes('wasm')) {
+          WhisperAnalytics.getInstance().logError(
+            new Error(event.message),
+            { type: 'wasm_error', url: event.filename },
+            'high'
+          );
         }
-      };
+      });
     }
   }
 

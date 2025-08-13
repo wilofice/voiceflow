@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
-import { AccessibilityProvider, SkipLink } from '@/components/ui/accessibility';
 import './globals.css';
 
 const inter = Inter({ subsets: ['latin'] });
@@ -18,12 +17,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <AccessibilityProvider>
-          <SkipLink href="#main-content" />
-          <main id="main-content" tabIndex={-1}>
-            {children}
-          </main>
-        </AccessibilityProvider>
+        <main id="main-content">
+          {children}
+        </main>
       </body>
     </html>
   );

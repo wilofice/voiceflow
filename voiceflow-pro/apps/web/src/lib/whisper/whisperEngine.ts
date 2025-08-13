@@ -474,7 +474,7 @@ export class WhisperWebEngine {
    */
   async destroy(): Promise<void> {
     if (this.context && this.module) {
-      this.module.ccall('whisper_free', null, ['number'], [this.context]);
+      this.module.ccall('whisper_free', 'number', ['number'], [this.context]);
       this.context = null;
     }
 

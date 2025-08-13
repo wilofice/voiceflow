@@ -1,29 +1,25 @@
-import type { Metadata } from "next";
-import { Inter } from "next/font/google";
-import "./globals.css";
-import { AuthProvider } from "@/lib/auth-context";
+import type { Metadata } from 'next';
+import { Inter } from 'next/font/google';
+import './globals.css';
 
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-});
+const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: "VoiceFlow Pro",
-  description: "Professional audio transcription platform with AI-powered insights",
+  title: 'VoiceFlow Pro - Advanced Audio Transcription',
+  description: 'AI-powered audio transcription with privacy-focused local processing options',
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="en">
-      <body className={`${inter.variable} font-sans antialiased`}>
-        <AuthProvider>
+      <body className={inter.className}>
+        <main id="main-content">
           {children}
-        </AuthProvider>
+        </main>
       </body>
     </html>
   );

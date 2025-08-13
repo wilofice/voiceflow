@@ -175,29 +175,31 @@ export function TranscriptionMethodSelector({
         } ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''} ${className}`}
         onClick={() => !isDisabled && handleMethodSelect(method)}
       >
-        <CardHeader className="pb-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
+        <CardHeader className="pb-3">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex items-center space-x-2 min-w-0">
               {info.icon}
-              <div>
-                <CardTitle className="text-lg">{info.name}</CardTitle>
-                <CardDescription className="text-sm">{info.description}</CardDescription>
+              <div className="min-w-0">
+                <CardTitle className="text-base leading-tight">{info.name}</CardTitle>
+                <CardDescription className="text-xs text-gray-500 line-clamp-2 mt-1">
+                  {info.description}
+                </CardDescription>
               </div>
             </div>
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-1 flex-shrink-0">
               {info.badge && (
                 <Badge variant={isSelected ? "default" : "secondary"} className="text-xs">
                   {info.badge}
                 </Badge>
               )}
               {isSelected && (
-                <CheckCircle className="w-5 h-5 text-green-500" />
+                <CheckCircle className="w-4 h-4 text-green-500" />
               )}
             </div>
           </div>
         </CardHeader>
 
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-3">
           {/* Status Alert */}
           {availability === 'unavailable' && (
             <Alert variant="destructive">
@@ -218,50 +220,48 @@ export function TranscriptionMethodSelector({
           )}
 
           {/* Metrics */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <div className="flex items-center justify-between text-sm">
-                <span className="flex items-center space-x-1">
-                  <DollarSign className="w-3 h-3" />
-                  <span>Cost</span>
-                </span>
-                <Badge variant="outline" className="text-xs">
-                  {info.cost}
-                </Badge>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-1 text-xs text-gray-600 min-w-0">
+                <DollarSign className="w-3 h-3 flex-shrink-0" />
+                <span>Cost</span>
               </div>
-              <div className="flex items-center justify-between text-sm">
-                <span className="flex items-center space-x-1">
-                  <Zap className="w-3 h-3" />
-                  <span>Speed</span>
-                </span>
-                <Badge variant="outline" className="text-xs">
-                  {info.speed}
-                </Badge>
-              </div>
+              <Badge variant="outline" className="text-xs whitespace-nowrap">
+                {info.cost}
+              </Badge>
             </div>
-
-            <div className="space-y-2">
-              <div className="flex items-center justify-between text-sm">
-                <span className="flex items-center space-x-1">
-                  <Gauge className="w-3 h-3" />
-                  <span>Accuracy</span>
-                </span>
-                <Badge variant="outline" className="text-xs">
-                  {info.accuracy}
-                </Badge>
+            
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-1 text-xs text-gray-600 min-w-0">
+                <Zap className="w-3 h-3 flex-shrink-0" />
+                <span>Speed</span>
               </div>
-              <div className="flex items-center justify-between text-sm">
-                <span className="flex items-center space-x-1">
-                  <Shield className="w-3 h-3" />
-                  <span>Privacy</span>
-                </span>
-                <Badge 
-                  variant={info.privacy === 'Local' ? 'default' : 'secondary'} 
-                  className="text-xs"
-                >
-                  {info.privacy}
-                </Badge>
+              <Badge variant="outline" className="text-xs whitespace-nowrap">
+                {info.speed}
+              </Badge>
+            </div>
+            
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-1 text-xs text-gray-600 min-w-0">
+                <Gauge className="w-3 h-3 flex-shrink-0" />
+                <span>Accuracy</span>
               </div>
+              <Badge variant="outline" className="text-xs whitespace-nowrap">
+                {info.accuracy}
+              </Badge>
+            </div>
+            
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-1 text-xs text-gray-600 min-w-0">
+                <Shield className="w-3 h-3 flex-shrink-0" />
+                <span>Privacy</span>
+              </div>
+              <Badge 
+                variant={info.privacy === 'Local' ? 'default' : 'secondary'} 
+                className="text-xs whitespace-nowrap"
+              >
+                {info.privacy}
+              </Badge>
             </div>
           </div>
 
@@ -325,11 +325,11 @@ export function TranscriptionMethodSelector({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div>
-        <h3 className="text-lg font-semibold mb-2">Choose Transcription Method</h3>
-        <p className="text-sm text-gray-600">
-          Select how you'd like your audio to be transcribed. Each method has different trade-offs for cost, speed, accuracy, and privacy.
+        <h3 className="text-lg font-semibold mb-1">Choose Transcription Method</h3>
+        <p className="text-xs text-gray-600">
+          Select how you'd like your audio to be transcribed. Each method has different trade-offs.
         </p>
       </div>
 
@@ -346,28 +346,28 @@ export function TranscriptionMethodSelector({
       )}
 
       {/* Method Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-3">
         {(Object.keys(METHOD_INFO) as TranscriptionMethod[]).map(renderMethodCard)}
       </div>
 
       {/* Quick Recommendations */}
-      <div className="bg-blue-50 rounded-lg p-4">
-        <h4 className="font-medium mb-3 flex items-center space-x-2">
+      <div className="bg-blue-50 rounded-lg p-3">
+        <h4 className="font-medium mb-2 flex items-center space-x-2 text-sm">
           <Info className="w-4 h-4" />
           <span>Quick Recommendations</span>
         </h4>
-        <div className="grid md:grid-cols-3 gap-3 text-sm">
-          <div>
-            <strong className="text-blue-700">For Privacy:</strong>
-            <p className="text-gray-600">Choose Whisper (Browser) to keep all data on your device</p>
+        <div className="space-y-2 text-xs">
+          <div className="flex items-start space-x-2">
+            <span className="font-medium text-blue-700 whitespace-nowrap">Privacy:</span>
+            <span className="text-gray-600">Choose Whisper (Browser) to keep all data local</span>
           </div>
-          <div>
-            <strong className="text-blue-700">For Accuracy:</strong>
-            <p className="text-gray-600">Choose OpenAI API for the most accurate results</p>
+          <div className="flex items-start space-x-2">
+            <span className="font-medium text-blue-700 whitespace-nowrap">Accuracy:</span>
+            <span className="text-gray-600">Choose OpenAI API for best results</span>
           </div>
-          <div>
-            <strong className="text-blue-700">For Cost:</strong>
-            <p className="text-gray-600">Choose Whisper (Browser) for free transcription</p>
+          <div className="flex items-start space-x-2">
+            <span className="font-medium text-blue-700 whitespace-nowrap">Cost:</span>
+            <span className="text-gray-600">Choose Whisper (Browser) for free transcription</span>
           </div>
         </div>
       </div>

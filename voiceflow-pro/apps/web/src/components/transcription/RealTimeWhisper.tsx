@@ -492,16 +492,16 @@ export function RealTimeWhisper({
           console.log('Clicked segment:', segment);
         }}
         onCopyTranscript={() => {
-          trackWhisperEvent('transcript_copied', {
+          trackWhisperEvent('transcription', {
             method: 'realtime',
             segmentCount: segments.length,
           });
         }}
         onExportTranscript={() => {
-          trackWhisperEvent('transcript_exported', {
+          trackWhisperEvent('transcription', {
             method: 'realtime',
             segmentCount: segments.length,
-            format: 'json'
+            type: 'export'
           });
         }}
       />

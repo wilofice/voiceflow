@@ -430,8 +430,6 @@ export function ProgressWithError({
     <Progress 
       value={value} 
       className={className}
-      label={`Progress: ${Math.round(value)}%`}
-      showValue
     />
   );
 }

@@ -134,8 +134,8 @@ export default function Home() {
               {/* Method Selection */}
               <div>
                 <TranscriptionMethodSelector
-                  onMethodChange={setSelectedMethod}
-                  selectedMethod={selectedMethod}
+                  currentMethod={selectedMethod as any}
+                  onMethodChange={(method) => setSelectedMethod(method)}
                 />
               </div>
 

@@ -162,7 +162,7 @@ export class TranscriptionRouter {
       file = request.audio;
     } else {
       // Convert Float32Array to File
-      const blob = new Blob([request.audio.buffer], { type: 'audio/wav' });
+      const blob = new Blob([new Uint8Array(request.audio.buffer)], { type: 'audio/wav' });
       file = new File([blob], 'audio.wav', { type: 'audio/wav' });
     }
 
@@ -277,7 +277,7 @@ export class TranscriptionRouter {
     if (request.audio instanceof File) {
       file = request.audio;
     } else {
-      const blob = new Blob([request.audio.buffer], { type: 'audio/wav' });
+      const blob = new Blob([new Uint8Array(request.audio.buffer)], { type: 'audio/wav' });
       file = new File([blob], 'audio.wav', { type: 'audio/wav' });
     }
 

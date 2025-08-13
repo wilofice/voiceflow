@@ -25,7 +25,7 @@ export function AudioVisualizer({
   backgroundColor = '#1e40af'
 }: AudioVisualizerProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const animationFrameRef = useRef<number>();
+  const animationFrameRef = useRef<number | undefined>(undefined);
 
   useEffect(() => {
     if (!canvasRef.current) return;
