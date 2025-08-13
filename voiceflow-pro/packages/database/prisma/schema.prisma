@@ -26,6 +26,18 @@ enum AccessLevel {
   EDIT
 }
 
+enum TranscriptionMethod {
+  OPENAI
+  WHISPER_LOCAL
+  WHISPER_DOCKER
+}
+
+enum ProcessingLocation {
+  CLOUD
+  LOCAL
+  CONTAINER
+}
+
 model User {
   id               String           @id @default(uuid())
   email            String           @unique
@@ -39,22 +51,27 @@ model User {
   comments         TranscriptComment[]
   sharedBy         TranscriptShare[]   @relation("SharedBy")
   sharedWith       TranscriptShare[]   @relation("SharedWith")
+  preferences      UserPreferences?
 
   @@index([email])
   @@index([createdAt])
 }
 
 model Transcript {
-  id        String           @id @default(uuid())
-  userId    String
-  title     String
-  duration  Int              @default(0) // Duration in seconds
-  language  String           @default("en")
-  status    TranscriptStatus @default(QUEUED)
-  audioUrl  String?
-  createdAt DateTime         @default(now())
-  updatedAt DateTime         @updatedAt
-  deletedAt DateTime?
+  id                   String               @id @default(uuid())
+  userId               String
+  title                String
+  duration             Int                  @default(0) // Duration in seconds
+  language             String               @default("en")
+  status               TranscriptStatus     @default(QUEUED)
+  audioUrl             String?
+  transcriptionMethod  TranscriptionMethod  @default(OPENAI)
+  whisperModel         String?              // Model name (tiny, base, small, etc.)
+  processingLocation   ProcessingLocation   @default(CLOUD)
+  processingStats      Json?                // Performance stats, cost, etc.
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @updatedAt
+  deletedAt            DateTime?
 
   user      User                @relation(fields: [userId], references: [id], onDelete: Cascade)
   segments  TranscriptSegment[]
@@ -64,7 +81,10 @@ model Transcript {
   @@index([userId])
   @@index([status])
   @@index([createdAt])
+  @@index([transcriptionMethod])
+  @@index([processingLocation])
   @@index([userId, status])
+  @@index([userId, transcriptionMethod])
 }
 
 model TranscriptSegment {
@@ -126,4 +146,21 @@ model TranscriptShare {
   @@index([transcriptId])
   @@index([sharedById])
   @@index([sharedWithId])
+}
+
+model UserPreferences {
+  id                         String               @id @default(uuid())
+  userId                     String               @unique
+  defaultTranscriptionMethod TranscriptionMethod  @default(OPENAI)
+  defaultWhisperModel        String               @default("base")
+  autoDownloadModels         Boolean              @default(false)
+  privacyMode                Boolean              @default(false)
+  preferredProcessingLocation ProcessingLocation  @default(CLOUD)
+  maxFileSize                Int                  @default(500) // MB
+  createdAt                  DateTime             @default(now())
+  updatedAt                  DateTime             @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }

@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  whisper:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: voiceflow-whisper
+    image: voiceflow/whisper:latest
+    ports:
+      - "8080:8080"
+    environment:
+      - WHISPER_MODEL=base
+      - WHISPER_THREADS=4
+      - WHISPER_HOST=0.0.0.0
+      - WHISPER_PORT=8080
+      - MODELS_DIR=/opt/whisper/models
+    volumes:
+      # Mount models directory for persistence
+      - whisper_models:/opt/whisper/models
+      # Mount temp directory for processing
+      - whisper_temp:/opt/whisper/temp
+      # Mount logs directory
+      - whisper_logs:/opt/whisper/logs
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 4G
+        reservations:
+          cpus: '1.0'
+          memory: 2G
+    networks:
+      - whisper-network
+    healthcheck:
+      test: ["CMD", "/opt/whisper/healthcheck.sh"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # Optional: Redis for caching transcription results
+  redis:
+    image: redis:7-alpine
+    container_name: voiceflow-whisper-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    command: redis-server --appendonly yes --maxmemory 1gb --maxmemory-policy allkeys-lru
+    networks:
+      - whisper-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+volumes:
+  whisper_models:
+    driver: local
+  whisper_temp:
+    driver: local
+  whisper_logs:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  whisper-network:
+    driver: bridge
