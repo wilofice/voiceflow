@@ -26,10 +26,12 @@ run_sql_file() {
     
     if command -v psql >/dev/null 2>&1; then
         psql "$DATABASE_URL" -f "$file_path"
+    elif [ -x "/Library/PostgreSQL/17/bin/psql" ]; then
+        /Library/PostgreSQL/17/bin/psql "$DATABASE_URL" -f "$file_path"
     elif command -v docker >/dev/null 2>&1 && [ -n "$POSTGRES_CONTAINER" ]; then
         docker exec -i "$POSTGRES_CONTAINER" psql "$DATABASE_URL" < "$file_path"
     else
-        echo "❌ Neither psql nor docker with POSTGRES_CONTAINER is available"
+        echo "❌ Neither psql, /Library/PostgreSQL/17/bin/psql, nor docker with POSTGRES_CONTAINER is available"
         exit 1
     fi
     
