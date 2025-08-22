@@ -476,6 +476,7 @@ export class WhisperServerService {
       '/opt/whisper/whisper',
       '/usr/local/bin/whisper',
       '/usr/bin/whisper',
+      '/Users/galahassa/.local/bin/whisper',
       path.join(os.homedir(), '.local/share/whisper/whisper'),
       path.join(process.cwd(), 'whisper'),
       'whisper' // In PATH
