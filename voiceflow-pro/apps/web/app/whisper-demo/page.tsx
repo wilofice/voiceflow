@@ -29,6 +29,9 @@ export default function WhisperDemoPage() {
   const [transcriptionResult, setTranscriptionResult] = useState<any>(null);
   const [showResults, setShowResults] = useState(false);
 
+  // API base URL configuration
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002';
+
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
@@ -103,7 +106,7 @@ export default function WhisperDemoPage() {
       let additionalParams: Record<string, string> = {};
 
       if (selectedMethod === 'openai') {
-        apiRoute = '/api/whisper/transcribe';
+        apiRoute = `${API_BASE_URL}/api/whisper/transcribe`;
         additionalParams = {
           method: 'openai',
           model: 'base',
@@ -111,7 +114,7 @@ export default function WhisperDemoPage() {
           fallbackEnabled: 'true'
         };
       } else if (selectedMethod === 'server') {
-        apiRoute = '/api/whisper/transcribe/local';
+        apiRoute = `${API_BASE_URL}/api/whisper/transcribe/local`;
         additionalParams = {
           model: 'base',
           task: 'transcribe'

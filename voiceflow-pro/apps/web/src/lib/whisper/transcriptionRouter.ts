@@ -175,7 +175,9 @@ export class TranscriptionRouter {
       formData.append('language', request.config.language);
     }
 
-    const response = await fetch('/api/transcriptions/openai', {
+    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002';
+    
+    const response = await fetch(`${API_BASE_URL}/api/transcriptions/openai`, {
       method: 'POST',
       body: formData,
       headers: {
@@ -293,7 +295,9 @@ export class TranscriptionRouter {
       formData.append('language', request.config.language);
     }
 
-    const response = await fetch('/api/transcriptions/whisper', {
+    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002';
+    
+    const response = await fetch(`${API_BASE_URL}/api/transcriptions/whisper`, {
       method: 'POST',
       body: formData,
       headers: {
