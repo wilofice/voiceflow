@@ -131,7 +131,7 @@ export class WhisperDockerService {
       
     } catch (error) {
       console.error('❌ Failed to initialize Whisper Docker Service:', error);
-      throw error;
+      //throw error;
     }
   }
 
