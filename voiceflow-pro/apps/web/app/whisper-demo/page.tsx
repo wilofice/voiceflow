@@ -1,6 +1,9 @@
 "use client";
 
 import { useState } from 'react';
+import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
+import { Layout } from '@/components/layout/Layout';
+import { useAuth } from '@/lib/auth-context';
 import { TranscriptionMethodSelector } from '@/components/transcription/TranscriptionMethodSelector';
 import { RealTimeWhisper } from '@/components/transcription/RealTimeWhisper';
 import { TranscriptionSettings } from '@/components/settings/TranscriptionSettings';
@@ -9,6 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { getSupabaseToken } from '@/lib/api-client';
 import {
   Upload,
   Mic,
@@ -22,6 +26,7 @@ import {
 } from 'lucide-react';
 
 export default function WhisperDemoPage() {
+  const { user } = useAuth();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -128,15 +133,19 @@ export default function WhisperDemoPage() {
 
       console.log(`🎙️ Starting ${selectedMethod} transcription via ${apiRoute}`);
 
-      // Get auth token (you may need to adjust this based on your auth implementation)
-      const token = localStorage.getItem('access_token') || sessionStorage.getItem('access_token');
+      // Get Supabase auth token
+      const token = await getSupabaseToken();
+      
+      if (!token) {
+        throw new Error('Authentication required. Please log in to use the transcription service.');
+      }
       
       // Start upload with progress tracking
       const response = await fetch(apiRoute, {
         method: 'POST',
         body: formData,
         headers: {
-          ...(token && { 'Authorization': `Bearer ${token}` }),
+          'Authorization': `Bearer ${token}`,
         },
         // Note: Don't set Content-Type header, let browser set it for FormData
       });
@@ -209,7 +218,9 @@ export default function WhisperDemoPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <ProtectedRoute>
+      <Layout user={user ? { name: user.user_metadata?.name || 'User', email: user.email! } : null}>
+        <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="text-center mb-8">
@@ -498,5 +509,7 @@ export default function WhisperDemoPage() {
         </div>
       </div>
     </div>
+      </Layout>
+    </ProtectedRoute>
   );
 }
