@@ -3,11 +3,11 @@
  * Health checks, performance monitoring, and alerting for Whisper services
  */
 
-import { Request, Response, NextFunction } from 'express';
+import { FastifyRequest, FastifyReply } from 'fastify';
 import { HybridTranscriptionService } from '../services/hybridTranscription';
 import { WhisperServerService } from '../services/whisperServer';
 import { WhisperDockerService } from '../services/whisperDocker';
-import os from 'os';
+import * as os from 'os';
 
 export interface HealthCheckResult {
   service: string;
@@ -175,29 +175,41 @@ export class WhisperMonitoring {
   }
 
   /**
-   * Middleware for request monitoring
+   * Fastify hook for request monitoring (onRequest)
    */
   requestMonitoring() {
-    return (req: Request, res: Response, next: NextFunction) => {
+    return async (request: FastifyRequest, _reply: FastifyReply) => {
       const startTime = Date.now();
-
-      // Track request
-      res.on('finish', () => {
-        const duration = Date.now() - startTime;
-        this.trackRequest(req, res, duration);
-      });
-
-      next();
+      
+      // Store start time on request object
+      (request as any).startTime = startTime;
     };
   }
 
   /**
-   * Middleware for error monitoring
+   * Fastify hook for response monitoring (onResponse)
+   */
+  responseMonitoring() {
+    return async (request: FastifyRequest, reply: FastifyReply) => {
+      const startTime = (request as any).startTime || Date.now();
+      const duration = Date.now() - startTime;
+      this.trackRequest(request, reply, duration);
+    };
+  }
+
+  /**
+   * Fastify error handler for error monitoring
    */
   errorMonitoring() {
-    return (error: any, req: Request, res: Response, next: NextFunction) => {
-      this.trackError(error, req);
-      next(error);
+    return (error: any, request: FastifyRequest, reply: FastifyReply) => {
+      this.trackError(error, request);
+      
+      // Send error response
+      reply.status(500).send({
+        error: error.message || 'Internal server error',
+        code: error.code || 'INTERNAL_ERROR',
+        timestamp: new Date().toISOString()
+      });
     };
   }
 
@@ -526,11 +538,11 @@ export class WhisperMonitoring {
   /**
    * Track request metrics
    */
-  private trackRequest(req: Request, res: Response, duration: number): void {
+  private trackRequest(request: FastifyRequest, reply: FastifyReply, duration: number): void {
     // Track API request metrics
-    const endpoint = req.route?.path || req.path;
-    const method = req.method;
-    const statusCode = res.statusCode;
+    const endpoint = request.routerPath || request.url;
+    const method = request.method;
+    const statusCode = reply.statusCode;
 
     // Log slow requests
     if (duration > 10000) { // 10 seconds
@@ -546,9 +558,9 @@ export class WhisperMonitoring {
   /**
    * Track error
    */
-  private trackError(error: any, req: Request): void {
-    const endpoint = req.route?.path || req.path;
-    const method = req.method;
+  private trackError(error: any, request: FastifyRequest): void {
+    const endpoint = request.routerPath || request.url;
+    const method = request.method;
     
     this.createAlert('error', 'api', `Error in ${method} ${endpoint}: ${error.message}`, 'high');
   }

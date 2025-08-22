@@ -73,8 +73,9 @@ try {
 }
 
 export async function whisperRoutes(fastify: FastifyInstance) {
-  // Add monitoring middleware
+  // Add monitoring hooks
   fastify.addHook('onRequest', whisperMonitoring.requestMonitoring());
+  fastify.addHook('onResponse', whisperMonitoring.responseMonitoring());
   fastify.setErrorHandler(whisperMonitoring.errorMonitoring());
 
   /**
