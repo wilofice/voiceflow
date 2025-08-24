@@ -111,7 +111,32 @@ export async function whisperRoutes(fastify: FastifyInstance) {
     await fs.writeFile(tempFilePath, await file.toBuffer());
 
     try {
-      const params = transcribeSchema.parse(request.body);
+
+      // Extract fields from multipart form
+      // file.fields is a Map<string, MultipartField[]>
+      const fields: Record<string, any> = {};
+      if (file.fields) {
+        for (const [key, valueArr] of Object.entries(file.fields)) {
+          if (Array.isArray(valueArr) && valueArr.length > 0) {
+            const field = valueArr[0];
+            // Only use .value if it's a text field (not a file)
+            if ('value' in field && typeof field.value === 'string') {
+              fields[key] = field.value;
+            }
+          }
+        }
+      }
+
+      // Convert string booleans/numbers to correct types for Zod
+      if (fields.wordTimestamps !== undefined) fields.wordTimestamps = fields.wordTimestamps === 'true';
+      if (fields.fallbackEnabled !== undefined) fields.fallbackEnabled = fields.fallbackEnabled === 'true';
+
+      // Parse params using Zod
+      const params = transcribeSchema.parse(fields);
+
+
+      // Accept 'balanced' as a valid priority, but map it to undefined for the backend if not supported
+      const mappedPriority = params.priority === 'balanced' ? undefined : params.priority;
 
       const transcriptionRequest = {
         filePath: tempFilePath,
@@ -122,7 +147,7 @@ export async function whisperRoutes(fastify: FastifyInstance) {
           task: params.task,
           wordTimestamps: params.wordTimestamps
         },
-        priority: params.priority,
+        priority: mappedPriority,
         fallbackEnabled: params.fallbackEnabled,
         userId: request.user.id,
         metadata: {
@@ -216,7 +241,23 @@ export async function whisperRoutes(fastify: FastifyInstance) {
     await fs.writeFile(tempFilePath, await file.toBuffer());
 
     try {
-      const params = localTranscribeSchema.parse(request.body);
+      // Extract fields from multipart form
+      const fields: Record<string, any> = {};
+      if (file.fields) {
+        for (const [key, valueArr] of Object.entries(file.fields)) {
+          if (Array.isArray(valueArr) && valueArr.length > 0) {
+            const field = valueArr[0];
+            if ('value' in field && typeof field.value === 'string') {
+              fields[key] = field.value;
+            }
+          }
+        }
+      }
+      // Convert string booleans/numbers to correct types for Zod
+      if (fields.wordTimestamps !== undefined) fields.wordTimestamps = fields.wordTimestamps === 'true';
+      if (fields.threads !== undefined) fields.threads = Number(fields.threads);
+
+      const params = localTranscribeSchema.parse(fields);
 
       const result = await whisperLocalService.transcribeFile(tempFilePath, {
         model: params.model as any,
