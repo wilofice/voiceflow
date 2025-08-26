@@ -144,7 +144,7 @@ export class WhisperModelManager extends EventEmitter {
   private readonly DB_NAME = 'whisper-models';
   private readonly DB_VERSION = 1;
   private readonly STORE_NAME = 'models';
-  private readonly CDN_BASE_URL = process.env.NEXT_PUBLIC_MODEL_CDN_URL || '/models';
+  private readonly CDN_BASE_URL = process.env.NEXT_PUBLIC_MODEL_CDN_URL || 'https://huggingface.co/ggerganov/whisper.cpp/resolve/main';
   private downloadControllers = new Map<WhisperModel, AbortController>();
 
   private constructor() {

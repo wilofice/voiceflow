@@ -32,3 +32,5 @@
 - Test model download, cache, and integrity check logic
 - Test WebWorker message passing and error handling
 - Test UI state transitions for upload, progress, and result
+
+Check current existing script : voiceflow-pro/scripts/setup-whisper-local.sh ? Is that related to current task ? Please advise

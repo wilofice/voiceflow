@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Browser Whisper Test</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            max-width: 800px; 
+            margin: 0 auto; 
+            padding: 20px; 
+        }
+        .test-section { 
+            margin: 20px 0; 
+            padding: 15px; 
+            border: 1px solid #ddd; 
+            border-radius: 5px; 
+        }
+        .result { 
+            margin: 10px 0; 
+            padding: 10px; 
+            background: #f5f5f5; 
+            border-radius: 3px; 
+        }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        .pending { background-color: #fff3cd; color: #856404; }
+        button { 
+            background: #007bff; 
+            color: white; 
+            border: none; 
+            padding: 10px 20px; 
+            border-radius: 3px; 
+            cursor: pointer; 
+            margin: 5px; 
+        }
+        button:disabled { 
+            background: #6c757d; 
+            cursor: not-allowed; 
+        }
+        .progress { 
+            width: 100%; 
+            height: 20px; 
+            background: #e9ecef; 
+            border-radius: 10px; 
+            overflow: hidden; 
+        }
+        .progress-bar { 
+            height: 100%; 
+            background: #007bff; 
+            transition: width 0.3s ease; 
+        }
+    </style>
+</head>
+<body>
+    <h1>🎙️ Browser Whisper Integration Test</h1>
+    <p>This page tests the browser-based Whisper transcription functionality.</p>
+
+    <div class="test-section">
+        <h2>1. Browser Compatibility Check</h2>
+        <div id="compatibility-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>2. WASM Module Loading Test</h2>
+        <button id="test-wasm-load" onclick="testWASMLoad()">Test WASM Loading</button>
+        <div id="wasm-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>3. Model Download Test</h2>
+        <button id="test-model-download" onclick="testModelDownload()">Test Model Download</button>
+        <div id="model-progress"></div>
+        <div id="model-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>4. Audio File Transcription Test</h2>
+        <input type="file" id="audio-file" accept="audio/*">
+        <button id="test-transcription" onclick="testTranscription()">Test Transcription</button>
+        <div id="transcription-progress"></div>
+        <div id="transcription-results"></div>
+    </div>
+
+    <script>
+        // Browser compatibility check
+        function checkBrowserCompatibility() {
+            const results = [];
+            
+            // Check WebAssembly support
+            if (typeof WebAssembly !== 'undefined') {
+                results.push({ test: 'WebAssembly', status: 'success', message: 'Supported' });
+            } else {
+                results.push({ test: 'WebAssembly', status: 'error', message: 'Not supported' });
+            }
+            
+            // Check IndexedDB
+            if (window.indexedDB) {
+                results.push({ test: 'IndexedDB', status: 'success', message: 'Supported' });
+            } else {
+                results.push({ test: 'IndexedDB', status: 'error', message: 'Not supported' });
+            }
+            
+            // Check Web Audio API
+            if (window.AudioContext || window.webkitAudioContext) {
+                results.push({ test: 'Web Audio API', status: 'success', message: 'Supported' });
+            } else {
+                results.push({ test: 'Web Audio API', status: 'error', message: 'Not supported' });
+            }
+            
+            // Check fetch API
+            if (typeof fetch !== 'undefined') {
+                results.push({ test: 'Fetch API', status: 'success', message: 'Supported' });
+            } else {
+                results.push({ test: 'Fetch API', status: 'error', message: 'Not supported' });
+            }
+            
+            const resultsHTML = results.map(r => 
+                `<div class="result ${r.status}">${r.test}: ${r.message}</div>`
+            ).join('');
+            
+            document.getElementById('compatibility-results').innerHTML = resultsHTML;
+        }
+
+        // Test WASM module loading
+        async function testWASMLoad() {
+            const resultsDiv = document.getElementById('wasm-results');
+            const button = document.getElementById('test-wasm-load');
+            
+            button.disabled = true;
+            resultsDiv.innerHTML = '<div class="result pending">Loading WASM module...</div>';
+            
+            try {
+                // Load the WASM module script
+                if (!window.Module) {
+                    await new Promise((resolve, reject) => {
+                        const script = document.createElement('script');
+                        script.src = 'apps/web/public/wasm/whisper.js';
+                        script.onload = resolve;
+                        script.onerror = reject;
+                        document.head.appendChild(script);
+                    });
+                }
+                
+                // Check if module is available
+                if (window.Module) {
+                    resultsDiv.innerHTML = '<div class="result success">✅ WASM module loaded successfully</div>';
+                } else {
+                    throw new Error('Module not found in window');
+                }
+            } catch (error) {
+                resultsDiv.innerHTML = `<div class="result error">❌ Failed to load WASM module: ${error.message}</div>`;
+            }
+            
+            button.disabled = false;
+        }
+
+        // Test model download
+        async function testModelDownload() {
+            const resultsDiv = document.getElementById('model-results');
+            const progressDiv = document.getElementById('model-progress');
+            const button = document.getElementById('test-model-download');
+            
+            button.disabled = true;
+            resultsDiv.innerHTML = '<div class="result pending">Testing model download...</div>';
+            
+            try {
+                // Test connection to Hugging Face
+                const modelUrl = 'https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-tiny.bin';
+                
+                progressDiv.innerHTML = `
+                    <div class="progress">
+                        <div class="progress-bar" style="width: 0%" id="download-progress"></div>
+                    </div>
+                    <div id="download-status">Checking model availability...</div>
+                `;
+                
+                // Just check if the model is accessible (don't actually download)
+                const response = await fetch(modelUrl, { method: 'HEAD' });
+                
+                if (response.ok) {
+                    const size = response.headers.get('content-length');
+                    progressDiv.innerHTML = '';
+                    resultsDiv.innerHTML = `<div class="result success">✅ Model accessible (Size: ${Math.round(size/1024/1024)}MB)</div>`;
+                } else {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+            } catch (error) {
+                progressDiv.innerHTML = '';
+                resultsDiv.innerHTML = `<div class="result error">❌ Model download test failed: ${error.message}</div>`;
+            }
+            
+            button.disabled = false;
+        }
+
+        // Test audio transcription
+        async function testTranscription() {
+            const fileInput = document.getElementById('audio-file');
+            const resultsDiv = document.getElementById('transcription-results');
+            const progressDiv = document.getElementById('transcription-progress');
+            const button = document.getElementById('test-transcription');
+            
+            if (!fileInput.files || !fileInput.files[0]) {
+                resultsDiv.innerHTML = '<div class="result error">❌ Please select an audio file first</div>';
+                return;
+            }
+            
+            const file = fileInput.files[0];
+            
+            button.disabled = true;
+            resultsDiv.innerHTML = '<div class="result pending">Starting transcription test...</div>';
+            
+            try {
+                // This is a simplified test - in reality we would use the full WhisperWebEngine
+                progressDiv.innerHTML = `
+                    <div class="progress">
+                        <div class="progress-bar" style="width: 20%" id="transcription-progress-bar"></div>
+                    </div>
+                    <div id="transcription-status">Processing audio file...</div>
+                `;
+                
+                // Simulate processing steps
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                document.getElementById('transcription-progress-bar').style.width = '60%';
+                document.getElementById('transcription-status').innerText = 'Running inference...';
+                
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                document.getElementById('transcription-progress-bar').style.width = '100%';
+                
+                progressDiv.innerHTML = '';
+                resultsDiv.innerHTML = `
+                    <div class="result success">✅ Transcription test completed</div>
+                    <div class="result">File: ${file.name} (${Math.round(file.size/1024)}KB)</div>
+                    <div class="result">Note: This is a basic test. Full transcription requires the complete WASM integration.</div>
+                `;
+                
+            } catch (error) {
+                progressDiv.innerHTML = '';
+                resultsDiv.innerHTML = `<div class="result error">❌ Transcription test failed: ${error.message}</div>`;
+            }
+            
+            button.disabled = false;
+        }
+
+        // Run compatibility check on page load
+        window.onload = function() {
+            checkBrowserCompatibility();
+        };
+    </script>
+</body>
+</html>

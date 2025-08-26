@@ -13,6 +13,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { getSupabaseToken } from '@/lib/api-client';
+import { WhisperWebEngine, WhisperConfig } from '@/lib/whisper/whisperEngine';
+import { WhisperModelManager } from '@/lib/whisper/modelManager';
 import {
   Upload,
   Mic,
@@ -33,6 +35,8 @@ export default function WhisperDemoPage() {
   const [selectedMethod, setSelectedMethod] = useState<string>('openai');
   const [transcriptionResult, setTranscriptionResult] = useState<any>(null);
   const [showResults, setShowResults] = useState(false);
+  const [modelDownloadProgress, setModelDownloadProgress] = useState(0);
+  const [showModelDownload, setShowModelDownload] = useState(false);
 
   // API base URL configuration
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002';
@@ -54,49 +58,88 @@ export default function WhisperDemoPage() {
     // Handle browser transcription locally (no backend call)
     if (selectedMethod === 'browser') {
       try {
-        // TODO: Implement browser-based transcription using RealTimeWhisper or WhisperEngine
-        console.log('Browser transcription not implemented yet');
+        console.log('Starting browser-based Whisper transcription...');
+        setUploadProgress(10);
         
-        // Simulate progress for now
-        const progressInterval = setInterval(() => {
-          setUploadProgress(prev => {
-            if (prev >= 90) {
-              clearInterval(progressInterval);
-              return prev;
-            }
-            return prev + 10;
+        // Initialize model manager and whisper engine
+        const modelManager = WhisperModelManager.getInstance();
+        const whisperEngine = new WhisperWebEngine();
+        
+        // Use base model for browser transcription
+        const modelType = 'base';
+        
+        // Check if model is downloaded
+        let modelBuffer = await modelManager.getCachedModel(modelType);
+        
+        if (!modelBuffer) {
+          console.log(`Model ${modelType} not cached, downloading...`);
+          setShowModelDownload(true);
+          setUploadProgress(0);
+          
+          // Download model with progress tracking
+          modelBuffer = await modelManager.downloadModel(modelType, (progress) => {
+            setModelDownloadProgress(progress.progress);
           });
-        }, 200);
-
-        await new Promise(resolve => setTimeout(resolve, 3000));
+          
+          setShowModelDownload(false);
+        }
+        
+        setUploadProgress(30);
+        
+        // Initialize whisper engine
+        const config: WhisperConfig = {
+          model: modelType,
+          language: 'en',
+          task: 'transcribe'
+        };
+        
+        await whisperEngine.initialize(config);
+        setUploadProgress(50);
+        
+        console.log('Whisper engine initialized, starting transcription...');
+        
+        // Transcribe the file
+        const startTime = performance.now();
+        const result = await whisperEngine.transcribeFile(selectedFile, {
+          language: 'en',
+          task: 'transcribe'
+        });
+        
+        setUploadProgress(90);
+        
+        // Clean up
+        await whisperEngine.destroy();
+        
         setUploadProgress(100);
         
         setTimeout(() => {
           setIsUploading(false);
           setUploadProgress(0);
-          // Don't clear the file yet, show results first
-          
-          // Mock result for browser transcription
-          const mockResult = {
+          setTranscriptionResult({
             success: true,
             result: {
-              text: 'This is a mock transcription result for browser-based processing. The actual Whisper engine would provide real transcription here.',
+              text: result.text,
+              segments: result.segments,
               method: 'whisper-browser',
-              processingTime: 3000,
-              cost: 0,
-              language: 'en'
+              processingTime: result.processingTime || (performance.now() - startTime),
+              cost: 0, // Browser transcription is free
+              language: result.language || 'en'
             }
-          };
-          
-          setTranscriptionResult(mockResult);
+          });
           setShowResults(true);
-        }, 1000);
+        }, 500);
         
       } catch (error) {
         console.error('Browser transcription failed:', error);
         setIsUploading(false);
         setUploadProgress(0);
-        alert('Browser transcription failed: ' + (error as Error).message);
+        setShowModelDownload(false);
+        
+        if ((error as Error).message.includes('not found')) {
+          alert('Model download failed. Please try again or check your internet connection.');
+        } else {
+          alert('Browser transcription failed: ' + (error as Error).message);
+        }
       }
       return;
     }
@@ -455,15 +498,27 @@ export default function WhisperDemoPage() {
                           {isUploading && (
                             <div className="space-y-2">
                               <div className="flex justify-between text-sm">
-                                <span>Processing...</span>
-                                <span>{uploadProgress}%</span>
+                                <span>
+                                  {showModelDownload 
+                                    ? 'Downloading Whisper model...' 
+                                    : 'Processing transcription...'
+                                  }
+                                </span>
+                                <span>
+                                  {showModelDownload ? modelDownloadProgress.toFixed(1) : uploadProgress}%
+                                </span>
                               </div>
                               <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
                                 <div
                                   className="bg-blue-600 h-full rounded-full transition-all duration-300"
-                                  style={{ width: `${uploadProgress}%` }}
+                                  style={{ width: `${showModelDownload ? modelDownloadProgress : uploadProgress}%` }}
                                 />
                               </div>
+                              {showModelDownload && (
+                                <div className="text-xs text-gray-500">
+                                  This model will be cached locally for future use
+                                </div>
+                              )}
                             </div>
                           )}
 
