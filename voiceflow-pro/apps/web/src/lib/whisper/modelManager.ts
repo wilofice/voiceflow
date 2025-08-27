@@ -144,7 +144,7 @@ export class WhisperModelManager extends EventEmitter {
   private readonly DB_NAME = 'whisper-models';
   private readonly DB_VERSION = 1;
   private readonly STORE_NAME = 'models';
-  private readonly CDN_BASE_URL = process.env.NEXT_PUBLIC_MODEL_CDN_URL || 'https://huggingface.co/ggerganov/whisper.cpp/resolve/main';
+  private readonly CDN_BASE_URL = process.env.NEXT_PUBLIC_MODEL_CDN_URL || `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002'}/api/models`;
   private downloadControllers = new Map<WhisperModel, AbortController>();
 
   private constructor() {
@@ -233,19 +233,46 @@ export class WhisperModelManager extends EventEmitter {
     this.downloadControllers.set(modelType, controller);
 
     try {
-      const modelUrl = `${this.CDN_BASE_URL}/ggml-${modelType}.bin`;
-      console.log(`Downloading model from: ${modelUrl}`);
+      const modelUrls = [
+        `${this.CDN_BASE_URL}/download/${modelType}`, // Proxy route (preferred)
+        `https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-${modelType}.bin`, // Direct fallback
+      ];
 
       const startTime = Date.now();
       let lastTime = startTime;
       let lastLoaded = 0;
+      let response: Response | null = null;
+      let lastError: Error | null = null;
 
-      const response = await fetch(modelUrl, {
-        signal: controller.signal,
-      });
+      // Try each URL until one works
+      for (const modelUrl of modelUrls) {
+        console.log(`Attempting to download model from: ${modelUrl}`);
+        
+        try {
+          response = await fetch(modelUrl, {
+            signal: controller.signal,
+            mode: 'cors',
+            headers: {
+              'Accept': 'application/octet-stream',
+              'Cache-Control': 'no-cache',
+            },
+          });
+          
+          if (response.ok) {
+            console.log(`✅ Successfully connected to: ${modelUrl}`);
+            break;
+          } else {
+            lastError = new Error(`HTTP ${response.status}: ${response.statusText}`);
+          }
+        } catch (error) {
+          console.warn(`❌ Failed to fetch from ${modelUrl}:`, error);
+          lastError = error instanceof Error ? error : new Error(String(error));
+          response = null;
+        }
+      }
 
-      if (!response.ok) {
-        throw new Error(`Failed to download model: ${response.statusText}`);
+      if (!response || !response.ok) {
+        throw lastError || new Error('All download sources failed');
       }
 
       const contentLength = Number(response.headers.get('content-length'));
