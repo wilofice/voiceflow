@@ -10,6 +10,7 @@ import { transcriptRoutes } from './routes/transcripts';
 import { uploadRoutes } from './routes/upload';
 import { userRoutes } from './routes/users';
 import { whisperRoutes } from './routes/whisper';
+import modelsRoute from './routes/models';
 
 // Middleware
 import { errorHandler } from './middleware/errorHandler';
@@ -70,6 +71,7 @@ async function start() {
     await server.register(transcriptRoutes, { prefix: '/api/transcripts' });
     await server.register(userRoutes, { prefix: '/api/users' });
     await server.register(whisperRoutes, { prefix: '/api/whisper' });
+    await server.register(modelsRoute, { prefix: '/api/models' });
     
     console.log('✅ All routes registered successfully');
     console.log('📍 Whisper API available at /api/whisper');
