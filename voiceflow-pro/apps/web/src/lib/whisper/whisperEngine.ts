@@ -41,6 +41,7 @@ export interface WhisperModule {
 declare global {
   interface Window {
     Module?: any;
+    whisper_factory?: () => { ready: Promise<any> };
   }
 }
 
@@ -97,19 +98,26 @@ export class WhisperWebEngine {
    * Load the WASM module
    */
   private async loadWASMModule(): Promise<void> {
-    // Load the script dynamically if not already loaded
-    if (!window.Module) {
-      await this.loadScript('/wasm/whisper.js');
+    // Load the proper whisper bindings
+    if (!window.whisper_factory) {
+      await this.loadScript('/wasm/whisper-bindings.js');
     }
 
-    // Wait for the module to be ready
-    if (!window.Module) {
-      throw new Error('Whisper module not found');
+    if (!window.whisper_factory) {
+      throw new Error('Whisper factory function not found');
     }
 
-    // The module is the global Module object created by the WASM
-    this.module = window.Module;
-    console.log('WASM module loaded');
+    try {
+      console.log('Initializing Whisper module...');
+      // The whisper.js exports a factory function that returns a promise with a ready method
+      const modulePromise = window.whisper_factory();
+      this.module = await modulePromise.ready;
+      console.log('WASM module loaded successfully');
+      console.log('Available module methods:', Object.keys(this.module).filter(k => typeof this.module[k] === 'function'));
+    } catch (error) {
+      console.error('Failed to initialize Whisper module:', error);
+      throw error;
+    }
   }
 
   /**
@@ -148,21 +156,36 @@ export class WhisperWebEngine {
       throw new Error('WASM module not loaded');
     }
 
-    // Write the model to the file system
-    const modelData = new Uint8Array(modelBuffer);
-    const modelPath = `/model-${config.model}.bin`;
-    
-    this.module.FS.writeFile(modelPath, modelData);
+    try {
+      // Write the model to the WASM file system using the correct API
+      const modelData = new Uint8Array(modelBuffer);
+      const modelPath = 'whisper.bin'; // Use simple filename as in the test
+      
+      console.log(`Writing model to WASM FS: ${modelPath} (${modelData.length} bytes)`);
+      
+      // Use FS_createDataFile like in the test file
+      if (this.module.FS_createDataFile) {
+        this.module.FS_createDataFile('/', modelPath, modelData, true, true);
+      } else {
+        throw new Error('WASM module FS_createDataFile not available');
+      }
 
-    // Initialize whisper with the model file
-    const success = this.module.init(modelPath);
-    
-    if (!success) {
-      throw new Error('Failed to initialize Whisper context');
+      // Initialize whisper with the model file
+      console.log('Initializing Whisper context...');
+      const success = this.module.init(modelPath);
+      
+      if (!success) {
+        throw new Error('Failed to initialize Whisper context');
+      }
+
+      this.context = 1; // Set as initialized
+      this.modelPath = modelPath;
+      console.log('Whisper context initialized successfully');
+    } catch (error) {
+      console.error('Error initializing Whisper context:', error);
+      console.log('Available module methods:', Object.keys(this.module).filter(k => typeof this.module[k] === 'function'));
+      throw error;
     }
-
-    this.context = 1; // Set as initialized
-    console.log('Whisper context initialized');
   }
 
   /**
