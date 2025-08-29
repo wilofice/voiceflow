@@ -41,7 +41,8 @@ export interface WhisperModule {
 declare global {
   interface Window {
     Module?: any;
-    whisper_factory?: () => { ready: Promise<any> };
+    createWhisperModule?: (config?: any) => Promise<any>;
+    whisper_factory?: () => Promise<any>;
   }
 }
 
@@ -98,25 +99,83 @@ export class WhisperWebEngine {
    * Load the WASM module
    */
   private async loadWASMModule(): Promise<void> {
-    // Load the proper whisper bindings
-    if (!window.whisper_factory) {
-      await this.loadScript('/wasm/whisper-bindings.js');
-    }
-
-    if (!window.whisper_factory) {
-      throw new Error('Whisper factory function not found');
-    }
-
     try {
-      console.log('Initializing Whisper module...');
-      // The whisper.js exports a factory function that returns a promise with a ready method
-      const modulePromise = window.whisper_factory();
-      this.module = await modulePromise.ready;
-      console.log('WASM module loaded successfully');
-      console.log('Available module methods:', Object.keys(this.module).filter(k => typeof this.module[k] === 'function'));
+      console.log('Loading Whisper WASM module...');
+      
+      // Check SharedArrayBuffer availability
+      const hasSharedArrayBuffer = typeof SharedArrayBuffer !== 'undefined';
+      console.log(`SharedArrayBuffer support: ${hasSharedArrayBuffer ? '✓' : '✗'}`);
+      
+      // Provide a polyfill or alternative for missing SharedArrayBuffer
+      if (!hasSharedArrayBuffer) {
+        console.log('Providing SharedArrayBuffer polyfill...');
+        // Create a simple polyfill that falls back to regular ArrayBuffer
+        (window as any).SharedArrayBuffer = ArrayBuffer;
+      }
+      
+      // Load the whisper WASM module
+      await this.loadScript('/wasm/whisper.js');
+      
+      // Wait for module to be available
+      if (!window.Module) {
+        throw new Error('Module global not found after loading whisper.js');
+      }
+      
+      const module = window.Module;
+      console.log('Module loaded, initializing...');
+      
+      // Wait for runtime initialization with proper error handling
+      await new Promise<void>((resolve, reject) => {
+        const timeout = setTimeout(() => {
+          reject(new Error('WASM module initialization timed out after 30 seconds'));
+        }, 30000);
+        
+        try {
+          if (module.calledRun) {
+            clearTimeout(timeout);
+            resolve();
+            return;
+          }
+          
+          const originalCallback = module.onRuntimeInitialized;
+          module.onRuntimeInitialized = () => {
+            clearTimeout(timeout);
+            try {
+              if (originalCallback) originalCallback();
+              console.log('✓ WASM runtime initialized');
+              resolve();
+            } catch (err) {
+              reject(err);
+            }
+          };
+          
+          // Fallback for modules that might not have onRuntimeInitialized
+          if (typeof module.onRuntimeInitialized === 'undefined') {
+            clearTimeout(timeout);
+            resolve();
+          }
+        } catch (err) {
+          clearTimeout(timeout);
+          reject(err);
+        }
+      });
+      
+      this.module = module;
+      console.log('✅ Whisper WASM module loaded and ready');
+      
+      // Log available methods for debugging
+      const methods = Object.keys(this.module).filter(k => typeof this.module[k] === 'function');
+      console.log(`Available methods (${methods.length}):`, methods.slice(0, 10).join(', ') + (methods.length > 10 ? '...' : ''));
+        
     } catch (error) {
-      console.error('Failed to initialize Whisper module:', error);
-      throw error;
+      console.error('❌ Failed to load Whisper module:', error);
+      
+      // Clean up polyfill if we added it
+      if (typeof SharedArrayBuffer === 'undefined' && (window as any).SharedArrayBuffer === ArrayBuffer) {
+        delete (window as any).SharedArrayBuffer;
+      }
+      
+      throw new Error(`Whisper initialization failed: ${error.message}`);
     }
   }
 
@@ -179,7 +238,6 @@ export class WhisperWebEngine {
       }
 
       this.context = 1; // Set as initialized
-      this.modelPath = modelPath;
       console.log('Whisper context initialized successfully');
     } catch (error) {
       console.error('Error initializing Whisper context:', error);
