@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CORS Fix Test</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            max-width: 800px; 
+            margin: 0 auto; 
+            padding: 20px; 
+        }
+        .test-section { 
+            margin: 20px 0; 
+            padding: 15px; 
+            border: 1px solid #ddd; 
+            border-radius: 5px; 
+        }
+        .result { 
+            margin: 10px 0; 
+            padding: 10px; 
+            background: #f5f5f5; 
+            border-radius: 3px; 
+        }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        .pending { background-color: #fff3cd; color: #856404; }
+        button { 
+            background: #007bff; 
+            color: white; 
+            border: none; 
+            padding: 10px 20px; 
+            border-radius: 3px; 
+            cursor: pointer; 
+            margin: 5px; 
+        }
+        button:disabled { 
+            background: #6c757d; 
+            cursor: not-allowed; 
+        }
+        .progress { 
+            width: 100%; 
+            height: 20px; 
+            background: #e9ecef; 
+            border-radius: 10px; 
+            overflow: hidden; 
+        }
+        .progress-bar { 
+            height: 100%; 
+            background: #007bff; 
+            transition: width 0.3s ease; 
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 CORS Fix Test for Whisper Models</h1>
+    
+    <div class="test-section">
+        <h2>1. Test Proxy Route</h2>
+        <button onclick="testProxyRoute()">Test /api/models/info/tiny</button>
+        <div id="proxy-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>2. Test Model Download</h2>
+        <button onclick="testModelDownload()">Test Model Download (First 1KB)</button>
+        <div id="download-progress"></div>
+        <div id="download-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>3. Test Direct Hugging Face (Old Method)</h2>
+        <button onclick="testDirectHF()">Test Direct HF Access</button>
+        <div id="hf-results"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3002';
+
+        async function testProxyRoute() {
+            const resultsDiv = document.getElementById('proxy-results');
+            resultsDiv.innerHTML = '<div class="result pending">Testing proxy route...</div>';
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/models/info/tiny`);
+                if (response.ok) {
+                    const data = await response.json();
+                    resultsDiv.innerHTML = `
+                        <div class="result success">✅ Proxy route working</div>
+                        <div class="result">Model: ${data.name}</div>
+                        <div class="result">Size: ${Math.round(data.size/1024/1024)}MB</div>
+                        <div class="result">Download URL: ${data.url}</div>
+                    `;
+                } else {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+            } catch (error) {
+                resultsDiv.innerHTML = `<div class="result error">❌ Proxy test failed: ${error.message}</div>`;
+            }
+        }
+
+        async function testModelDownload() {
+            const resultsDiv = document.getElementById('download-results');
+            const progressDiv = document.getElementById('download-progress');
+            
+            resultsDiv.innerHTML = '<div class="result pending">Testing model download...</div>';
+            progressDiv.innerHTML = `
+                <div class="progress">
+                    <div class="progress-bar" style="width: 0%" id="download-progress-bar"></div>
+                </div>
+                <div id="download-status">Starting download test...</div>
+            `;
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/models/download/tiny`);
+                if (response.ok) {
+                    const contentLength = response.headers.get('content-length');
+                    const reader = response.body.getReader();
+                    
+                    let received = 0;
+                    const total = parseInt(contentLength) || 39321600; // tiny model size
+                    let chunks = [];
+                    
+                    // Only read first few chunks for testing
+                    let maxChunks = 3;
+                    let chunkCount = 0;
+                    
+                    while (chunkCount < maxChunks) {
+                        const { done, value } = await reader.read();
+                        if (done) break;
+                        
+                        chunks.push(value);
+                        received += value.length;
+                        chunkCount++;
+                        
+                        const progress = (received / total) * 100;
+                        document.getElementById('download-progress-bar').style.width = `${Math.min(progress, 10)}%`;
+                        document.getElementById('download-status').innerText = `Downloaded ${received} bytes (${chunkCount} chunks)`;
+                    }
+                    
+                    // Cancel the rest of the download
+                    reader.cancel();
+                    
+                    progressDiv.innerHTML = '';
+                    resultsDiv.innerHTML = `
+                        <div class="result success">✅ Model download working</div>
+                        <div class="result">Downloaded ${received} bytes from ${chunkCount} chunks</div>
+                        <div class="result">Content-Length: ${contentLength || 'not provided'}</div>
+                    `;
+                } else {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+            } catch (error) {
+                progressDiv.innerHTML = '';
+                resultsDiv.innerHTML = `<div class="result error">❌ Download test failed: ${error.message}</div>`;
+            }
+        }
+
+        async function testDirectHF() {
+            const resultsDiv = document.getElementById('hf-results');
+            resultsDiv.innerHTML = '<div class="result pending">Testing direct Hugging Face access...</div>';
+            
+            try {
+                const url = 'https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-tiny.bin';
+                const response = await fetch(url, { method: 'HEAD' });
+                
+                if (response.ok) {
+                    resultsDiv.innerHTML = '<div class="result success">✅ Direct HF access working (no CORS issue)</div>';
+                } else {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+            } catch (error) {
+                if (error.message.includes('CORS')) {
+                    resultsDiv.innerHTML = '<div class="result error">❌ CORS issue confirmed - proxy solution needed</div>';
+                } else {
+                    resultsDiv.innerHTML = `<div class="result error">❌ Direct HF failed: ${error.message}</div>`;
+                }
+            }
+        }
+    </script>
+</body>
+</html>

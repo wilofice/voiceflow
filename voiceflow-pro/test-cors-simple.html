@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple CORS Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .result { margin: 10px 0; padding: 10px; border-radius: 3px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .pending { background: #fff3cd; color: #856404; }
+        button { padding: 10px 20px; margin: 5px; }
+    </style>
+</head>
+<body>
+    <h1>CORS Test - Whisper Model Download</h1>
+    
+    <div>
+        <button onclick="testDirectHF()">Test Direct Hugging Face (Should Fail)</button>
+        <div id="direct-result"></div>
+    </div>
+
+    <div>
+        <button onclick="testModelManager()">Test Model Manager (Should Use Proxy)</button>
+        <div id="manager-result"></div>
+    </div>
+
+    <script>
+        // Test direct access to Hugging Face (should demonstrate CORS issue)
+        async function testDirectHF() {
+            const resultDiv = document.getElementById('direct-result');
+            resultDiv.innerHTML = '<div class="result pending">Testing direct Hugging Face access...</div>';
+            
+            try {
+                const url = 'https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-tiny.bin';
+                const response = await fetch(url, { method: 'HEAD' });
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = '<div class="result success">✅ Direct HF works - No CORS issue detected</div>';
+                } else {
+                    resultDiv.innerHTML = `<div class="result error">❌ Direct HF failed: HTTP ${response.status}</div>`;
+                }
+            } catch (error) {
+                const isCorsError = error.message.toLowerCase().includes('cors') || 
+                                  error.message.toLowerCase().includes('network') ||
+                                  error.message.toLowerCase().includes('fetch');
+                
+                if (isCorsError) {
+                    resultDiv.innerHTML = '<div class="result error">❌ CORS issue confirmed - Proxy solution needed</div>';
+                } else {
+                    resultDiv.innerHTML = `<div class="result error">❌ Direct HF failed: ${error.message}</div>`;
+                }
+            }
+        }
+
+        // Test the model manager approach (should work with proxy when backend is running)
+        async function testModelManager() {
+            const resultDiv = document.getElementById('manager-result');
+            resultDiv.innerHTML = '<div class="result pending">Testing model manager approach...</div>';
+            
+            // Simulate what the model manager does
+            const modelUrls = [
+                'http://localhost:3002/api/models/download/tiny', // Proxy route (preferred)
+                'https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-tiny.bin', // Direct fallback
+            ];
+
+            let success = false;
+            let lastError = null;
+
+            for (const url of modelUrls) {
+                try {
+                    console.log(`Trying URL: ${url}`);
+                    const response = await fetch(url, { method: 'HEAD' });
+                    
+                    if (response.ok) {
+                        resultDiv.innerHTML = `<div class="result success">✅ Model manager approach works via: ${url.includes('localhost') ? 'Proxy Server' : 'Direct HF'}</div>`;
+                        success = true;
+                        break;
+                    } else {
+                        lastError = `HTTP ${response.status} from ${url}`;
+                    }
+                } catch (error) {
+                    lastError = `${error.message} from ${url}`;
+                }
+            }
+
+            if (!success) {
+                if (lastError && lastError.includes('localhost')) {
+                    resultDiv.innerHTML = '<div class="result error">❌ Proxy server not running at localhost:3002. Need to start backend server.</div>';
+                } else {
+                    resultDiv.innerHTML = `<div class="result error">❌ All URLs failed. Last error: ${lastError}</div>`;
+                }
+            }
+        }
+
+        // Show current setup
+        console.log('Lines 243-245 in modelManager.ts:');
+        console.log('const modelUrls = [');
+        console.log('  `${this.CDN_BASE_URL}/download/${modelType}`, // Proxy route (preferred)');
+        console.log('  `https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-${modelType}.bin`, // Direct fallback');
+        console.log('];');
+    </script>
+</body>
+</html>

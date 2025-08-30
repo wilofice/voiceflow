@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Whisper WASM Test</title>
+</head>
+<body>
+    <h1>Whisper WebAssembly Test</h1>
+    <button id="initBtn">Initialize Whisper</button>
+    <div id="status"></div>
+
+    <script src="whisper.js"></script>
+    <script src="whisper-module.js"></script>
+    <script>
+        const statusDiv = document.getElementById('status');
+        const initBtn = document.getElementById('initBtn');
+
+        initBtn.addEventListener('click', async () => {
+            statusDiv.textContent = 'Initializing...';
+            try {
+                const whisper = new WhisperModule();
+                await whisper.initialize();
+                statusDiv.textContent = '✅ Whisper WASM initialized successfully!';
+            } catch (error) {
+                statusDiv.textContent = '❌ Error: ' + error.message;
+                console.error(error);
+            }
+        });
+    </script>
+</body>
+</html>

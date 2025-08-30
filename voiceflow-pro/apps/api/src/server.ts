@@ -9,6 +9,8 @@ import { authRoutes } from './routes/auth';
 import { transcriptRoutes } from './routes/transcripts';
 import { uploadRoutes } from './routes/upload';
 import { userRoutes } from './routes/users';
+import { whisperRoutes } from './routes/whisper';
+import modelsRoute from './routes/models';
 
 // Middleware
 import { errorHandler } from './middleware/errorHandler';
@@ -37,7 +39,8 @@ async function start() {
 
     await server.register(multipart, {
       limits: {
-        fileSize: parseInt(process.env.MAX_FILE_SIZE || '2147483648'), // 2GB
+        fileSize: parseInt(process.env.MAX_FILE_SIZE || '524288000'), // 500MB default
+        files: 1, // Max number of files per request
       },
     });
 
@@ -67,6 +70,11 @@ async function start() {
     await server.register(uploadRoutes, { prefix: '/api/upload' });
     await server.register(transcriptRoutes, { prefix: '/api/transcripts' });
     await server.register(userRoutes, { prefix: '/api/users' });
+    await server.register(whisperRoutes, { prefix: '/api/whisper' });
+    await server.register(modelsRoute, { prefix: '/api/models' });
+    
+    console.log('✅ All routes registered successfully');
+    console.log('📍 Whisper API available at /api/whisper');
 
     // Start server
     const port = parseInt(process.env.PORT || '3002');

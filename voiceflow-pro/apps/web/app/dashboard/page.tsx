@@ -4,7 +4,7 @@ import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { Layout } from '@/components/layout/Layout';
 import { useAuth } from '@/lib/auth-context';
 import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
+import { authenticatedFetch } from '@/lib/api-client';
 import Link from 'next/link';
 import { formatDate, formatDuration } from '@/lib/utils';
 
@@ -33,14 +33,7 @@ export default function DashboardPage() {
 
   const fetchTranscripts = async () => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) return;
-
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002'}/api/transcripts?limit=10`, {
-        headers: {
-          'Authorization': `Bearer ${session.access_token}`,
-        },
-      });
+      const response = await authenticatedFetch('/api/transcripts?limit=10');
 
       if (response.ok) {
         const data = await response.json();
@@ -105,7 +98,7 @@ export default function DashboardPage() {
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-2xl font-bold text-gray-900">Recent Transcripts</h2>
               <Link
-                href="/transcripts/upload"
+                href="/whisper-demo"
                 className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
               >
                 Upload Audio

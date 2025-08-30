@@ -1,6 +1,9 @@
 "use client";
 
 import { useState } from 'react';
+import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
+import { Layout } from '@/components/layout/Layout';
+import { useAuth } from '@/lib/auth-context';
 import { TranscriptionMethodSelector } from '@/components/transcription/TranscriptionMethodSelector';
 import { RealTimeWhisper } from '@/components/transcription/RealTimeWhisper';
 import { TranscriptionSettings } from '@/components/settings/TranscriptionSettings';
@@ -9,6 +12,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { getSupabaseToken } from '@/lib/api-client';
+import { WhisperWebEngine, WhisperConfig } from '@/lib/whisper/whisperEngine';
+import { WhisperModelManager } from '@/lib/whisper/modelManager';
 import {
   Upload,
   Mic,
@@ -17,14 +23,23 @@ import {
   Zap,
   Shield,
   Clock,
-  X
+  X,
+  CheckCircle
 } from 'lucide-react';
 
 export default function WhisperDemoPage() {
+  const { user } = useAuth();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [selectedMethod, setSelectedMethod] = useState<string>('openai');
+  const [transcriptionResult, setTranscriptionResult] = useState<any>(null);
+  const [showResults, setShowResults] = useState(false);
+  const [modelDownloadProgress, setModelDownloadProgress] = useState(0);
+  const [showModelDownload, setShowModelDownload] = useState(false);
+
+  // API base URL configuration
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002';
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -40,33 +55,190 @@ export default function WhisperDemoPage() {
     setIsUploading(true);
     setUploadProgress(0);
 
-    // Simulate upload progress
-    const progressInterval = setInterval(() => {
-      setUploadProgress(prev => {
-        if (prev >= 90) {
-          clearInterval(progressInterval);
-          return prev;
+    // Handle browser transcription locally (no backend call)
+    if (selectedMethod === 'browser') {
+      try {
+        console.log('Starting browser-based Whisper transcription...');
+        setUploadProgress(10);
+        
+        // Initialize model manager and whisper engine
+        const modelManager = WhisperModelManager.getInstance();
+        const whisperEngine = new WhisperWebEngine();
+        
+        // Use base model for browser transcription
+        const modelType = 'base';
+        
+        // Check if model is downloaded
+        let modelBuffer = await modelManager.getCachedModel(modelType);
+        
+        if (!modelBuffer) {
+          console.log(`Model ${modelType} not cached, downloading...`);
+          setShowModelDownload(true);
+          setUploadProgress(0);
+          
+          // Download model with progress tracking
+          modelBuffer = await modelManager.downloadModel(modelType, (progress) => {
+            setModelDownloadProgress(progress.progress);
+          });
+          
+          setShowModelDownload(false);
         }
-        return prev + 10;
-      });
-    }, 200);
+        
+        setUploadProgress(30);
+        
+        // Initialize whisper engine
+        const config: WhisperConfig = {
+          model: modelType,
+          language: 'en',
+          task: 'transcribe'
+        };
+        
+        await whisperEngine.initialize(config);
+        setUploadProgress(50);
+        
+        console.log('Whisper engine initialized, starting transcription...');
+        
+        // Transcribe the file
+        const startTime = performance.now();
+        const result = await whisperEngine.transcribeFile(selectedFile, {
+          language: 'en',
+          task: 'transcribe'
+        });
+        
+        setUploadProgress(90);
+        
+        // Clean up
+        await whisperEngine.destroy();
+        
+        setUploadProgress(100);
+        
+        setTimeout(() => {
+          setIsUploading(false);
+          setUploadProgress(0);
+          setTranscriptionResult({
+            success: true,
+            result: {
+              text: result.text,
+              segments: result.segments,
+              method: 'whisper-browser',
+              processingTime: result.processingTime || (performance.now() - startTime),
+              cost: 0, // Browser transcription is free
+              language: result.language || 'en'
+            }
+          });
+          setShowResults(true);
+        }, 500);
+        
+      } catch (error) {
+        console.error('Browser transcription failed:', error);
+        setIsUploading(false);
+        setUploadProgress(0);
+        setShowModelDownload(false);
+        
+        if ((error as Error).message.includes('not found')) {
+          alert('Model download failed. Please try again or check your internet connection.');
+        } else {
+          alert('Browser transcription failed: ' + (error as Error).message);
+        }
+      }
+      return;
+    }
 
+    // Handle server-side transcription (openai or server methods)
     try {
-      // TODO: Implement actual upload logic with transcription method selection
-      await new Promise(resolve => setTimeout(resolve, 3000)); // Simulate upload
+      const formData = new FormData();
+      formData.append('file', selectedFile);
+
+      // Map frontend methods to API routes and parameters
+      let apiRoute = '';
+      let additionalParams: Record<string, string> = {};
+
+      if (selectedMethod === 'openai') {
+        apiRoute = `${API_BASE_URL}/api/whisper/transcribe`;
+        additionalParams = {
+          method: 'openai',
+          model: 'base',
+          priority: 'balanced',
+          fallbackEnabled: 'true'
+        };
+      } else if (selectedMethod === 'server') {
+        apiRoute = `${API_BASE_URL}/api/whisper/transcribe/local`;
+        additionalParams = {
+          model: 'base',
+          task: 'transcribe'
+        };
+      }
+
+      // Add additional parameters to form data
+      Object.entries(additionalParams).forEach(([key, value]) => {
+        formData.append(key, value);
+      });
+
+      console.log(`🎙️ Starting ${selectedMethod} transcription via ${apiRoute}`);
+
+      // Get Supabase auth token
+      const token = await getSupabaseToken();
+      
+      if (!token) {
+        throw new Error('Authentication required. Please log in to use the transcription service.');
+      }
+      
+      // Start upload with progress tracking
+      const response = await fetch(apiRoute, {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+        // Note: Don't set Content-Type header, let browser set it for FormData
+      });
+
+      if (!response.ok) {
+        let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+        
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorMessage;
+          
+          // Handle authentication errors specifically
+          if (response.status === 401) {
+            errorMessage = 'Authentication required. Please log in to use the transcription service.';
+          } else if (response.status === 403) {
+            errorMessage = 'Access denied. You may not have permission to use this transcription method.';
+          } else if (response.status === 503) {
+            errorMessage = `${selectedMethod === 'server' ? 'Local Whisper' : 'Docker Whisper'} service is not available. Please try another method.`;
+          }
+        } catch {
+          // If we can't parse JSON, use the basic error message
+        }
+        
+        throw new Error(errorMessage);
+      }
+
+      const result = await response.json();
       
       setUploadProgress(100);
+      
+      console.log('✅ Transcription successful:', result);
+      
       setTimeout(() => {
         setIsUploading(false);
         setUploadProgress(0);
-        setSelectedFile(null);
-        // TODO: Navigate to transcription results
+        // Don't clear the file yet, show results first
+        
+        // Store and display results
+        setTranscriptionResult(result);
+        setShowResults(true);
       }, 1000);
       
     } catch (error) {
       console.error('Upload failed:', error);
       setIsUploading(false);
       setUploadProgress(0);
+      
+      // Show user-friendly error message
+      const errorMessage = (error as Error).message || 'Unknown error occurred';
+      alert(`Transcription failed: ${errorMessage}`);
     }
   };
 
@@ -89,7 +261,9 @@ export default function WhisperDemoPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <ProtectedRoute>
+      <Layout user={user ? { name: user.user_metadata?.name || 'User', email: user.email! } : null}>
+        <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="text-center mb-8">
@@ -123,8 +297,87 @@ export default function WhisperDemoPage() {
             {/* Upload Tab */}
             <TabsContent value="upload" className="mt-0">
               <div className="space-y-6">
+                {/* Results Display */}
+                {showResults && transcriptionResult && (
+                  <Card className="mb-6 border-green-200 bg-green-50">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2 text-green-800">
+                        <CheckCircle className="w-5 h-5" />
+                        Transcription Complete
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        {/* Metadata */}
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                          <div>
+                            <span className="font-medium text-gray-600">Method:</span>
+                            <div className="font-mono text-green-700">
+                              {transcriptionResult.result?.method || selectedMethod}
+                            </div>
+                          </div>
+                          <div>
+                            <span className="font-medium text-gray-600">Processing Time:</span>
+                            <div className="font-mono text-green-700">
+                              {transcriptionResult.result?.processingTime || 'Unknown'}ms
+                            </div>
+                          </div>
+                          <div>
+                            <span className="font-medium text-gray-600">Cost:</span>
+                            <div className="font-mono text-green-700">
+                              ${transcriptionResult.result?.cost || 0}
+                            </div>
+                          </div>
+                          <div>
+                            <span className="font-medium text-gray-600">Language:</span>
+                            <div className="font-mono text-green-700">
+                              {transcriptionResult.result?.language || 'auto'}
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {/* Transcription Text */}
+                        <div>
+                          <h4 className="font-medium text-gray-700 mb-2">Transcription:</h4>
+                          <div className="bg-white rounded-lg p-4 border border-green-200 max-h-40 overflow-y-auto">
+                            <p className="text-gray-800 whitespace-pre-wrap">
+                              {transcriptionResult.result?.text || transcriptionResult.text || 'No text returned'}
+                            </p>
+                          </div>
+                        </div>
+                        
+                        {/* Actions */}
+                        <div className="flex gap-2">
+                          <Button 
+                            onClick={() => {
+                              const text = transcriptionResult.result?.text || transcriptionResult.text || '';
+                              navigator.clipboard.writeText(text);
+                              alert('Transcription copied to clipboard!');
+                            }}
+                            variant="outline"
+                            size="sm"
+                          >
+                            Copy Text
+                          </Button>
+                          <Button 
+                            onClick={() => {
+                              setShowResults(false);
+                              setTranscriptionResult(null);
+                              setSelectedFile(null);
+                            }}
+                            variant="outline"
+                            size="sm"
+                          >
+                            New Transcription
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
                 {/* Cost/Quality Comparison */}
-                {selectedFile && (
+                {selectedFile && !showResults && (
                   <div className="mb-6">
                     <CostQualityComparison
                       fileSize={selectedFile.size / (1024 * 1024)} // Convert to MB
@@ -135,17 +388,31 @@ export default function WhisperDemoPage() {
                   </div>
                 )}
 
-                <div className="grid lg:grid-cols-2 gap-6">
-                  {/* Method Selection */}
-                  <div>
-                    <TranscriptionMethodSelector
-                      currentMethod={selectedMethod as any}
-                      onMethodChange={(method) => setSelectedMethod(method)}
-                    />
-                  </div>
+                {!showResults && (
+                  <div className="grid lg:grid-cols-2 gap-6">
+                    {/* Method Selection */}
+                    <div>
+                      <TranscriptionMethodSelector
+                        currentMethod={
+                          selectedMethod === 'browser' ? 'whisper-browser' :
+                          selectedMethod === 'server' ? 'whisper-server' :
+                          selectedMethod as any
+                        }
+                        onMethodChange={(method) => {
+                          // Map the internal method names to our frontend names
+                          if (method === 'whisper-browser') {
+                            setSelectedMethod('browser');
+                          } else if (method === 'whisper-server') {
+                            setSelectedMethod('server');
+                          } else {
+                            setSelectedMethod(method);
+                          }
+                        }}
+                      />
+                    </div>
 
-                  {/* File Upload */}
-                  <Card className="h-fit">
+                    {/* File Upload */}
+                    <Card className="h-fit">
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
                         <FileAudio className="w-5 h-5" />
@@ -231,15 +498,27 @@ export default function WhisperDemoPage() {
                           {isUploading && (
                             <div className="space-y-2">
                               <div className="flex justify-between text-sm">
-                                <span>Processing...</span>
-                                <span>{uploadProgress}%</span>
+                                <span>
+                                  {showModelDownload 
+                                    ? 'Downloading Whisper model...' 
+                                    : 'Processing transcription...'
+                                  }
+                                </span>
+                                <span>
+                                  {showModelDownload ? modelDownloadProgress.toFixed(1) : uploadProgress}%
+                                </span>
                               </div>
                               <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
                                 <div
                                   className="bg-blue-600 h-full rounded-full transition-all duration-300"
-                                  style={{ width: `${uploadProgress}%` }}
+                                  style={{ width: `${showModelDownload ? modelDownloadProgress : uploadProgress}%` }}
                                 />
                               </div>
+                              {showModelDownload && (
+                                <div className="text-xs text-gray-500">
+                                  This model will be cached locally for future use
+                                </div>
+                              )}
                             </div>
                           )}
 
@@ -255,8 +534,9 @@ export default function WhisperDemoPage() {
                         </div>
                       )}
                     </CardContent>
-                  </Card>
-                </div>
+                    </Card>
+                  </div>
+                )}
               </div>
             </TabsContent>
 
@@ -284,5 +564,7 @@ export default function WhisperDemoPage() {
         </div>
       </div>
     </div>
+      </Layout>
+    </ProtectedRoute>
   );
 }

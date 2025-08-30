@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- ======== Basic SEO ======== -->
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>VoiceFlow Pro — Professional AI Audio Transcription That Works Everywhere</title>
+  <meta name="description" content="VoiceFlow Pro is a modern, browser-based AI transcription platform that works on any device. Real-time collaboration, privacy-first processing, flexible exports, and lightning-fast performance." />
+  <link rel="canonical" href="https://www.voiceflowpro.com/" />
+  <meta name="theme-color" content="#0f172a" />
+
+  <!-- ======== Open Graph / Twitter ======== -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="VoiceFlow Pro — Transcription That Works Everywhere" />
+  <meta property="og:description" content="Unlike MacWhisper's Mac-only limitation, VoiceFlow Pro delivers accurate AI transcription on any device with privacy-first browser processing and real-time collaboration." />
+  <meta property="og:image" content="https://www.voiceflowpro.com/og-voiceflowpro.webp" />
+  <meta property="og:url" content="https://www.voiceflowpro.com/" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="VoiceFlow Pro — Transcription That Works Everywhere" />
+  <meta name="twitter:description" content="Accurate, fast AI transcription on any device. Privacy-first. Team-ready." />
+  <meta name="twitter:image" content="https://www.voiceflowpro.com/og-voiceflowpro.webp" />
+
+  <!-- ======== Performance ======== -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400..800&display=swap" rel="stylesheet" />
+  <link rel="preload" as="image" href="hero-dashboard.webp" imagesrcset="hero-dashboard.webp" />
+
+  <!-- ======== Styles ======== -->
+  <style>
+    :root{
+      --primary:#1e40af;   /* Deep blue */
+      --accent:#8b5cf6;    /* Purple */
+      --secondary:#3b82f6; /* Light blue */
+      --bg-0:#0b1224;      /* deep navy background */
+      --bg-1:#0f172a;      /* slate-900 */
+      --bg-2:#111827;      /* gray-900 */
+      --text-0:#f8fafc;    /* gray-50 */
+      --text-1:#cbd5e1;    /* gray-300 */
+      --text-2:#94a3b8;    /* gray-400 */
+      --muted:#1f2937;     /* gray-800 */
+      --success:#10b981;
+      --danger:#ef4444;
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --radius: 14px;
+      --radius-sm: 10px;
+      --maxw: 1200px;
+    }
+    /* Global reset & typography */
+    *{box-sizing:border-box}
+    html:focus-within{scroll-behavior:smooth}
+    body{
+      margin:0; font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background:
+        radial-gradient(1200px 600px at 80% -10%, rgba(139,92,246,.25), transparent 60%),
+        radial-gradient(900px 500px at 10% 0%, rgba(30,64,175,.25), transparent 60%),
+        linear-gradient(180deg, var(--bg-0) 0%, var(--bg-1) 60%, #0c1327 100%);
+      color:var(--text-0);
+      line-height:1.6;
+      overflow-x:hidden;
+    }
+    a{color:var(--secondary); text-decoration:none}
+    a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible{
+      outline: 3px solid color-mix(in oklab, var(--accent) 60%, white);
+      outline-offset: 2px;
+      border-radius: 8px;
+    }
+    img{max-width:100%; height:auto; display:block}
+
+    /* Utilities */
+    .container{max-width:var(--maxw); margin-inline:auto; padding-inline:20px}
+    .grid{display:grid; gap:24px}
+    .btn{
+      appearance:none; border:0; border-radius:12px; padding:14px 20px; font-weight:600; cursor:pointer;
+      transition: transform .15s ease, box-shadow .15s ease, background .3s ease;
+      color:#fff; background:linear-gradient(135deg, var(--primary), var(--accent));
+      box-shadow: 0 8px 20px rgba(139,92,246,.35), inset 0 1px 0 rgba(255,255,255,.05);
+    }
+    .btn:hover{transform: translateY(-2px)}
+    .btn:active{transform: translateY(0)}
+    .btn.secondary{
+      background:transparent; border:1px solid color-mix(in oklab, var(--text-1) 35%, transparent); color:var(--text-0)
+    }
+    .badge{display:inline-flex; align-items:center; gap:8px; padding:6px 10px; border-radius:999px; font-weight:600; font-size:.875rem;
+      background:rgba(139,92,246,.15); color:#e9d5ff; border:1px solid rgba(139,92,246,.35)}
+    .muted{color:var(--text-2)}
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.01));
+      border:1px solid rgba(148,163,184,.15);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(6px);
+    }
+    .section{padding:72px 0}
+    @media (min-width: 768px){ .section{padding:96px 0} }
+
+    /* Skip link */
+    .skip-link{
+      position:absolute; left:-9999px; top:auto; width:1px; height:1px; overflow:hidden;
+    }
+    .skip-link:focus{position:fixed; left:20px; top:20px; width:auto; height:auto; padding:10px 14px; z-index:9999; background:#111827; border-radius:10px}
+
+    /* Header */
+    header{
+      position:sticky; top:0; z-index:50; backdrop-filter: blur(10px);
+      background: rgba(15,23,42,.7);
+      border-bottom:1px solid rgba(148,163,184,.15);
+    }
+    .nav{display:flex; align-items:center; justify-content:space-between; gap:16px; padding:14px 0}
+    .logo{display:flex; align-items:center; gap:12px; font-weight:800; letter-spacing:.2px}
+    .logo svg{filter: drop-shadow(0 4px 20px rgba(139,92,246,.55))}
+    .nav a{color:var(--text-1); font-weight:600}
+    .nav a:hover{color:#fff}
+    .nav-links{display:none; gap:18px; align-items:center}
+    .nav-cta{display:none}
+    .menu-btn{display:inline-flex; background:transparent; color:var(--text-0); border:1px solid rgba(148,163,184,.25); padding:10px; border-radius:10px}
+    @media (min-width: 980px){
+      .nav-links{display:flex}
+      .nav-cta{display:flex; gap:12px}
+      .menu-btn{display:none}
+    }
+
+    /* Mobile menu */
+    .mobile-menu{display:none; padding:16px 0}
+    .mobile-menu.open{display:block}
+    .mobile-menu a{display:block; padding:10px 0; border-bottom:1px solid rgba(148,163,184,.12)}
+
+    /* Hero */
+    .hero{padding:64px 0 32px}
+    .hero-grid{display:grid; gap:28px}
+    @media (min-width: 980px){ .hero-grid{grid-template-columns: 1.2fr 1fr; align-items:center} }
+    .headline{font-size: clamp(2rem, 4vw, 3rem); line-height:1.1; font-weight:800}
+    .sub{font-size: clamp(1.05rem, 2vw, 1.3rem); color:var(--text-1)}
+    .trust{display:flex; flex-wrap:wrap; gap:10px; margin-top:16px; color:var(--text-2); font-weight:600}
+    .hero-media{
+      position:relative; border-radius: var(--radius); overflow:hidden; border:1px solid rgba(148,163,184,.2);
+      box-shadow: var(--shadow);
+      background: radial-gradient(600px 300px at 20% -20%, rgba(59,130,246,.25), transparent 60%),
+                  radial-gradient(600px 300px at 80% 120%, rgba(139,92,246,.2), transparent 60%),
+                  #0b1020;
+      min-height: 320px;
+    }
+    .play-overlay{
+      position:absolute; inset:0; display:grid; place-items:center; cursor:pointer;
+      background: linear-gradient(180deg, rgba(2,6,23,.35), rgba(2,6,23,.55));
+    }
+    .play-btn{
+      width:74px; height:74px; border-radius:999px; display:grid; place-items:center;
+      background:linear-gradient(135deg, var(--accent), var(--secondary));
+      box-shadow:0 10px 30px rgba(139,92,246,.5);
+      transition: transform .15s ease;
+    }
+    .play-btn:hover{transform: scale(1.05)}
+
+    /* Logo wall */
+    .logos{display:grid; grid-template-columns:repeat(2,1fr); gap:16px; opacity:.85}
+    @media (min-width:640px){ .logos{grid-template-columns:repeat(4,1fr)} }
+    .logo-tile{display:grid; place-items:center; padding:16px; border:1px dashed rgba(148,163,184,.2); border-radius:12px}
+
+    /* Features */
+    .features{grid-template-columns:repeat(1,1fr)}
+    @media (min-width: 768px){ .features{grid-template-columns:repeat(2,1fr)} }
+    @media (min-width: 1080px){ .features{grid-template-columns:repeat(3,1fr)} }
+    .feature{padding:22px}
+    .feature h3{margin:6px 0 6px; font-size:1.1rem}
+    .feature p{margin:0; color:var(--text-2)}
+
+    /* Comparison table */
+    table{width:100%; border-collapse:collapse; overflow:hidden; border-radius: var(--radius)}
+    th, td{padding:14px; text-align:left; border-bottom:1px solid rgba(148,163,184,.15)}
+    th{background: rgba(255,255,255,.04)}
+    tbody tr:nth-child(odd){background: rgba(255,255,255,.015)}
+
+    /* Pricing */
+    .pricing-grid{grid-template-columns: 1fr; align-items:stretch}
+    @media (min-width: 980px){ .pricing-grid{grid-template-columns: repeat(3,1fr)} }
+    .price-card{position:relative; padding:26px}
+    .popular{position:absolute; top:16px; right:16px}
+    .price{font-size:2.3rem; font-weight:800}
+    .price small{font-size:.85rem; color:var(--text-2)}
+    .price-features{margin:14px 0 16px}
+    .price-features li{margin:8px 0}
+    .toggle{
+      display:inline-flex; align-items:center; gap:10px; border:1px solid rgba(148,163,184,.25);
+      border-radius:999px; padding:6px 8px; font-weight:600
+    }
+    .switch{appearance:none; width:44px; height:24px; border-radius:999px; background:#374151; position:relative; outline:none; cursor:pointer}
+    .switch:checked{background: linear-gradient(135deg, var(--primary), var(--accent))}
+    .switch::after{
+      content:""; position:absolute; top:3px; left:3px; width:18px; height:18px; border-radius:999px; background:#fff; transition:left .2s ease
+    }
+    .switch:checked::after{left:23px}
+
+    /* Video & counters */
+    .video{aspect-ratio:16/9; width:100%; border:1px solid rgba(148,163,184,.2); border-radius: var(--radius); overflow:hidden}
+    .kpis{display:grid; grid-template-columns:1fr; gap:12px; margin-top:16px}
+    @media (min-width:640px){ .kpis{grid-template-columns:repeat(3,1fr)} }
+    .kpi{padding:18px; text-align:center}
+    .kpi .num{font-size:2rem; font-weight:800}
+
+    /* Testimonials */
+    .testimonials{grid-template-columns:1fr; }
+    @media (min-width:980px){ .testimonials{grid-template-columns: repeat(3,1fr)} }
+    .testimonial{padding:20px}
+    .avatar{width:46px; height:46px; border-radius:999px; background: linear-gradient(135deg, var(--secondary), var(--accent))}
+    .who{display:flex; align-items:center; gap:12px; margin-top:12px; color:var(--text-1)}
+
+    /* FAQ */
+    details{border:1px solid rgba(148,163,184,.2); border-radius:12px; padding:14px 16px; background:rgba(255,255,255,.02)}
+    summary{cursor:pointer; font-weight:700}
+    details + details{margin-top:10px}
+
+    /* Footer */
+    footer{padding:48px 0; color:var(--text-2); border-top:1px solid rgba(148,163,184,.12)}
+    .footer-grid{display:grid; gap:18px}
+    @media (min-width: 768px){ .footer-grid{grid-template-columns:1.5fr 1fr 1fr 1fr} }
+    .legal{font-size:.9rem}
+
+    /* Reveal animations */
+    .reveal{opacity:0; transform: translateY(18px); transition: opacity .6s ease, transform .6s ease}
+    .reveal.in{opacity:1; transform: translateY(0)}
+    @media (prefers-reduced-motion: reduce){
+      .btn, .play-btn, .reveal{transition:none !important}
+      html:focus-within{scroll-behavior:auto}
+    }
+  </style>
+
+  <!-- ======== Schema Markup ======== -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "VoiceFlow Pro",
+    "applicationCategory": "BusinessApplication",
+    "operatingSystem": "Web, Windows, macOS, Linux, iPadOS, Android",
+    "description": "AI-powered transcription that works on any device with privacy-first browser processing and real-time collaboration.",
+    "offers": [
+      {"@type":"Offer","price":"0","priceCurrency":"USD","category":"free","name":"Free"},
+      {"@type":"Offer","price":"12","priceCurrency":"USD","name":"Pro (Monthly)"},
+      {"@type":"Offer","price":"10","priceCurrency":"USD","name":"Pro (Annual, billed yearly)"},
+      {"@type":"Offer","price":"8","priceCurrency":"USD","name":"Team (per user, billed monthly)"}
+    ],
+    "publisher": {"@type":"Organization","name":"VoiceFlow Pro","logo":"https://www.voiceflowpro.com/logo.png"},
+    "url":"https://www.voiceflowpro.com"
+  }
+  </script>
+
+  <!-- ======== Google Analytics (placeholder) ======== -->
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    // Replace 'G-XXXXXXX' with your GA4 Measurement ID
+    gtag('js', new Date()); gtag('config', 'G-XXXXXXX');
+  </script>
+</head>
+<body>
+  <a href="#main" class="skip-link">Skip to content</a>
+
+  <!-- ======== Header ======== -->
+  <header role="banner" aria-label="Primary">
+    <div class="container nav" >
+      <a href="#" class="logo" aria-label="VoiceFlow Pro Home">
+        <!-- Waveform Logo -->
+        <svg width="28" height="28" viewBox="0 0 64 64" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+          <g fill="none" stroke="url(#g1)" stroke-linecap="round" stroke-width="6">
+            <defs>
+              <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="#8b5cf6"/><stop offset="1" stop-color="#3b82f6"/>
+              </linearGradient>
+            </defs>
+            <path d="M6 32h4M14 24v16M22 16v32M30 10v44M38 18v28M46 24v16M54 32h4"/>
+          </g>
+        </svg>
+        <span>VoiceFlow Pro</span>
+      </a>
+
+      <nav class="nav-links" aria-label="Main navigation">
+        <a href="#features">Features</a>
+        <a href="#comparison">Comparison</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#demo">Demo</a>
+        <a href="#faq">FAQ</a>
+      </nav>
+
+      <div class="nav-cta">
+        <a class="btn secondary" href="#contact">Contact Sales</a>
+        <a class="btn" href="#pricing" aria-label="Start free trial">Start Free Trial</a>
+      </div>
+
+      <button class="menu-btn" aria-controls="mobile-menu" aria-expanded="false" aria-label="Open menu">
+        <!-- hamburger -->
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18" stroke="#cbd5e1" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div id="mobile-menu" class="mobile-menu container" role="dialog" aria-label="Mobile menu">
+      <a href="#features">Features</a>
+      <a href="#comparison">Comparison</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#demo">Demo</a>
+      <a href="#faq">FAQ</a>
+      <a href="#contact"><strong>Contact Sales</strong></a>
+    </div>
+  </header>
+
+  <main id="main">
+    <!-- ======== HERO ======== -->
+    <section class="hero section container">
+      <div class="hero-grid">
+        <div class="reveal">
+          <span class="badge" aria-label="Trust indicators">
+            Professional • Privacy-focused • Works offline
+          </span>
+          <h1 class="headline" style="margin:14px 0 10px;">
+            Professional Audio Transcription That Works Everywhere
+          </h1>
+          <p class="sub">
+            Unlike MacWhisper’s Mac-only limitation, <strong>VoiceFlow Pro</strong> delivers accurate AI transcription on any device with privacy-first browser processing and real-time collaboration.
+          </p>
+
+          <div style="display:flex; flex-wrap:wrap; gap:12px; margin-top:18px">
+            <a class="btn" href="#pricing">Start Free Trial</a>
+            <a class="btn secondary" href="#demo" aria-label="Watch product demo">Watch Demo</a>
+          </div>
+
+          <div class="trust" role="list" aria-label="Trust notes">
+            <span role="listitem">No credit card required</span> •
+            <span role="listitem">Privacy-focused</span> •
+            <span role="listitem">Works offline</span>
+          </div>
+        </div>
+
+        <div class="hero-media reveal" aria-label="Product demo preview">
+          <!-- Replace with actual video or animated GIF/WebM -->
+          <picture>
+            <source srcset="hero-dashboard.webp" type="image/webp" />
+            <img src="hero-dashboard.webp" alt="VoiceFlow Pro dashboard transcription view preview" loading="eager" />
+          </picture>
+          <button class="play-overlay" aria-label="Play demo video" onclick="document.getElementById('demo').scrollIntoView({behavior:'smooth'})">
+            <div class="play-btn" aria-hidden="true">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7z"/></svg>
+            </div>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======== SOCIAL PROOF ======== -->
+    <section class="section container reveal" aria-labelledby="trusted">
+      <h2 id="trusted" style="text-align:center; margin-top:0">Trusted by <strong>10,000+</strong> creators worldwide</h2>
+      <div class="logos" style="margin-top:18px">
+        <!-- Placeholder logo wall -->
+        <div class="logo-tile" aria-label="Brand logo placeholder">WaveCast</div>
+        <div class="logo-tile">EduPod</div>
+        <div class="logo-tile">StudioNorth</div>
+        <div class="logo-tile">GlobalTalks</div>
+      </div>
+      <blockquote class="card" style="margin-top:18px; padding:18px; font-style:italic">
+        “Finally, a transcription tool that works on my PC and integrates with my team workflow.”
+        <div class="who"><span>— Sarah Chen, Podcast Producer</span></div>
+      </blockquote>
+    </section>
+
+    <!-- ======== PROBLEM / SOLUTION ======== -->
+    <section class="section container grid reveal" id="problem-solution" style="grid-template-columns:1fr; gap:20px">
+      <div class="card" style="padding:24px">
+        <h2>Tired of MacWhisper’s Limitations?</h2>
+        <ul>
+          <li>Mac-only restriction (<strong>87%</strong> of users excluded)</li>
+          <li>No collaboration features</li>
+          <li>One-time payment with limited updates</li>
+          <li>No cloud sync or team features</li>
+        </ul>
+      </div>
+      <div class="card" style="padding:24px">
+        <h2>VoiceFlow Pro: Built for the Modern Workflow</h2>
+        <ul>
+          <li>Works on <strong>ANY</strong> device and browser</li>
+          <li>Real-time team collaboration</li>
+          <li>Privacy-first browser processing</li>
+          <li>Flexible subscription with constant updates</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ======== KEY FEATURES ======== -->
+    <section id="features" class="section container">
+      <h2 class="reveal">Key Features</h2>
+      <div class="grid features">
+        <!-- 1 -->
+        <article class="card feature reveal" aria-labelledby="f1">
+          <div aria-hidden="true">🌐</div>
+          <h3 id="f1">Universal Compatibility</h3>
+          <p>Works on Windows, Mac, Linux, tablets — anywhere you have a browser.</p>
+        </article>
+        <!-- 2 -->
+        <article class="card feature reveal" aria-labelledby="f2">
+          <div aria-hidden="true">🔒</div>
+          <h3 id="f2">Privacy-First Processing</h3>
+          <p>Process audio locally in your browser — no files leave your device.</p>
+        </article>
+        <!-- 3 -->
+        <article class="card feature reveal" aria-labelledby="f3">
+          <div aria-hidden="true">👥</div>
+          <h3 id="f3">Team Collaboration</h3>
+          <p>Share, comment, and edit transcripts in real-time with your team.</p>
+        </article>
+        <!-- 4 -->
+        <article class="card feature reveal" aria-labelledby="f4">
+          <div aria-hidden="true">⚡</div>
+          <h3 id="f4">Multiple Processing Options</h3>
+          <p>Choose browser, cloud, or API processing based on your needs.</p>
+        </article>
+        <!-- 5 -->
+        <article class="card feature reveal" aria-labelledby="f5">
+          <div aria-hidden="true">📤</div>
+          <h3 id="f5">Smart Export Options</h3>
+          <p>Export to SRT, VTT, DOCX, PDF, TXT with professional formatting.</p>
+        </article>
+        <!-- 6 -->
+        <article class="card feature reveal" aria-labelledby="f6">
+          <div aria-hidden="true">🎯</div>
+          <h3 id="f6">Real-Time Transcription</h3>
+          <p>Live transcription as you speak — perfect for meetings and interviews.</p>
+        </article>
+      </div>
+    </section>
+
+    <!-- ======== COMPARISON TABLE ======== -->
+    <section id="comparison" class="section container reveal" aria-labelledby="compare">
+      <h2 id="compare">VoiceFlow Pro vs MacWhisper: Why Switch?</h2>
+      <div class="card" style="padding:8px">
+        <table role="table" aria-label="Comparison table">
+          <thead><tr><th>Feature</th><th>MacWhisper</th><th>VoiceFlow Pro</th></tr></thead>
+          <tbody>
+            <tr><td>Platform Support</td><td>Mac Only ❌</td><td>All Devices ✅</td></tr>
+            <tr><td>Team Collaboration</td><td>None ❌</td><td>Real-time ✅</td></tr>
+            <tr><td>Browser Processing</td><td>No ❌</td><td>Yes ✅</td></tr>
+            <tr><td>Cloud Sync</td><td>Limited ❌</td><td>Full Sync ✅</td></tr>
+            <tr><td>Export Formats</td><td>Basic ❌</td><td>8+ Formats ✅</td></tr>
+            <tr><td>Pricing Model</td><td>One-time $20</td><td>Flexible Plans ✅</td></tr>
+            <tr><td>Updates</td><td>Limited ❌</td><td>Continuous ✅</td></tr>
+            <tr><td>Support</td><td>Email Only</td><td>Priority Support ✅</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ======== PRICING ======== -->
+    <section id="pricing" class="section container">
+      <div class="reveal" style="display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:12px">
+        <h2 style="margin:0">Simple, Transparent Pricing</h2>
+        <label class="toggle" aria-label="Toggle annual billing">
+          <span>Monthly</span>
+          <input id="billingToggle" class="switch" type="checkbox" role="switch" aria-checked="false" aria-label="Billing Toggle"/>
+          <span>Annual <span class="badge">Save 17%</span></span>
+        </label>
+      </div>
+      <p class="muted reveal">💳 All plans include <strong>14-day free trial</strong> • Cancel anytime</p>
+
+      <div class="grid pricing-grid">
+        <!-- FREE -->
+        <div class="card price-card reveal" aria-labelledby="p-free">
+          <h3 id="p-free">FREE TIER</h3>
+          <div class="price"><span data-price="free">$0</span><small>/month</small></div>
+          <ul class="price-features">
+            <li>3 transcriptions/month</li>
+            <li>30 minutes max per file</li>
+            <li>Basic export formats</li>
+            <li>Community support</li>
+          </ul>
+          <a class="btn" href="#signup">Start Free</a>
+        </div>
+
+        <!-- PRO -->
+        <div class="card price-card reveal" aria-labelledby="p-pro">
+          <span class="popular badge">⭐ MOST POPULAR</span>
+          <h3 id="p-pro">PRO TIER</h3>
+          <div class="price">
+            <span data-price="pro">$12</span><small>/month</small>
+          </div>
+          <ul class="price-features">
+            <li>Unlimited transcriptions</li>
+            <li>All export formats</li>
+            <li>Browser + cloud processing</li>
+            <li>Priority support</li>
+            <li>Team collaboration (up to 3 users)</li>
+          </ul>
+          <a class="btn" href="#signup">Start Free Trial</a>
+        </div>
+
+        <!-- TEAM -->
+        <div class="card price-card reveal" aria-labelledby="p-team">
+          <h3 id="p-team">TEAM TIER</h3>
+          <div class="price"><span data-price="team">$8</span><small>/user/month</small></div>
+          <ul class="price-features">
+            <li>Everything in Pro</li>
+            <li>Advanced team features</li>
+            <li>Admin dashboard</li>
+            <li>API access</li>
+            <li>Custom branding</li>
+          </ul>
+          <a class="btn secondary" href="#contact">Contact Sales</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======== DEMO / PROOF ======== -->
+    <section id="demo" class="section container">
+      <h2 class="reveal">See VoiceFlow Pro in Action</h2>
+      <div class="reveal">
+        <!-- Replace src with your hosted WebM/MP4 -->
+        <video class="video" controls preload="none" poster="demo-poster.webp" aria-label="VoiceFlow Pro demo video">
+          <source src="demo.webm" type="video/webm" />
+          <source src="demo.mp4" type="video/mp4" />
+          Sorry, your browser doesn’t support embedded videos.
+        </video>
+        <p class="muted" style="margin-top:10px">Watch how VoiceFlow Pro transcribes a 10-minute podcast in under 30 seconds.</p>
+      </div>
+
+      <div class="grid kpis">
+        <div class="card kpi reveal" aria-live="polite"><div class="num" data-count="95">0%</div><div class="muted">Accuracy Rate</div></div>
+        <div class="card kpi reveal" aria-live="polite"><div class="num" data-count="30">0x</div><div class="muted">Faster Than Manual</div></div>
+        <div class="card kpi reveal" aria-live="polite"><div class="num" data-count="100">0+</div><div class="muted">Languages</div></div>
+      </div>
+    </section>
+
+    <!-- ======== TESTIMONIALS ======== -->
+    <section class="section container" aria-labelledby="voices">
+      <h2 id="voices" class="reveal">What Our Users Say</h2>
+      <div class="grid testimonials">
+        <article class="card testimonial reveal">
+          <h3>“Game changer for our podcast workflow”</h3>
+          <p>We switched from MacWhisper because we needed something that worked on our Windows editing machines. VoiceFlow Pro's team features saved us hours every week.</p>
+          <div class="who">
+            <img class="avatar" alt="Photo of Mike Rodriguez" src="avatar1.webp" width="46" height="46" loading="lazy" />
+            <div><strong>Mike Rodriguez</strong><br><span class="muted">Content Creator @ TechTalks Podcast</span></div>
+          </div>
+        </article>
+        <article class="card testimonial reveal">
+          <h3>“Perfect for academic research”</h3>
+          <p>The browser processing means I can transcribe sensitive interviews without worrying about cloud privacy. Much better than MacWhisper's limited export options.</p>
+          <div class="who">
+            <img class="avatar" alt="Photo of Dr. Jennifer Kim" src="avatar2.webp" width="46" height="46" loading="lazy" />
+            <div><strong>Dr. Jennifer Kim</strong><br><span class="muted">Research Professor</span></div>
+          </div>
+        </article>
+        <article class="card testimonial reveal">
+          <h3>“Finally, transcription that scales”</h3>
+          <p>Our agency handles dozens of client videos monthly. VoiceFlow Pro's team collaboration and API access made it possible to scale efficiently.</p>
+          <div class="who">
+            <img class="avatar" alt="Photo of Alex Thompson" src="avatar3.webp" width="46" height="46" loading="lazy" />
+            <div><strong>Alex Thompson</strong><br><span class="muted">Creative Director @ Digital Solutions</span></div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- ======== FAQ ======== -->
+    <section id="faq" class="section container">
+      <h2 class="reveal">Frequently Asked Questions</h2>
+      <div class="grid">
+        <details class="reveal">
+          <summary>How is VoiceFlow Pro different from MacWhisper?</summary>
+          <p>MacWhisper only works on Mac computers, while VoiceFlow Pro works on any device with a browser. We also offer real-time collaboration, more export formats, and flexible subscription pricing with constant updates.</p>
+        </details>
+        <details class="reveal">
+          <summary>Is my audio data secure and private?</summary>
+          <p>Yes! VoiceFlow Pro offers browser-based processing where your audio never leaves your device. For cloud processing, all data is encrypted and automatically deleted after processing.</p>
+        </details>
+        <details class="reveal">
+          <summary>Can I import my MacWhisper transcripts?</summary>
+          <p>Absolutely! We offer free migration assistance to help you import your existing transcripts and set up your workflow.</p>
+        </details>
+        <details class="reveal">
+          <summary>Do you offer refunds?</summary>
+          <p>Yes, we offer a full refund within 30 days if you're not completely satisfied.</p>
+        </details>
+        <details class="reveal">
+          <summary>Can I use this for commercial projects?</summary>
+          <p>Yes, all paid plans include commercial usage rights for client work and business projects.</p>
+        </details>
+      </div>
+    </section>
+
+    <!-- ======== FINAL CTA ======== -->
+    <section class="section container reveal" aria-labelledby="final-cta">
+      <div class="card" style="padding:26px; display:grid; gap:16px; align-items:center">
+        <h2 id="final-cta" style="margin:0">Ready to Upgrade Your Transcription Workflow?</h2>
+        <p class="muted" style="margin:0">Join 10,000+ users • No setup fees • Cancel anytime</p>
+        <div style="display:flex; flex-wrap:wrap; gap:12px">
+          <a class="btn" href="#pricing">Start Free Trial</a>
+          <a class="btn secondary" href="#contact">Schedule Demo</a>
+        </div>
+        <small class="muted">Free trial includes all Pro features for 14 days.</small>
+      </div>
+    </section>
+
+    <!-- ======== CONTACT ======== -->
+    <section id="contact" class="section container">
+      <h2 class="reveal">Talk to Our Team</h2>
+      <form class="card reveal" id="contactForm" novalidate style="padding:22px" aria-describedby="formHelp">
+        <div class="grid" style="grid-template-columns:1fr; gap:14px">
+          <label>
+            <span>Name</span>
+            <input name="name" required autocomplete="name" inputmode="text" aria-required="true" />
+          </label>
+          <label>
+            <span>Email</span>
+            <input name="email" type="email" required autocomplete="email" aria-required="true" />
+          </label>
+          <label>
+            <span>Company (optional)</span>
+            <input name="company" autocomplete="organization" />
+          </label>
+          <label>
+            <span>Message</span>
+            <textarea name="message" required rows="4" aria-required="true"></textarea>
+          </label>
+        </div>
+        <p id="formHelp" class="muted">We’ll get back to you within 1 business day.</p>
+        <div aria-live="polite" id="formFeedback" class="muted"></div>
+        <button class="btn" type="submit">Send Message</button>
+      </form>
+    </section>
+  </main>
+
+  <!-- ======== Footer ======== -->
+  <footer role="contentinfo">
+    <div class="container footer-grid">
+      <div>
+        <div class="logo" style="margin-bottom:10px">
+          <svg width="24" height="24" viewBox="0 0 64 64" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+            <g fill="none" stroke="url(#g2)" stroke-linecap="round" stroke-width="6">
+              <defs>
+                <linearGradient id="g2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8b5cf6"/><stop offset="1" stop-color="#3b82f6"/></linearGradient>
+              </defs>
+              <path d="M6 32h4M14 24v16M22 16v32M30 10v44M38 18v28M46 24v16M54 32h4"/>
+            </g>
+          </svg>
+          <span>VoiceFlow Pro</span>
+        </div>
+        <p class="muted">AI-powered audio transcription that works everywhere. Privacy-first. Team-ready.</p>
+      </div>
+      <div>
+        <strong>Product</strong>
+        <ul style="list-style:none; padding-left:0">
+          <li><a href="#features">Features</a></li>
+          <li><a href="#comparison">Comparison</a></li>
+          <li><a href="#pricing">Pricing</a></li>
+        </ul>
+      </div>
+      <div>
+        <strong>Company</strong>
+        <ul style="list-style:none; padding-left:0">
+          <li><a href="#contact">Contact</a></li>
+          <li><a href="#">Security</a></li>
+          <li><a href="#">Status</a></li>
+        </ul>
+      </div>
+      <div>
+        <strong>Legal</strong>
+        <ul style="list-style:none; padding-left:0">
+          <li><a href="#">Terms</a></li>
+          <li><a href="#">Privacy</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="container legal" style="margin-top:14px">
+      <span>© <span id="year"></span> VoiceFlow Pro. All rights reserved.</span>
+    </div>
+  </footer>
+
+  <!-- ======== Scripts ======== -->
+  <script>
+    // Sticky mobile menu toggle
+    const menuBtn = document.querySelector('.menu-btn');
+    const mobileMenu = document.getElementById('mobile-menu');
+    if(menuBtn){
+      menuBtn.addEventListener('click', ()=>{
+        const open = mobileMenu.classList.toggle('open');
+        menuBtn.setAttribute('aria-expanded', String(open));
+      });
+    }
+
+    // Reveal on scroll
+    const observer = new IntersectionObserver((entries)=>{
+      entries.forEach(e=>{
+        if(e.isIntersecting){ e.target.classList.add('in'); observer.unobserve(e.target); }
+      })
+    }, { threshold:.12 });
+    document.querySelectorAll('.reveal').forEach(el=>observer.observe(el));
+
+    // Counters
+    const kpiObserver = new IntersectionObserver((entries)=>{
+      entries.forEach(e=>{
+        if(!e.isIntersecting) return;
+        const el = e.target.querySelector('.num');
+        const target = Number(el.dataset.count);
+        const suffix = el.textContent.replace(/[0-9]/g,'');
+        let cur=0;
+        const step = Math.max(1, Math.round(target/60));
+        const t = setInterval(()=>{
+          cur += step;
+          if(cur>=target){cur=target; clearInterval(t);}
+          el.textContent = target===95 ? cur + '%' : target===30 ? cur + 'x' : cur + '+';
+        },16);
+        kpiObserver.unobserve(e.target);
+      })
+    }, {threshold:.3});
+    document.querySelectorAll('.kpi').forEach(el=>kpiObserver.observe(el));
+
+    // Pricing toggle (Monthly / Annual)
+    const toggle = document.getElementById('billingToggle');
+    const priceMap = {
+      pro: { monthly: 12, annual: 10 },
+      team:{ monthly: 8, annual: 8 }, // same display per spec
+      free:{ monthly: 0, annual: 0 }
+    };
+    function setPrices(annual){
+      document.querySelectorAll('[data-price]').forEach(el=>{
+        const tier = el.dataset.price;
+        const val = annual ? priceMap[tier].annual : priceMap[tier].monthly;
+        el.textContent = '$' + val;
+      });
+      toggle.setAttribute('aria-checked', String(annual));
+    }
+    if(toggle){
+      toggle.addEventListener('change', (e)=> setPrices(e.target.checked));
+      setPrices(false);
+    }
+
+    // Contact form validation (accessible)
+    const form = document.getElementById('contactForm');
+    const feedback = document.getElementById('formFeedback');
+    form?.addEventListener('submit', (e)=>{
+      e.preventDefault();
+      const data = new FormData(form);
+      const name = data.get('name').trim();
+      const email = data.get('email').trim();
+      const message = data.get('message').trim();
+      let errors = [];
+      if(!name) errors.push('Please enter your name.');
+      if(!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.push('Please enter a valid email.');
+      if(!message) errors.push('Please enter a message.');
+      if(errors.length){
+        feedback.style.color = 'var(--danger)';
+        feedback.textContent = errors.join(' ');
+        return;
+      }
+      // Simulate success — replace with your submit logic
+      feedback.style.color = 'var(--success)';
+      feedback.textContent = 'Thanks! Your message has been sent.';
+      form.reset();
+    });
+
+    // Current year
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // Chat widget integration placeholder (ready)
+    // window.voiceflowChat = { apiKey: 'YOUR_CHAT_WIDGET_KEY' };
+    // (function(){ /* load widget */ })();
+  </script>
+
+  <!-- ======== Minimal inline form styles for inputs (kept near end for specificity) ======== -->
+  <style>
+    input, textarea{
+      width:100%; margin-top:6px; padding:12px 12px; border-radius:10px; color:#fff;
+      border:1px solid rgba(148,163,184,.25); background: rgba(255,255,255,.03)
+    }
+    label span{font-weight:600}
+    input::placeholder, textarea::placeholder{color:#94a3b8}
+  </style>
+</body>
+</html>

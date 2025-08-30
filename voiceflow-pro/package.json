@@ -26,6 +26,8 @@
     "db:generate": "npm run -w @voiceflow-pro/database db:generate"
   },
   "devDependencies": {
+    "@types/express": "^5.0.3",
+    "@types/multer": "^2.0.0",
     "@types/node": "^20.11.5",
     "@typescript-eslint/eslint-plugin": "^6.19.0",
     "@typescript-eslint/parser": "^6.19.0",
@@ -55,7 +57,11 @@
   },
   "dependencies": {
     "@supabase/ssr": "^0.6.1",
+    "axios": "^1.11.0",
     "cookies-next": "^6.1.0",
-    "openai": "^5.12.2"
+    "express": "^5.1.0",
+    "multer": "^2.0.2",
+    "openai": "^5.12.2",
+    "uuid": "^11.1.0"
   }
 }
