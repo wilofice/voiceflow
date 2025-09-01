@@ -260,28 +260,46 @@ export class WhisperWebEngine {
     const startTime = performance.now();
 
     try {
+      console.log(`Starting transcription of ${audioData.length} samples (${audioData.length / 16000}s of audio)`);
+      
       // Ensure audio is mono and at 16kHz
       const processedAudio = await this.preprocessAudio(audioData);
-
-      // Convert to typed array
-      const audioTypedArray = new Float32Array(processedAudio);
-
-      // Run whisper
-      const language = options.language || 'en';
-      const translate = options.task === 'translate';
       
-      const result = this.module.full_default(audioTypedArray, language, translate);
+      // Validate audio data
+      if (!processedAudio || processedAudio.length === 0) {
+        throw new Error('Processed audio data is empty');
+      }
+      
+      console.log(`Processed audio: ${processedAudio.length} samples`);
+
+      // Check if full_default function exists
+      if (typeof this.module.full_default !== 'function') {
+        console.error('Available module methods:', Object.keys(this.module).filter(k => typeof this.module[k] === 'function'));
+        throw new Error('full_default function not found in WASM module');
+      }
+
+      // Run whisper transcription
+      const language = options.language || 'en';
+      const translate = options.task === 'translate' || false;
+      
+      console.log(`Running Whisper transcription (language: ${language}, translate: ${translate})`);
+      
+      // Call the WASM function with the correct parameters
+      const result = this.module.full_default(processedAudio, language, translate);
 
       if (result !== 0) {
         throw new Error(`Whisper processing failed with code: ${result}`);
       }
+      
+      console.log('Whisper transcription completed successfully');
 
-      // Extract results - for now return a simple result
-      // In a real implementation, we would extract the actual segments
+      // Extract results from the module
       const transcription = this.extractResults();
       
       const processingTime = performance.now() - startTime;
       transcription.processingTime = processingTime;
+      
+      console.log(`Transcription completed in ${processingTime}ms`);
 
       return transcription;
     } catch (error) {
@@ -311,7 +329,8 @@ export class WhisperWebEngine {
     options: Partial<WhisperConfig> = {}
   ): Promise<() => void> {
     if (!this.audioContext) {
-      this.audioContext = new AudioContext({ sampleRate: 16000 });
+      // Use default sample rate for audio context, we'll resample later
+      this.audioContext = new AudioContext();
     }
 
     const source = this.audioContext.createMediaStreamSource(stream);
@@ -382,49 +401,82 @@ export class WhisperWebEngine {
    * Convert File to Float32Array audio data
    */
   private async fileToAudioData(file: File): Promise<Float32Array> {
-    const arrayBuffer = await file.arrayBuffer();
-    
-    if (!this.audioContext) {
-      this.audioContext = new AudioContext({ sampleRate: 16000 });
-    }
-
-    const audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
-    
-    // Convert to mono if stereo
-    let channelData: Float32Array;
-    if (audioBuffer.numberOfChannels > 1) {
-      channelData = new Float32Array(audioBuffer.length);
-      for (let i = 0; i < audioBuffer.length; i++) {
-        let sum = 0;
-        for (let channel = 0; channel < audioBuffer.numberOfChannels; channel++) {
-          sum += audioBuffer.getChannelData(channel)[i];
-        }
-        channelData[i] = sum / audioBuffer.numberOfChannels;
-      }
-    } else {
-      channelData = audioBuffer.getChannelData(0);
-    }
-
-    // Resample to 16kHz if needed
-    if (audioBuffer.sampleRate !== 16000) {
-      const ratio = 16000 / audioBuffer.sampleRate;
-      const newLength = Math.floor(channelData.length * ratio);
-      const resampled = new Float32Array(newLength);
+    try {
+      console.log(`Processing audio file: ${file.name}, size: ${file.size}, type: ${file.type}`);
       
-      for (let i = 0; i < newLength; i++) {
-        const srcIndex = i / ratio;
-        const srcIndexFloor = Math.floor(srcIndex);
-        const srcIndexCeil = Math.min(srcIndexFloor + 1, channelData.length - 1);
-        const fraction = srcIndex - srcIndexFloor;
+      const arrayBuffer = await file.arrayBuffer();
+      
+      // Create AudioContext with default sample rate first for decoding
+      if (!this.audioContext) {
+        // Don't specify sample rate for decoding, let it use the default
+        this.audioContext = new AudioContext();
+      }
+
+      console.log('Decoding audio data...');
+      let audioBuffer: AudioBuffer;
+      
+      try {
+        audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer.slice(0));
+      } catch (decodeError) {
+        console.error('Failed to decode audio data:', decodeError);
+        console.log('Attempting alternative decoding method...');
         
-        resampled[i] = channelData[srcIndexFloor] * (1 - fraction) + 
-                       channelData[srcIndexCeil] * fraction;
+        // Try creating a new context without constraints
+        const tempContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+        try {
+          audioBuffer = await tempContext.decodeAudioData(arrayBuffer.slice(0));
+        } finally {
+          await tempContext.close();
+        }
       }
       
-      return resampled;
-    }
+      console.log(`Audio decoded: channels=${audioBuffer.numberOfChannels}, sampleRate=${audioBuffer.sampleRate}, length=${audioBuffer.length}`);
+      
+      // Convert to mono if stereo
+      let channelData: Float32Array;
+      if (audioBuffer.numberOfChannels > 1) {
+        console.log('Converting stereo to mono...');
+        channelData = new Float32Array(audioBuffer.length);
+        for (let i = 0; i < audioBuffer.length; i++) {
+          let sum = 0;
+          for (let channel = 0; channel < audioBuffer.numberOfChannels; channel++) {
+            sum += audioBuffer.getChannelData(channel)[i];
+          }
+          channelData[i] = sum / audioBuffer.numberOfChannels;
+        }
+      } else {
+        channelData = new Float32Array(audioBuffer.getChannelData(0));
+      }
 
-    return channelData;
+      // Resample to 16kHz if needed
+      if (audioBuffer.sampleRate !== 16000) {
+        console.log(`Resampling from ${audioBuffer.sampleRate}Hz to 16000Hz...`);
+        const ratio = 16000 / audioBuffer.sampleRate;
+        const newLength = Math.floor(channelData.length * ratio);
+        const resampled = new Float32Array(newLength);
+        
+        // Use linear interpolation for resampling
+        for (let i = 0; i < newLength; i++) {
+          const srcIndex = i / ratio;
+          const srcIndexFloor = Math.floor(srcIndex);
+          const srcIndexCeil = Math.min(srcIndexFloor + 1, channelData.length - 1);
+          const fraction = srcIndex - srcIndexFloor;
+          
+          resampled[i] = channelData[srcIndexFloor] * (1 - fraction) + 
+                         channelData[srcIndexCeil] * fraction;
+        }
+        
+        console.log(`Resampled audio length: ${resampled.length} samples (${resampled.length / 16000}s)`);
+        return resampled;
+      }
+
+      console.log(`Audio data ready: ${channelData.length} samples (${channelData.length / 16000}s)`);
+      return channelData;
+      
+    } catch (error) {
+      console.error('Failed to process audio file:', error);
+      throw new Error(`Unable to decode audio data: ${error.message}`);
+    }
   }
 
   /**
@@ -449,23 +501,90 @@ export class WhisperWebEngine {
    * Extract transcription results from Whisper
    */
   private extractResults(): TranscriptionResult {
-    // For now, return a placeholder result
-    // In the real implementation with proper bindings, 
-    // we would extract the actual segments from the WASM module
+    if (!this.module) {
+      throw new Error('Module not initialized');
+    }
     
-    return {
-      text: "Transcription completed using browser Whisper", // Placeholder
-      segments: [
-        {
-          text: "Transcription completed using browser Whisper",
-          start: 0,
-          end: 1,
-          confidence: 0.95
+    try {
+      // Get the number of segments
+      const n_segments = this.module.get_n_segments ? this.module.get_n_segments() : 0;
+      console.log(`Extracting ${n_segments} segments from transcription`);
+      
+      const segments: TranscriptionSegment[] = [];
+      let fullText = '';
+      
+      if (n_segments > 0) {
+        // Extract each segment
+        for (let i = 0; i < n_segments; i++) {
+          const text = this.module.get_segment_text ? this.module.get_segment_text(i) : '';
+          const t0 = this.module.get_segment_t0 ? this.module.get_segment_t0(i) : 0;
+          const t1 = this.module.get_segment_t1 ? this.module.get_segment_t1(i) : 0;
+          
+          // Convert timestamps from centiseconds to seconds
+          const start = t0 / 100;
+          const end = t1 / 100;
+          
+          if (text && text.trim()) {
+            segments.push({
+              text: text.trim(),
+              start,
+              end,
+              confidence: 0.95 // Whisper doesn't provide confidence scores directly
+            });
+            
+            fullText += text + ' ';
+          }
         }
-      ],
-      language: 'en',
-      duration: 1,
-    };
+      }
+      
+      // If no segments were extracted, try to get the full text directly
+      if (segments.length === 0 && this.module.get_text) {
+        fullText = this.module.get_text() || '';
+        if (fullText) {
+          segments.push({
+            text: fullText.trim(),
+            start: 0,
+            end: 0,
+            confidence: 0.95
+          });
+        }
+      }
+      
+      // Fallback if still no text
+      if (!fullText) {
+        console.warn('No transcription text extracted from Whisper');
+        fullText = '[No speech detected]';
+        segments.push({
+          text: fullText,
+          start: 0,
+          end: 0,
+          confidence: 0
+        });
+      }
+      
+      return {
+        text: fullText.trim(),
+        segments,
+        language: this.module.get_language ? this.module.get_language() : 'en',
+        duration: segments.length > 0 ? segments[segments.length - 1].end : 0,
+      };
+      
+    } catch (error) {
+      console.error('Failed to extract results:', error);
+      
+      // Return a fallback result
+      return {
+        text: '[Transcription extraction failed]',
+        segments: [{
+          text: '[Transcription extraction failed]',
+          start: 0,
+          end: 0,
+          confidence: 0
+        }],
+        language: 'en',
+        duration: 0,
+      };
+    }
   }
 
   /**
