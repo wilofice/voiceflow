@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VoiceFlow Pro Visual Roadmap</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: white;
+            overflow-x: auto;
+        }
+        
+        .roadmap-container {
+            width: 100%;
+            min-width: 1400px;
+            position: relative;
+            padding: 40px;
+        }
+        
+        .roadmap-title {
+            text-align: center;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 40px;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .timeline {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 60px;
+            position: relative;
+        }
+        
+        .timeline::before {
+            content: '';
+            position: absolute;
+            top: 30px;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #ef4444, #f97316, #eab308, #22c55e);
+            border-radius: 2px;
+        }
+        
+        .milestone {
+            position: relative;
+            text-align: center;
+            flex: 1;
+        }
+        
+        .milestone-marker {
+            width: 20px;
+            height: 20px;
+            background: #3b82f6;
+            border: 4px solid white;
+            border-radius: 50%;
+            margin: 0 auto 15px;
+            position: relative;
+            z-index: 10;
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+        }
+        
+        .milestone-label {
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        
+        .milestone-date {
+            font-size: 0.8rem;
+            opacity: 0.8;
+            margin-top: 5px;
+        }
+        
+        .phases-container {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .phase {
+            background: rgba(30, 41, 59, 0.8);
+            border-radius: 15px;
+            padding: 25px;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .phase::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--phase-color);
+            border-radius: 15px 15px 0 0;
+        }
+        
+        .phase.week1 { --phase-color: #ef4444; }
+        .phase.week2 { --phase-color: #f97316; }
+        .phase.week3 { --phase-color: #eab308; }
+        .phase.week4 { --phase-color: #22c55e; }
+        
+        .phase:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            border-color: var(--phase-color);
+        }
+        
+        .phase-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: var(--phase-color);
+        }
+        
+        .phase-duration {
+            font-size: 0.8rem;
+            opacity: 0.7;
+            margin-bottom: 20px;
+        }
+        
+        .task {
+            background: rgba(51, 65, 85, 0.6);
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 8px;
+            border-left: 3px solid var(--task-color);
+            transition: all 0.2s ease;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .task:hover {
+            background: rgba(51, 65, 85, 0.8);
+            transform: translateX(5px);
+        }
+        
+        .task.critical { --task-color: #ef4444; }
+        .task.important { --task-color: #f97316; }
+        .task.parallel { --task-color: #3b82f6; }
+        .task.continuous { --task-color: #22c55e; }
+        
+        .task-title {
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+        
+        .task-details {
+            font-size: 0.8rem;
+            opacity: 0.8;
+        }
+        
+        .task-type {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--task-color);
+            color: white;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin: 40px 0;
+            flex-wrap: wrap;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+        }
+        
+        .roi-indicator {
+            text-align: center;
+            margin: 40px 0;
+            padding: 25px;
+            background: linear-gradient(135deg, #1e293b, #334155);
+            border-radius: 15px;
+            border: 2px solid #22c55e;
+        }
+        
+        .roi-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #22c55e;
+            margin-bottom: 10px;
+        }
+        
+        .roi-details {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+        
+        .dependencies {
+            margin-top: 40px;
+            background: rgba(30, 41, 59, 0.6);
+            padding: 25px;
+            border-radius: 15px;
+        }
+        
+        .dependencies-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: #8b5cf6;
+        }
+        
+        .dependency-flow {
+            display: flex;
+            align-items: center;
+            margin: 15px 0;
+            gap: 15px;
+        }
+        
+        .dependency-item {
+            padding: 8px 15px;
+            background: rgba(59, 130, 246, 0.2);
+            border: 1px solid #3b82f6;
+            border-radius: 20px;
+            font-size: 0.8rem;
+        }
+        
+        .arrow {
+            color: #8b5cf6;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        
+        .parallel-indicator {
+            background: rgba(139, 92, 246, 0.1);
+            border: 2px dashed #8b5cf6;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .parallel-title {
+            font-weight: 600;
+            color: #8b5cf6;
+            margin-bottom: 10px;
+        }
+        
+        @media (max-width: 1200px) {
+            .phases-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .phases-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .timeline {
+                flex-direction: column;
+                gap: 20px;
+            }
+            
+            .timeline::before {
+                display: none;
+            }
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(51, 65, 85, 0.5);
+            border-radius: 4px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--task-color), rgba(255,255,255,0.3));
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+        
+        .cost-indicator {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            color: #22c55e;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="roadmap-container">
+        <h1 class="roadmap-title">🎯 VoiceFlow Pro Development Roadmap</h1>
+        
+        <!-- Timeline -->
+        <div class="timeline">
+            <div class="milestone">
+                <div class="milestone-marker"></div>
+                <div class="milestone-label">MVP Launch</div>
+                <div class="milestone-date">Week 4</div>
+            </div>
+            <div class="milestone">
+                <div class="milestone-marker"></div>
+                <div class="milestone-label">First Revenue</div>
+                <div class="milestone-date">Month 2</div>
+            </div>
+            <div class="milestone">
+                <div class="milestone-marker"></div>
+                <div class="milestone-label">Break Even</div>
+                <div class="milestone-date">Month 3</div>
+            </div>
+            <div class="milestone">
+                <div class="milestone-marker"></div>
+                <div class="milestone-label">Scale Phase</div>
+                <div class="milestone-date">Month 4+</div>
+            </div>
+        </div>
+
+        <!-- ROI Indicator -->
+        <div class="roi-indicator">
+            <div class="roi-title">💰 Target ROI: Month 3</div>
+            <div class="roi-details">Break-even at $12,000 MRR | Investment: $4,200 | Time to ROI: 12 weeks</div>
+        </div>
+
+        <!-- Phases -->
+        <div class="phases-container">
+            <!-- Week 1 -->
+            <div class="phase week1">
+                <div class="cost-indicator">€1,200</div>
+                <h3 class="phase-title">Week 1: Foundation</h3>
+                <div class="phase-duration">Critical Path - No Parallel</div>
+                
+                <div class="task critical">
+                    <div class="task-title">Legal Documents</div>
+                    <div class="task-details">Terms, Privacy, License</div>
+                    <div class="task-type">SEQ</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 0%;"></div>
+                    </div>
+                </div>
+                
+                <div class="task critical">
+                    <div class="task-title">Business Registration</div>
+                    <div class="task-details">LLC + Trademark filing</div>
+                    <div class="task-type">SEQ</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 0%;"></div>
+                    </div>
+                </div>
+                
+                <div class="task important">
+                    <div class="task-title">Browser Whisper</div>
+                    <div class="task-details">WebAssembly integration</div>
+                    <div class="task-type">CRIT</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 0%;"></div>
+                    </div>
+                </div>
+                
+                <div class="parallel-indicator">
+                    <div class="parallel-title">🔄 Can Start in Parallel:</div>
+                    <div class="task parallel">
+                        <div class="task-title">Landing Page</div>
+                        <div class="task-details">Marketing site</div>
+                        <div class="task-type">PAR</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Week 2 -->
+            <div class="phase week2">
+                <div class="cost-indicator">€800</div>
+                <h3 class="phase-title">Week 2: Core Features</h3>
+                <div class="phase-duration">Mixed: Sequential + Parallel</div>
+                
+                <div class="task critical">
+                    <div class="task-title">Transcript Management</div>
+                    <div class="task-details">CRUD + Database</div>
+                    <div class="task-type">SEQ</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 0%;"></div>
+                    </div>
+                </div>
+                
+                <div class="task important">
+                    <div class="task-title">File Storage</div>
+                    <div class="task-details">Supabase integration</div>
+                    <div class="task-type">SEQ</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 0%;"></div>
+                    </div>
+                </div>
+                
+                <div class="task important">
+                    <div class="task-title">Real-time Transcription</div>
+                    <div class="task-details">Live audio processing</div>
+                    <div class="task-type">SEQ</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 0%;"></div>
+                    </div>
+                </div>
+                
+                <div class="parallel-indicator">
+                    <div class="parallel-title">🔄 Parallel Development:</div>
+                    <div class="task parallel">
+                        <div class="task-title">Payment Integration</div>
+                        <div class="task-details">Stripe setup</div>
+                        <div class="task-type">PAR</div>
+                    </div>
+                    <div class="task parallel">
+                        <div class="task-title">Export Features</div>
+                        <div class="task-details">SRT, VTT, DOCX</div>
+                        <div class="task-type">PAR</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Week 3 -->
+            <div class="phase week3">
+                <div class="cost-indicator">€600</div>
+                <h3 class="phase-title">Week 3: Business Systems</h3>
+                <div class="phase-duration">Highly Parallel</div>
+                
+                <div class="task important">
+                    <div class="task-title">Pricing Pages</div>
+                    <div class="task-details">Plans + Checkout flow</div>
+                    <div class="task-type">SEQ</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 0%;"></div>
+                    </div>
+                </div>
+                
+                <div class="parallel-indicator">
+                    <div class="parallel-title">🔄 All Parallel Tasks:</div>
+                    <div class="task parallel">
+                        <div class="task-title">Multi-Platform Setup</div>
+                        <div class="task-details">Gumroad, Shopify</div>
+                        <div class="task-type">PAR</div>
+                    </div>
+                    <div class="task parallel">
+                        <div class="task-title">Content Creation</div>
+                        <div class="task-details">Blog, demos, videos</div>
+                        <div class="task-type">PAR</div>
+                    </div>
+                    <div class="task parallel">
+                        <div class="task-title">Branding Assets</div>
+                        <div class="task-details">Logo, graphics</div>
+                        <div class="task-type">PAR</div>
+                    </div>
+                    <div class="task parallel">
+                        <div class="task-title">SEO Foundation</div>
+                        <div class="task-details">Optimization</div>
+                        <div class="task-type">PAR</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Week 4 -->
+            <div class="phase week4">
+                <div class="cost-indicator">€400</div>
+                <h3 class="phase-title">Week 4: Launch</h3>
+                <div class="phase-duration">Sequential Launch Steps</div>
+                
+                <div class="task critical">
+                    <div class="task-title">Production Deployment</div>
+                    <div class="task-details">Docker + CI/CD</div>
+                    <div class="task-type">SEQ</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 0%;"></div>
+                    </div>
+                </div>
+                
+                <div class="task critical">
+                    <div class="task-title">Testing & QA</div>
+                    <div class="task-details">E2E validation</div>
+                    <div class="task-type">SEQ</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 0%;"></div>
+                    </div>
+                </div>
+                
+                <div class="task important">
+                    <div class="task-title">Product Hunt Launch</div>
+                    <div class="task-details">Marketing campaign</div>
+                    <div class="task-type">SEQ</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 0%;"></div>
+                    </div>
+                </div>
+                
+                <div class="parallel-indicator">
+                    <div class="parallel-title">🔄 Launch Support:</div>
+                    <div class="task continuous">
+                        <div class="task-title">Customer Support</div>
+                        <div class="task-details">Response system</div>
+                        <div class="task-type">CONT</div>
+                    </div>
+                    <div class="task continuous">
+                        <div class="task-title">Analytics Setup</div>
+                        <div class="task-details">Tracking & monitoring</div>
+                        <div class="task-type">CONT</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Continuous Tasks -->
+        <div class="parallel-indicator">
+            <div class="parallel-title">🔄 Continuous Tasks (Throughout All Weeks):</div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-top: 15px;">
+                <div class="task continuous">
+                    <div class="task-title">User Feedback Collection</div>
+                    <div class="task-details">Continuous improvement</div>
+                    <div class="task-type">CONT</div>
+                </div>
+                <div class="task continuous">
+                    <div class="task-title">Bug Fixes & Optimization</div>
+                    <div class="task-details">Quality maintenance</div>
+                    <div class="task-type">CONT</div>
+                </div>
+                <div class="task continuous">
+                    <div class="task-title">Content Marketing</div>
+                    <div class="task-details">Blog posts, social media</div>
+                    <div class="task-type">CONT</div>
+                </div>
+                <div class="task continuous">
+                    <div class="task-title">Community Building</div>
+                    <div class="task-details">Discord, social presence</div>
+                    <div class="task-type">CONT</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dependencies -->
+        <div class="dependencies">
+            <h3 class="dependencies-title">🔗 Critical Dependencies</h3>
+            
+            <div class="dependency-flow">
+                <div class="dependency-item">Legal Documents</div>
+                <div class="arrow">→</div>
+                <div class="dependency-item">Business Registration</div>
+                <div class="arrow">→</div>
+                <div class="dependency-item">Payment Processing</div>
+                <div class="arrow">→</div>
+                <div class="dependency-item">Revenue Generation</div>
+            </div>
+            
+            <div class="dependency-flow">
+                <div class="dependency-item">Browser Whisper</div>
+                <div class="arrow">→</div>
+                <div class="dependency-item">Transcript Management</div>
+                <div class="arrow">→</div>
+                <div class="dependency-item">Export Features</div>
+                <div class="arrow">→</div>
+                <div class="dependency-item">Market Differentiation</div>
+            </div>
+            
+            <div class="dependency-flow">
+                <div class="dependency-item">MVP Completion</div>
+                <div class="arrow">→</div>
+                <div class="dependency-item">Production Deployment</div>
+                <div class="arrow">→</div>
+                <div class="dependency-item">Marketing Launch</div>
+                <div class="arrow">→</div>
+                <div class="dependency-item">Customer Acquisition</div>
+            </div>
+        </div>
+
+        <!-- Legend -->
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background: #ef4444;"></div>
+                <span>SEQ - Sequential (Blocking)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #f97316;"></div>
+                <span>CRIT - Critical Path</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #3b82f6;"></div>
+                <span>PAR - Parallel (Non-blocking)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #22c55e;"></div>
+                <span>CONT - Continuous</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Interactive features
+        document.querySelectorAll('.task').forEach(task => {
+            task.addEventListener('click', function() {
+                const details = this.querySelector('.task-details').textContent;
+                const title = this.querySelector('.task-title').textContent;
+                const type = this.querySelector('.task-type').textContent;
+                
+                let typeDescription = '';
+                switch(type) {
+                    case 'SEQ': typeDescription = 'Sequential - Must complete before next task'; break;
+                    case 'CRIT': typeDescription = 'Critical Path - Delays affect launch date'; break;
+                    case 'PAR': typeDescription = 'Parallel - Can work alongside other tasks'; break;
+                    case 'CONT': typeDescription = 'Continuous - Ongoing throughout project'; break;
+                }
+                
+                alert(`📋 ${title}\n\n${details}\n\n🔧 ${typeDescription}\n\nClick to mark as completed when done!`);
+            });
+            
+            // Add hover effect for progress indication
+            task.addEventListener('mouseenter', function() {
+                const progressBar = this.querySelector('.progress-fill');
+                if (progressBar) {
+                    progressBar.style.width = '100%';
+                }
+            });
+            
+            task.addEventListener('mouseleave', function() {
+                const progressBar = this.querySelector('.progress-fill');
+                if (progressBar && !this.classList.contains('completed')) {
+                    progressBar.style.width = '0%';
+                }
+            });
+        });
+
+        // Add click to complete functionality
+        let completedTasks = 0;
+        const totalTasks = document.querySelectorAll('.task').length;
+
+        document.querySelectorAll('.task').forEach(task => {
+            task.addEventListener('dblclick', function() {
+                if (!this.classList.contains('completed')) {
+                    this.classList.add('completed');
+                    this.style.opacity = '0.6';
+                    this.style.textDecoration = 'line-through';
+                    const progressBar = this.querySelector('.progress-fill');
+                    if (progressBar) {
+                        progressBar.style.width = '100%';
+                        progressBar.style.background = '#22c55e';
+                    }
+                    
+                    completedTasks++;
+                    updateROIIndicator();
+                }
+            });
+        });
+
+        function updateROIIndicator() {
+            const completionRate = (completedTasks / totalTasks) * 100;
+            const roiIndicator = document.querySelector('.roi-details');
+            
+            if (completionRate >= 100) {
+                roiIndicator.innerHTML = '🎉 MVP Complete! Ready for revenue generation and ROI achievement!';
+                roiIndicator.parentElement.style.borderColor = '#22c55e';
+            } else if (completionRate >= 75) {
+                roiIndicator.innerHTML = '🚀 Almost there! ROI target within reach - keep pushing!';
+                roiIndicator.parentElement.style.borderColor = '#eab308';
+            } else if (completionRate >= 50) {
+                roiIndicator.innerHTML = '⚡ Half way to ROI! Momentum building - stay focused!';
+                roiIndicator.parentElement.style.borderColor = '#f97316';
+            }
+        }
+
+        // Add some initial animation
+        setTimeout(() => {
+            document.querySelectorAll('.phase').forEach((phase, index) => {
+                setTimeout(() => {
+                    phase.style.opacity = '0';
+                    phase.style.transform = 'translateY(20px)';
+                    phase.style.transition = 'all 0.5s ease';
+                    
+                    setTimeout(() => {
+                        phase.style.opacity = '1';
+                        phase.style.transform = 'translateY(0)';
+                    }, 100);
+                }, index * 200);
+            });
+        }, 500);
+    </script>
+</body>
+</html>
