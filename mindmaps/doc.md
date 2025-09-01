@@ -1,139 +1,136 @@
 mindmap
-  root((VoiceFlow Pro Project Evolution))
-    I. Project Vision & Goals
-      Cross-Platform Dominance: Web, Mac, Windows, Linux, iOS, Android, real-time sync [1]
-      Team Collaboration Built-In: Real-time editing, role-based permissions, shared libraries, comments [2]
-      Advanced AI Post-Processing: Summaries, action items, chapter detection, sentiment analysis [2]
-      Superior Audio Enhancement: AI noise reduction, audio leveling, voice isolation [3]
-      Workflow Integration Powerhouse: Slack, Teams, Notion, Zapier, CRM, Calendar integrations [3]
-      Privacy-First: Client-side processing with no external API calls after model download [4-6]
-      Compete with MacWhisper: Build a superior, sellable, more likable version [7]
-
-    II. Core Foundation & Initial Setup (✅ COMPLETE - Week 1 Goals)
-      Repository Setup and Monorepo Structure [8-12]
-      Database Schema Design and Setup (PostgreSQL, Prisma, RLS) [8-11, 13]
-        JsonB datatype for processingStats [14, 15]
-      Next.js Frontend Application Setup (React 18, TypeScript, Tailwind CSS, Radix UI) [8, 10, 11, 13, 16-18]
-      Node.js Backend API Setup (Fastify, TypeScript, tRPC) [8-11, 16, 19, 20]
-      Supabase Integration and Authentication [8-11, 16, 21-25]
-        Login and Registration: Supabase Auth API [26-30]
-        Session Management: Supabase Session, Auth Context [26, 29, 31-33]
-        Protected Routes: UI-level auth enforcement, /dashboard, /whisper-demo [26, 29, 31-34]
-        API Requests: JWT token in Authorization header [34-37]
-        Token Expiry and Refresh: Automatic handling [37-40]
-        Logout: Supabase signOut [38, 39, 41, 42]
-      OpenAI Whisper API Integration (Hybrid Service) [8-11, 19, 25, 43]
-      Basic File Upload Pipeline (Drag & Drop, Validation, Progress) [8, 10, 18, 24, 44-47]
-      Development Environment and Scripts (Monorepo, build, linting, formatting) [8, 10, 48]
-        `setup-whisper-local.sh` Script (Numerous improvements made) [14, 15, 49-115]
-          Reproducibility: Pinned whisper.cpp commit [60, 61]
-          Parameterized Model Download [60]
-          Error Handling & Rollback [53, 111]
-          Shell Compatibility [53, 112]
-          Logging [54, 112]
-          Security & Systemd Hardening [54, 55, 112]
-          Parallel Downloads (recommended for `download-models.sh`) [55, 113]
-          Unattended/Dry Run/Uninstall/Self-Update Modes [55, 113, 114]
-          Progress Bar & Better Error Messages [63, 113]
-          Automatic Shell Detection for PATH [63, 113]
-          Post-Install Test [63, 114]
-          README Generation & Interactive Model Selection [63, 114]
-          Disk Space Check & Locale Support [63, 115]
-          CI/CD Friendly Output [63, 115]
-
-    III. Whisper Integration Roadmap (Key Technical Evolution)
-      Phase 1: Core Infrastructure (Browser Whisper Foundation) (✅ COMPLETE)
-        WASM Build Setup (Emscripten, whisper.cpp to WASM, TS Bindings) [21, 116-125]
-          How compilation is done: Emscripten compiles C++ to .wasm and JS wrapper [125, 126]
-          Why compile: Browsers can't run C++ directly; enables high-performance native code [125, 126]
-        Model Management System (IndexedDB caching, Progress, Hugging Face CDN) [21, 116, 118, 121, 123, 127-130]
-          IndexedDB for large binary file storage (models) [116, 130, 131]
-          Versioning: Tagged models, update new versions [130, 131]
-          Quota Management: Tracks usage, warns near limits, allows deletion [130, 131]
-          CORS Fix for Model Download: Proxy server route `/api/models/download/:modelName` [132, 133]
-        Browser Whisper Engine (WASM integration, Audio Preprocessing, Real-time/Batch) [21, 121, 123, 128, 134]
-          SharedArrayBuffer Polyfill: Fallback for unsupported browsers [135]
-          `FS.writeFile` Undefined Error Fix: Correct `whisper.cpp` JS bindings [136]
-        WebWorker Background Processing (Non-blocking UI, Message-based) [116, 118, 119, 121, 123, 124, 127, 137-139]
-        Security & Validation (File upload, Malware, Filename sanitization) [121, 139, 140]
-        Analytics & Error Logging Foundation [121, 139, 140]
-
-      Phase 2: UI Integration (for Browser Whisper) (✅ COMPLETE)
-        Update Whisper Demo Page (Mock replaced with real inference, progress indicator, error handling) [5, 116, 118, 124, 127, 141-146]
-          Integration with correct Fastify API routes based on method selected [143, 147]
-          Ensure backend Whisper API calls use correct host (e.g., `localhost:3002`) [148]
-          Multipart form fields parsing for Zod validation [149, 150]
-          Correct Python CLI arguments for `openai-whisper` [151, 152]
-          Auth token sent in fetch headers [153]
-        Add Model Download UI Component [127, 141, 142]
-        Settings & Configuration UI (Method Selector, Model Management, Quality/Speed Preference, Privacy Mode, Cost Comparison) [124, 154-156]
-        Real-time Transcription Component (Audio Visualization, Streaming Display, Language Detection, Quality Indicators) [154-156]
-        Hybrid Upload Flow (Method selection, Client-side processing, Progress for local, Cost comparison, Stats) [156-158]
-        Accessibility Support (Keyboard navigation, Screen readers) [158]
-        Error Handling UI Components (Error boundary, specialized error messages) [158]
-
-      Phase 3: Server-Side Integration (Native Whisper.cpp) (✅ COMPLETE)
-        Native Whisper.cpp Setup (Install, Docker container, Model storage, Health checks, CPU/GPU optimization) [124-126, 157, 159, 160]
-          Why Docker: Consistent, reproducible environments, better performance for large files [125, 126]
-          Health Checks: Automated checks for server and Whisper service [125, 126]
-          Non-fatal initialization: Server starts even if Docker fails [161]
-        Whisper Server Service (Binary execution, Job tracking, Model management, Health monitoring, Progress, Error handling) [124, 160, 162]
-        Hybrid Routing Service (Intelligent method selection, Fallback, Performance/Cost tracking) [124, 138, 139, 162, 163]
-        API Endpoints (POST /api/whisper/transcribe, /local, /docker; GET /health, /models, /performance, /jobs; DELETE /jobs/:jobId; POST /docker/start, /stop) [163-167]
-          API Migration from Express to Fastify [168, 169]
-          Logging at runtime for routes [170]
-          Monitoring Middleware refactored to Fastify hooks [171-173]
-          Fastify Deprecation Warning (`request.routerPath`) [174, 175]
-        Monitoring & Health Checks (Real-time, System metrics, Alerts) [176]
-        Database Schema Updates (New columns: `transcriptionMethod`, `whisperModel`, `processingLocation`, `processingStats`; new `UserPreferences` table) [166, 177, 178]
-
-      Phase 4: Advanced Features & Optimization (Next Steps - ⚠️ INCOMPLETE)
-        Performance Optimization (WebGPU/SIMD acceleration, Adaptive Quality, Profiling, Memory Optimization) [124, 162, 179-183]
-          WebGPU: Modern web API for GPU access, high-performance computing [183, 184]
-          SIMD: CPU feature for parallel data processing [183, 184]
-          How to use: Enable in browser/WASM build, compile with Emscripten flags, detect at runtime [178, 185]
-          Why use: Faster in browser by leveraging hardware acceleration [178, 185]
-        Advanced Whisper Features (Speaker diarization, Auto-punctuation, Noise reduction, Translation mode, Custom vocabulary support, Subtitle generation) [124, 186-189]
-        Testing & Documentation (Comprehensive test suite, Performance benchmarks, User documentation, Troubleshooting guides) [124, 188]
-
-    IV. General Application Features (Beyond Whisper Core)
-      Transcript Management System (❌ CRITICAL GAP / HIGH PRIORITY) [18, 24, 190-193]
-        CRUD API Endpoints for Transcripts [190, 194]
-        UI for Listing, Searching, Editing, Exporting [190, 194]
-        Supabase Storage for Audio Files linked to transcripts [18, 24, 190, 191, 194, 195]
-        Sharing and Organization Features (Folders, Tags) [190]
-        Export Functionality (SRT/VTT/DOCX/PDF/TXT) [24, 181, 193, 196]
-      Real-Time Transcription (Microphone) (⚠️ INCOMPLETE / MEDIUM PRIORITY) [18, 24, 187, 193, 197]
-        Microphone Access via getUserMedia [187, 197]
-        Audio Streaming Pipeline [187, 197]
-        Live Text Display in UI [187, 197]
-        Voice Activity Detection (VAD) [187, 197]
-        Live Editing During Recording [197]
-      Advanced Processing Features (Speaker Detection & Labeling, Auto-Punctuation & Capitalization, Noise Reduction & Audio Enhancement) [24, 186, 187]
-      Collaborative Features (Public/Private Sharing Links, Comments & Suggestions, Team Workspaces & Permissions, Real-time Collaboration) [24, 181, 189, 198]
-
-    V. Deployment, Scaling & Business Foundation
-      Production Deployment & Optimization (⚠️ INCOMPLETE / HIGH PRIORITY) [24, 181, 189, 194, 199, 200]
-        Docker containerization for API and web app [189, 194, 199]
-        CI/CD pipeline for automated deploys [189, 199, 201]
-        Production Supabase configuration [189, 199, 201]
-        Monitoring and logging setup [189, 199]
-        Performance optimization and caching [189, 199]
-      Business Foundation Setup (Terms of Service, Privacy Policy, Pricing Pages, Stripe Integration, Registered Business Entity & Trademarks) [202, 203]
-      Marketing Launch Execution (Landing Page, Demo Video, Blog, Social Media, Product Hunt, Email Marketing, Referral Program) [204, 205]
-      Licensing and Legal Framework (Software License Agreements, Registered Trademark & Copyright, Compliance Checklists - GDPR, CCPA, HIPAA, SOC2) [206, 207]
-
-    VI. Overall Status & Top Priorities
-      Current Status (✅ Implemented / Strong Foundation)
-        Authentication System (Production-Ready Supabase Auth) [9, 21-24, 26, 27, 29, 30, 208-211]
-        Backend API Foundation (Fastify with proper routing and monitoring) [9, 19]
-        Whisper Integration Infrastructure (Multi-Method: OpenAI, Local Whisper.cpp, Browser Whisper - core infra) [9, 19, 21, 24, 29, 212]
-        Frontend Components (Production-Ready UI, User Experience Flow) [17, 18]
-        Development Infrastructure (Monorepo, Build System, Documentation, Setup Scripts) [8, 18]
-        Browser Whisper Core Implementation (Real WebAssembly processing, Model Management, WebWorker, UI integration) [9, 21, 24, 118, 159, 213]
-        `setup-whisper-local.sh` Script (Highly robust, reproducible, user-friendly with many enhancements) [14, 15, 53-115]
-      Top Priorities (Gaps to Address)
-        Priority 1: Complete Browser Whisper Implementation (Key Differentiator) [18, 214, 215] (Core is done, but ongoing optimization)
-        Priority 2: Implement Real Transcript Management (Essential for user retention and data persistence) [18, 191, 192]
-        Priority 3: Production Deployment Setup (Enable user testing and feedback) [181, 194, 200]
-        Other Incomplete/Lower Priority: Real-time Transcription, Advanced Whisper Features, Performance Optimization, Advanced UI Features (Segment Editing, Playback Sync), Analytics & Monitoring [181, 187, 215]
+  root**VoiceFlow Pro**
+    Core Differentiators
+      Cross-Platform Dominance
+        Native Apps *Web, Mac, Windows, Linux, iOS, Android*
+        Real-time Sync Across Devices
+      Team Collaboration Built-In
+        Real-time Collaborative Editing
+        Team Workspaces & Permissions
+        Shared Libraries *Tagging, Search*
+        Comment System with Timestamps
+      Advanced AI Post-Processing
+        Automatic Meeting Summaries *Action Items*
+        Smart Chapter & Auto-Segmentation
+        Sentiment Analysis & Tone Detection
+        Key Quote Extraction
+        Context-aware Topic Tagging
+      Superior Audio Enhancement
+        AI-powered Noise Reduction
+        Automatic Audio Leveling
+        Voice Isolation
+        Background Music/Noise Removal
+      Workflow Integration Powerhouse
+        Direct Integrations *Slack, Teams, Notion, Obsidian, Airtable*
+        Zapier/Automation Connections
+        CRM Integrations *Salesforce, HubSpot*
+        Calendar Integrations *Auto-Meeting Detection*
+    Business Model Advantage
+      Freemium with Usage-Based Pro Tiers
+        Free is  5 hours/month, basic features
+        Pro Individual *$15/month* is  50 hours, advanced AI
+        Team *$8/user/month* is  Unlimited, collaboration
+        Enterprise is  Custom pricing, SSO, compliance
+    Technical Superiority
+      Hybrid Processing Architecture
+        Edge computing *privacy-sensitive*
+        Cloud processing *complex AI*
+        Automatic Quality Optimization
+        50% Faster than Local-Only Processing
+      Multi-Model AI Engine
+        Auto-selects best model per audio type
+        Custom fine-tuned models *industries*
+        Real-time model switching
+    User Experience Wins
+      Smart Onboarding
+        AI analyzes first transcripts for optimal settings
+        Industry-specific templates/workflows
+        Guided team collaboration setup
+      Predictive Features
+        Auto-detects meeting types, applies formatting
+        Suggests speakers *voice patterns*
+        Predicts/auto-corrects transcription errors
+    Current Status & Roadmap
+      Current Status *Strong Foundation*
+        Authentication *Supabase Auth, JWT, sessions*
+        Backend API *Fastify, OpenAI + Local Whisper*
+        Frontend *React/Next.js UI, core components*
+        Basic Transcription *File upload -> OpenAI/Local -> Results*
+      Critical Gaps *vs. MacWhisper*
+        Browser Whisper *Mock only*
+        Transcript Management *No save/edit/organize*
+        File Storage *No persistent audio storage*
+        Export Functionality *No SRT/VTT/DOCX*
+        Real-time Features *Live recording not fully functional*
+        Advanced Processing *No speaker detection, auto-punctuation*
+      MVP Completion *Phase 1 is  2-3 weeks*
+        Priority 1A is  Real Browser Whisper *1 week*
+          Emscripten build environment for whisper.cpp
+          WhisperWebAssembly class with model loading
+          WebWorker for background processing
+          Model download UI with progress tracking
+          Replace mock with real Whisper processing
+          Memory optimization for large files
+          Test cross-browser compatibility
+        Priority 1B is  Transcript Management System *1 week*
+          Prisma database schema for transcripts
+          Transcript CRUD API endpoints
+          Supabase Storage for audio files
+          Transcript listing page *search/filter*
+          Transcript editor *segment editing*
+          Export functionality *all formats*
+          Sharing capabilities
+        Priority 1C is  Real-time Transcription *3-4 days*
+          getUserMedia for microphone access
+          Real-time audio streaming pipeline
+          Live transcription UI with streaming text
+          Voice activity detection *VAD*
+          Live editing capabilities
+      MacWhisper Competitive Features *Phase 2 is  1-2 weeks*
+        Priority 2A is  Advanced Whisper Features
+        Priority 2B is  Collaborative Features
+      Production & Scaling *Phase 3 is  1 week*
+        Priority 3A is  Production Deployment
+          Docker containerization *API, web app*
+          CI/CD pipeline *GitHub Actions*
+          Production Supabase configuration
+          Monitoring and logging setup
+          Performance optimization and caching
+        Priority 3B is  Performance & Security
+          WebGPU acceleration *browser Whisper*
+          Audio streaming optimization
+          Security audit and hardening
+          Rate limiting and abuse prevention
+          GDPR compliance features
+    Immediate Action Plan *Next 4 Weeks*
+      Week 1 is  Complete MVP
+        Implement real browser Whisper processing
+        Build transcript management system
+        Add file storage and persistence
+        Create export functionality
+      Week 2 is  Business Foundation
+        Set up legal framework *ToS, Privacy Policy*
+        Create pricing pages and Stripe integration
+        Build landing page with demo
+        Register business entity and trademarks
+      Week 3 is  Platform Distribution
+        Launch on own website with payment processing
+        Set up Gumroad store *lifetime offers*
+        Create Shopify store
+        Prepare Product Hunt launch materials
+      Week 4 is  Marketing Launch
+        Execute Product Hunt launch strategy
+        Begin content marketing campaign
+        Start email marketing sequences
+        Launch referral program
+    Success Metrics & Targets
+      Technical Metrics
+        Browser Whisper Accuracy *>90% vs OpenAI*
+        Processing Speed *<30s for 10-min audio*
+        User Experience *<5s time-to-first-transcription*
+        Reliability *99.5% uptime, <0.1% error rate*
+      Business Metrics
+        Launch Goals *1,000+ signups in first month*
+        Conversion Rate *15% free-to-paid*
+        Revenue Target *$5,000 MRR by month 3*
+        Market Position *Top 3 for "MacWhisper alternative"*
