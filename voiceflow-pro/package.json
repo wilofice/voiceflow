@@ -57,6 +57,7 @@
   },
   "dependencies": {
     "@supabase/ssr": "^0.6.1",
+    "@xenova/transformers": "^2.17.2",
     "axios": "^1.11.0",
     "cookies-next": "^6.1.0",
     "express": "^5.1.0",

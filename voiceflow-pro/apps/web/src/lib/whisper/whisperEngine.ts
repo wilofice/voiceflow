@@ -1,10 +1,16 @@
 /**
  * Whisper Web Engine
- * Main interface for running Whisper.cpp in the browser via WebAssembly
+ * Main interface for running Whisper using @xenova/transformers.js
  */
 
+import { env, pipeline, Pipeline } from '@xenova/transformers';
 import { WhisperModelManager, WhisperModel } from './modelManager';
 import { AudioProcessor } from './audioProcessor';
+
+// Configure transformers.js for browser environment
+env.allowRemoteModels = true;
+env.allowLocalModels = false;
+env.backends.onnx.wasm.wasmPaths = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.14.0/dist/';
 
 export interface WhisperConfig {
   model: WhisperModel;
@@ -32,34 +38,27 @@ export interface TranscriptionResult {
   processingTime?: number;
 }
 
-export interface WhisperModule {
-  init: (modelPath: string) => boolean;
-  free: () => void;
-  full_default: (audioData: any, language: string, translate: boolean) => number;
-  [key: string]: any;
-}
-
-declare global {
-  interface Window {
-    Module?: any;
-    createWhisperModule?: (config?: any) => Promise<any>;
-    whisper_factory?: () => Promise<any>;
-  }
-}
+// Map our model names to transformers.js model IDs
+const MODEL_MAPPING: Record<string, string> = {
+  'tiny': 'Xenova/whisper-tiny',
+  'tiny.en': 'Xenova/whisper-tiny.en',
+  'base': 'Xenova/whisper-base',
+  'base.en': 'Xenova/whisper-base.en',
+  'small': 'Xenova/whisper-small',
+  'small.en': 'Xenova/whisper-small.en',
+  'medium': 'Xenova/whisper-medium',
+  'medium.en': 'Xenova/whisper-medium.en',
+  'large-v3': 'Xenova/whisper-large-v3',
+};
 
 export class WhisperWebEngine {
-  private module: WhisperModule | null = null;
-  private context: number | null = null;
-  private instance: number | null = null; // Whisper instance ID
-  private modelManager: WhisperModelManager;
+  private transcriber: Pipeline | null = null;
   private currentModel: WhisperModel | null = null;
-  private worker: Worker | null = null;
   private initialized = false;
   private audioContext: AudioContext | null = null;
   private audioProcessor: AudioProcessor;
 
   constructor() {
-    this.modelManager = WhisperModelManager.getInstance();
     this.audioProcessor = new AudioProcessor();
   }
 
@@ -73,21 +72,16 @@ export class WhisperWebEngine {
     }
 
     try {
-      // Clean up previous instance if exists
-      if (this.initialized) {
-        await this.destroy();
-      }
-
       console.log(`Initializing Whisper engine with model: ${config.model}`);
 
-      // Load the WASM module
-      await this.loadWASMModule();
+      // Get the transformers.js model ID
+      const modelId = MODEL_MAPPING[config.model];
+      if (!modelId) {
+        throw new Error(`Unsupported model: ${config.model}`);
+      }
 
-      // Load the model
-      const modelBuffer = await this.loadModel(config.model);
-
-      // Initialize Whisper context
-      await this.initializeContext(modelBuffer, config);
+      // Create the automatic speech recognition pipeline
+      this.transcriber = await pipeline('automatic-speech-recognition', modelId);
 
       this.currentModel = config.model;
       this.initialized = true;
@@ -100,210 +94,13 @@ export class WhisperWebEngine {
   }
 
   /**
-   * Load the WASM module
-   */
-  private async loadWASMModule(): Promise<void> {
-    try {
-      console.log('Loading Whisper WASM module...');
-      
-      // Check SharedArrayBuffer availability
-      const hasSharedArrayBuffer = typeof SharedArrayBuffer !== 'undefined';
-      console.log(`SharedArrayBuffer support: ${hasSharedArrayBuffer ? '✓' : '✗'}`);
-      
-      // Provide a polyfill or alternative for missing SharedArrayBuffer
-      if (!hasSharedArrayBuffer) {
-        console.log('Providing SharedArrayBuffer polyfill...');
-        // Create a simple polyfill that falls back to regular ArrayBuffer
-        (window as any).SharedArrayBuffer = ArrayBuffer;
-      }
-      
-      // Load the original whisper WASM module (we'll test with correct signature first)
-      await this.loadScript('/wasm/whisper.js');
-      
-      // Wait for module to be available
-      if (!window.Module) {
-        throw new Error('Module global not found after loading whisper.js');
-      }
-      
-      const module = window.Module;
-      console.log('Module loaded, initializing...');
-      
-      // Wait for runtime initialization with proper error handling
-      await new Promise<void>((resolve, reject) => {
-        const timeout = setTimeout(() => {
-          reject(new Error('WASM module initialization timed out after 30 seconds'));
-        }, 30000);
-        
-        try {
-          if (module.calledRun) {
-            clearTimeout(timeout);
-            resolve();
-            return;
-          }
-          
-          const originalCallback = module.onRuntimeInitialized;
-          module.onRuntimeInitialized = () => {
-            clearTimeout(timeout);
-            try {
-              if (originalCallback) originalCallback();
-              console.log('✓ WASM runtime initialized');
-              resolve();
-            } catch (err) {
-              reject(err);
-            }
-          };
-          
-          // Fallback for modules that might not have onRuntimeInitialized
-          if (typeof module.onRuntimeInitialized === 'undefined') {
-            clearTimeout(timeout);
-            resolve();
-          }
-        } catch (err) {
-          clearTimeout(timeout);
-          reject(err);
-        }
-      });
-      
-      this.module = module;
-      console.log('✅ Whisper WASM module loaded and ready');
-      
-      // Log available methods for debugging
-      const methods = Object.keys(this.module).filter(k => typeof this.module[k] === 'function');
-      console.log(`Available methods (${methods.length}):`, methods.slice(0, 10).join(', ') + (methods.length > 10 ? '...' : ''));
-        
-    } catch (error) {
-      console.error('❌ Failed to load Whisper module:', error);
-      
-      // Clean up polyfill if we added it
-      if (typeof SharedArrayBuffer === 'undefined' && (window as any).SharedArrayBuffer === ArrayBuffer) {
-        delete (window as any).SharedArrayBuffer;
-      }
-      
-      throw new Error(`Whisper initialization failed: ${error.message}`);
-    }
-  }
-
-  /**
-   * Load a script dynamically
-   */
-  private loadScript(src: string): Promise<void> {
-    return new Promise((resolve, reject) => {
-      // Check if script already exists
-      const existingScript = document.querySelector(`script[src="${src}"]`);
-      if (existingScript) {
-        console.log(`Script already loaded: ${src}, removing it first...`);
-        existingScript.remove();
-      }
-      
-      const script = document.createElement('script');
-      script.src = src;
-      script.async = true;
-      script.onload = () => {
-        console.log(`Script loaded successfully: ${src}`);
-        resolve();
-      };
-      script.onerror = () => reject(new Error(`Failed to load script: ${src}`));
-      document.head.appendChild(script);
-    });
-  }
-
-  /**
-   * Load a model from cache or download it
-   */
-  private async loadModel(modelType: WhisperModel): Promise<ArrayBuffer> {
-    // Try to get from cache first
-    let modelBuffer = await this.modelManager.getCachedModel(modelType);
-    
-    if (!modelBuffer) {
-      console.log(`Model ${modelType} not cached, downloading...`);
-      modelBuffer = await this.modelManager.downloadModel(modelType);
-    }
-
-    return modelBuffer;
-  }
-
-  /**
-   * Initialize Whisper context with the model
-   */
-  private async initializeContext(modelBuffer: ArrayBuffer, config: WhisperConfig): Promise<void> {
-    if (!this.module) {
-      throw new Error('WASM module not loaded');
-    }
-
-    try {
-      // Write the model to the WASM file system using the correct API
-      const modelData = new Uint8Array(modelBuffer);
-      const modelPath = 'whisper.bin'; // Use simple filename as in the test
-      
-      console.log(`Writing model to WASM FS: ${modelPath} (${modelData.length} bytes)`);
-      
-      // Use FS_createDataFile like in the test file
-      if (this.module.FS_createDataFile) {
-        this.module.FS_createDataFile('/', modelPath, modelData, true, true);
-      } else {
-        throw new Error('WASM module FS_createDataFile not available');
-      }
-
-      // Initialize whisper with the model file
-      console.log('Initializing Whisper context...');
-      
-      // Temporarily capture output during initialization
-      const initOutput: string[] = [];
-      const originalPrint = this.module.print;
-      const originalPrintErr = this.module.printErr;
-      
-      this.module.print = (text: string) => {
-        initOutput.push(text);
-        console.log('[Whisper Init]:', text);
-      };
-      
-      this.module.printErr = (text: string) => {
-        initOutput.push(text);
-        console.log('[Whisper Init Error]:', text);
-      };
-      
-      let instance;
-      try {
-        instance = this.module.init(modelPath);
-      } finally {
-        // Restore original print functions
-        this.module.print = originalPrint;
-        this.module.printErr = originalPrintErr;
-      }
-      
-      // The model loading output indicates success even if instance is 0 or false
-      // Check if initialization succeeded based on the output
-      const modelLoaded = initOutput.some(line => 
-        line.includes('model size') || 
-        line.includes('whisper_init_state')
-      );
-      
-      if (!instance && !modelLoaded) {
-        console.error('Initialization failed. Output:', initOutput);
-        throw new Error('Failed to initialize Whisper context');
-      }
-      
-      // Store the instance (it might be 1, which is a valid instance ID)
-      this.instance = instance || 1; // Default to 1 if falsy but model loaded
-      console.log(`Whisper instance initialized: ${this.instance}`);
-
-      this.context = 1; // Set as initialized
-      console.log('Whisper context initialized successfully');
-    } catch (error) {
-      console.error('Error initializing Whisper context:', error);
-      console.log('Available module methods:', Object.keys(this.module).filter(k => typeof this.module[k] === 'function'));
-      throw error;
-    }
-  }
-
-  /**
-   * Transcribe audio from Float32Array
+   * Transcribe audio data
    */
   async transcribeAudio(
     audioData: Float32Array,
     options: Partial<WhisperConfig> = {}
   ): Promise<TranscriptionResult> {
-    if (!this.initialized || !this.module || !this.context) {
+    if (!this.initialized || !this.transcriber) {
       throw new Error('Whisper engine not initialized');
     }
 
@@ -322,196 +119,41 @@ export class WhisperWebEngine {
       
       console.log(`Processed audio: ${processedAudio.length} samples`);
 
-      // Check available methods and log them for debugging
-      const availableMethods = Object.keys(this.module).filter(k => typeof this.module[k] === 'function');
-      console.log('Available WASM methods:', availableMethods.slice(0, 20).join(', '));
-      
-      if (typeof this.module.full_default !== 'function') {
-        console.error('full_default function not found in WASM module');
-        console.error('Available methods:', availableMethods);
-        throw new Error('full_default function not found in WASM module');
+      // Configure transcription options
+      const transcribeOptions: any = {
+        chunk_length_s: 30, // 30-second chunks
+        stride_length_s: 5, // 5-second stride for overlapping
+        return_timestamps: options.wordTimestamps || false,
+        force_full_sequence: false,
+      };
+
+      // Set language if specified
+      if (options.language) {
+        transcribeOptions.language = options.language;
       }
 
-      // Run whisper transcription
-      // Ensure language is a clean ASCII string
-      //const language = String(options.language || 'fr').toLowerCase().trim();
-      const language = 'fr';
-      const shouldTranslate = Boolean(options.task === 'translate');
-      
-      console.log(`Running Whisper transcription (language: ${language}, translate: ${shouldTranslate})`);
-      console.log(`Audio data type: ${processedAudio.constructor.name}, length: ${processedAudio.length}`);
-      console.log(`Language type: ${typeof language}, value: "${language}"`);
-      console.log(`Translate type: ${typeof shouldTranslate}, value: ${shouldTranslate}`);
-      
-      // Ensure parameters are the correct types
-      if (typeof language !== 'string') {
-        throw new Error(`Language must be a string, got ${typeof language}`);
-      }
-      
-      // Call the WASM function with proper parameter handling
-      let result: number;
-      
-      try {
-        // Check if we have a valid instance
-        if (!this.instance) {
-          throw new Error('No Whisper instance available. Call initialize() first.');
-        }
-        
-        // Prepare parameters as in the example
-        const audioBuffer = new Float32Array(processedAudio);
-        const nthreads = options.threads || navigator.hardwareConcurrency || 4;
-        
-        console.log(`Calling full_default with 5 parameters:`);
-        console.log(`- Instance: ${this.instance}`);
-        console.log(`- Audio: ${audioBuffer.length} samples (${audioBuffer.constructor.name})`);
-        console.log(`- Language: "${language}"`);
-        console.log(`- Threads: ${nthreads}`);
-        console.log(`- Translate: ${shouldTranslate}`);
-        
-        // Set up output capture like in the example
-        const capturedOutput: string[] = [];
-        const originalPrint = this.module.print;
-        const originalPrintErr = this.module.printErr;
-        
-        // Capture print output to extract transcription
-        this.module.print = (text: string) => {
-          capturedOutput.push(text);
-          console.log('[Whisper]:', text);
-          if (originalPrint) originalPrint(text);
-        };
-        
-        this.module.printErr = (text: string) => {
-          capturedOutput.push(text);  
-          console.error('[Whisper]:', text);
-          if (originalPrintErr) originalPrintErr(text);
-        };
-        
-        // Call in setTimeout to prevent blocking like the example
-        // Processing timeout should be generous for long audio files
-        const audioDurationSeconds = audioBuffer.length / 16000;
-        const processingTimeoutMs = Math.max(300000, audioDurationSeconds * 10000); // At least 5 minutes or 10x audio duration
-        
-        console.log(`Audio duration: ${audioDurationSeconds.toFixed(1)}s, processing timeout: ${(processingTimeoutMs/1000).toFixed(0)}s`);
-        
-        result = await new Promise<number>((resolve, reject) => {
-          let completed = false;
-          
-          // Set up timeout for processing
-          const processingTimeout = setTimeout(() => {
-            if (!completed) {
-              completed = true;
-              // Restore original print functions
-              this.module.print = originalPrint;
-              this.module.printErr = originalPrintErr;
-              reject(new Error(`Whisper processing timed out after ${(processingTimeoutMs/1000).toFixed(0)} seconds`));
-            }
-          }, processingTimeoutMs);
-          
-          // Progress indicator - log every 30 seconds
-          const progressInterval = setInterval(() => {
-            if (!completed) {
-              console.log('🎵 Whisper still processing audio... (this may take several minutes for long files)');
-            } else {
-              clearInterval(progressInterval);
-            }
-          }, 30000);
-          
-          setTimeout(() => {
-            try {
-              console.log(`Starting whisper processing (max ${(processingTimeoutMs/1000).toFixed(0)}s)...`);
-              
-              // Call exactly as in the example: Module.full_default(instance, audio, language, nthreads, translate)
-              const ret = this.module.full_default(this.instance!, audioBuffer, language, nthreads, shouldTranslate);
-              
-              if (!completed) {
-                completed = true;
-                clearTimeout(processingTimeout);
-                clearInterval(progressInterval);
-                console.log(`full_default returned: ${ret}`);
-                resolve(ret);
-              }
-            } catch (error) {
-              if (!completed) {
-                completed = true;
-                clearTimeout(processingTimeout);
-                clearInterval(progressInterval);
-                reject(error);
-              }
-            } finally {
-              // Restore original print functions
-              this.module.print = originalPrint;
-              this.module.printErr = originalPrintErr;
-            }
-          }, 100);
-        });
-        
-        // Store captured output for result extraction
-        (this as any).lastCapturedOutput = capturedOutput;
-        
-      } catch (error: any) {
-        console.error('WASM function call failed:', error);
-        
-        // If it's a binding error, try alternative approaches
-        if (error.name === 'BindingError') {
-          console.log('Trying alternative parameter types...');
-          
-          try {
-            // Try with explicit boolean conversion
-            const translateBool = Boolean(shouldTranslate);
-            console.log(`Trying with Boolean(${shouldTranslate}) = ${translateBool}`);
-            result = this.module.full_default(processedAudio, language, translateBool);
-          } catch (secondError: any) {
-            console.error('Second attempt failed:', secondError);
-            
-            // Try with numeric boolean as last resort
-            try {
-              const translateNum = shouldTranslate ? 1 : 0;
-              console.log(`Trying with numeric boolean: ${translateNum}`);
-              result = this.module.full_default(processedAudio, language, translateNum);
-            } catch (thirdError: any) {
-              console.error('All attempts failed');
-              console.error('Original error:', error);
-              console.error('Second error:', secondError);
-              console.error('Third error:', thirdError);
-              
-              // Provide detailed debugging information
-              console.error('Debug info:');
-              console.error('- Audio data:', processedAudio);
-              console.error('- Language:', language, typeof language);
-              console.error('- Translate:', shouldTranslate, typeof shouldTranslate);
-              console.error('- Module methods:', Object.keys(this.module).filter(k => k.includes('full')));
-              
-              throw new Error(`Unable to call Whisper full_default function. ${error.message}`);
-            }
-          }
-        } else {
-          throw error;
-        }
+      // Set task (transcribe or translate)
+      if (options.task) {
+        transcribeOptions.task = options.task;
       }
 
-      if (result !== 0) {
-        throw new Error(`Whisper processing failed with code: ${result}`);
-      }
-      
-      console.log('Whisper transcription completed successfully');
-
-      // Extract results from the module
-      const transcription = this.extractResults();
+      // Run transcription
+      const result = await this.transcriber(processedAudio, transcribeOptions);
       
       const processingTime = performance.now() - startTime;
-      transcription.processingTime = processingTime;
-      
-      console.log(`Transcription completed in ${processingTime}ms`);
+      console.log(`Transcription completed in ${processingTime.toFixed(2)}ms`);
 
-      return transcription;
+      // Parse the result
+      return this.parseTranscriptionResult(result, audioData.length / 16000, processingTime);
+
     } catch (error) {
-      console.error('Transcription failed:', error);
-      throw error;
+      console.error('Error during transcription:', error);
+      throw new Error(`Transcription failed: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
   /**
-   * Transcribe audio from a File
+   * Transcribe audio file
    */
   async transcribeFile(
     file: File,
@@ -523,7 +165,7 @@ export class WhisperWebEngine {
   }
 
   /**
-   * Transcribe audio in real-time from a MediaStream
+   * Start real-time transcription from MediaStream
    */
   async startRealtimeTranscription(
     stream: MediaStream,
@@ -531,44 +173,38 @@ export class WhisperWebEngine {
     options: Partial<WhisperConfig> = {}
   ): Promise<() => void> {
     if (!this.audioContext) {
-      // Use default sample rate for audio context, we'll resample later
       this.audioContext = new AudioContext();
     }
 
     const source = this.audioContext.createMediaStreamSource(stream);
-    const processor = this.audioContext.createScriptProcessor(16384, 1, 1);
+    const processor = this.audioContext.createScriptProcessor(4096, 1, 1);
     
     let audioBuffer: Float32Array[] = [];
-    let isProcessing = false;
+    const bufferDurationMs = 3000; // 3 seconds
+    const sampleRate = this.audioContext.sampleRate;
+    const maxBufferLength = (bufferDurationMs / 1000) * sampleRate;
 
     processor.onaudioprocess = async (event) => {
-      if (isProcessing) return;
-
       const inputData = event.inputBuffer.getChannelData(0);
       audioBuffer.push(new Float32Array(inputData));
 
-      // Process every 2 seconds of audio
-      if (audioBuffer.length * 16384 >= 16000 * 2) {
-        isProcessing = true;
+      // Calculate current buffer length
+      const currentLength = audioBuffer.reduce((sum, chunk) => sum + chunk.length, 0);
 
-        // Combine buffers
-        const totalLength = audioBuffer.reduce((acc, buf) => acc + buf.length, 0);
-        const combinedBuffer = new Float32Array(totalLength);
+      if (currentLength >= maxBufferLength) {
+        // Combine buffer chunks
+        const combinedBuffer = new Float32Array(currentLength);
         let offset = 0;
-        
-        for (const buf of audioBuffer) {
-          combinedBuffer.set(buf, offset);
-          offset += buf.length;
+        for (const chunk of audioBuffer) {
+          combinedBuffer.set(chunk, offset);
+          offset += chunk.length;
         }
 
-        // Clear buffer
-        audioBuffer = [];
-
         try {
-          // Transcribe the chunk
+          // Transcribe the buffer
           const result = await this.transcribeAudio(combinedBuffer, options);
           
-          // Send segments
+          // Call the callback with each segment
           for (const segment of result.segments) {
             onSegment(segment);
           }
@@ -576,208 +212,106 @@ export class WhisperWebEngine {
           console.error('Real-time transcription error:', error);
         }
 
-        isProcessing = false;
+        // Clear buffer
+        audioBuffer = [];
       }
     };
 
     source.connect(processor);
     processor.connect(this.audioContext.destination);
 
-    // Return stop function
+    // Return cleanup function
     return () => {
-      source.disconnect();
       processor.disconnect();
+      source.disconnect();
     };
   }
 
   /**
-   * Preprocess audio to ensure it's mono 16kHz
+   * Convert file to audio data
+   */
+  private async fileToAudioData(file: File): Promise<Float32Array> {
+    try {
+      return await this.audioProcessor.processAudioFile(file);
+    } catch (error) {
+      console.error('Error processing audio file:', error);
+      throw new Error(`Failed to process audio file: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+
+  /**
+   * Preprocess audio to ensure it's mono and at 16kHz
    */
   private async preprocessAudio(audioData: Float32Array): Promise<Float32Array> {
-    // For now, assume the audio is already at 16kHz mono
-    // In a real implementation, we would resample if needed
+    // For transformers.js, we don't need to resample to 16kHz
+    // The pipeline handles resampling internally
     return audioData;
   }
 
   /**
-   * Convert File to Float32Array audio data
+   * Parse transcription result from transformers.js
    */
-  private async fileToAudioData(file: File): Promise<Float32Array> {
-    try {
-      // Use the dedicated audio processor
-      const audioData = await this.audioProcessor.processAudioFile(file);
-      
-      // Validate the audio data
-      if (!this.audioProcessor.validateAudioData(audioData)) {
-        throw new Error('Invalid audio data after processing');
-      }
-      
-      console.log(`Audio processing completed: ${audioData.length} samples (${audioData.length / 16000}s at 16kHz)`);
-      return audioData;
-      
-    } catch (error) {
-      console.error('Failed to process audio file:', error);
-      throw new Error(`Unable to decode audio data: ${error.message}`);
-    }
-  }
+  private parseTranscriptionResult(
+    result: any,
+    duration: number,
+    processingTime: number
+  ): TranscriptionResult {
+    console.log('Raw transcription result:', result);
 
-  /**
-   * Create parameters for Whisper
-   */
-  private createParams(options: Partial<WhisperConfig>): any {
-    // This is a simplified version
-    // In the real implementation, we would properly set all parameters
+    let text = '';
+    let segments: TranscriptionSegment[] = [];
+
+    if (typeof result === 'string') {
+      // Simple text result
+      text = result;
+      segments = [{
+        text: result,
+        start: 0,
+        end: duration
+      }];
+    } else if (result.text) {
+      // Result with text and possibly chunks
+      text = result.text;
+      
+      if (result.chunks && Array.isArray(result.chunks)) {
+        segments = result.chunks.map((chunk: any) => ({
+          text: chunk.text,
+          start: chunk.timestamp?.[0] || 0,
+          end: chunk.timestamp?.[1] || duration,
+          confidence: chunk.confidence
+        }));
+      } else {
+        // Single segment
+        segments = [{
+          text: result.text,
+          start: 0,
+          end: duration
+        }];
+      }
+    } else {
+      throw new Error('Unexpected transcription result format');
+    }
+
     return {
-      n_threads: options.threads || navigator.hardwareConcurrency || 4,
-      translate: options.task === 'translate',
-      language: options.language || 'en',
-      print_progress: false,
-      print_timestamps: true,
-      token_timestamps: options.wordTimestamps || false,
-      temperature: options.temperature || 0.0,
-      max_tokens: options.maxTokens || 0,
+      text: text.trim(),
+      segments,
+      duration,
+      processingTime
     };
   }
 
   /**
-   * Extract transcription results from Whisper
-   */
-  private extractResults(): TranscriptionResult {
-    if (!this.module) {
-      throw new Error('Module not initialized');
-    }
-    
-    try {
-      // Extract results from captured output 
-      const capturedOutput = (this as any).lastCapturedOutput as string[] || [];
-      
-      console.log(`Extracting results from ${capturedOutput.length} output lines`);
-      console.log('Full captured output:', capturedOutput); // Log ALL lines for debugging
-      
-      const segments: TranscriptionSegment[] = [];
-      let fullText = '';
-      
-      // Parse the captured output to extract transcription segments
-      let inTranscription = false;
-      
-      for (const line of capturedOutput) {
-        // Check for transcription markers
-        if (line.includes('==== TRANSCRIPTION START ====')) {
-          inTranscription = true;
-          continue;
-        }
-        if (line.includes('==== TRANSCRIPTION END ====')) {
-          inTranscription = false;
-          continue;
-        }
-        
-        // Only process lines within transcription markers
-        if (inTranscription) {
-          // Look for timestamp patterns like [00:00.000 --> 00:05.000]
-          const timestampMatch = line.match(/\[(\d{2}):(\d{2})\.(\d{3})\s*-->\s*(\d{2}):(\d{2})\.(\d{3})\]\s*(.+)/);
-          
-          if (timestampMatch) {
-            const [, startMin, startSec, startMs, endMin, endSec, endMs, text] = timestampMatch;
-            
-            const start = parseInt(startMin) * 60 + parseInt(startSec) + parseInt(startMs) / 1000;
-            const end = parseInt(endMin) * 60 + parseInt(endSec) + parseInt(endMs) / 1000;
-            
-            if (text && text.trim()) {
-              const cleanText = text.trim();
-              segments.push({
-                text: cleanText,
-                start,
-                end,
-                confidence: 0.95
-              });
-              fullText += cleanText + ' ';
-            }
-          }
-        }
-      }
-      
-      // If we found text without proper segments, create a single segment
-      if (!segments.length && fullText.trim()) {
-        segments.push({
-          text: fullText.trim(),
-          start: 0,
-          end: 0,
-          confidence: 0.95
-        });
-      }
-      
-      // Fallback if still no text
-      if (!fullText.trim()) {
-        console.warn('No transcription text extracted from Whisper output');
-        console.log('Raw captured output for debugging:', capturedOutput);
-        fullText = '[No speech detected]';
-        segments.push({
-          text: fullText,
-          start: 0,
-          end: 0,
-          confidence: 0
-        });
-      }
-      
-      return {
-        text: fullText.trim(),
-        segments,
-        language: this.module.get_language ? this.module.get_language() : 'en',
-        duration: segments.length > 0 ? segments[segments.length - 1].end : 0,
-      };
-      
-    } catch (error) {
-      console.error('Failed to extract results:', error);
-      
-      // Return a fallback result
-      return {
-        text: '[Transcription extraction failed]',
-        segments: [{
-          text: '[Transcription extraction failed]',
-          start: 0,
-          end: 0,
-          confidence: 0
-        }],
-        language: 'en',
-        duration: 0,
-      };
-    }
-  }
-
-  /**
-   * Get the current model info
-   */
-  getCurrentModel(): WhisperModel | null {
-    return this.currentModel;
-  }
-
-  /**
-   * Check if engine is initialized
-   */
-  isInitialized(): boolean {
-    return this.initialized;
-  }
-
-  /**
-   * Clean up and free resources
+   * Destroy the engine and clean up resources
    */
   async destroy(): Promise<void> {
-    if (this.context && this.module) {
-      this.module.free();
-      this.context = null;
-    }
-
-    if (this.worker) {
-      this.worker.terminate();
-      this.worker = null;
-    }
-
+    console.log('Destroying Whisper engine...');
+    
     if (this.audioContext) {
       await this.audioContext.close();
       this.audioContext = null;
     }
 
-    this.module = null;
+    this.transcriber = null;
     this.initialized = false;
     this.currentModel = null;
 
@@ -785,53 +319,23 @@ export class WhisperWebEngine {
   }
 
   /**
-   * Get performance stats
+   * Check if the engine is initialized
    */
-  async getPerformanceStats(): Promise<{
-    modelSize: number;
-    memoryUsage: number;
-    averageSpeed: number;
-  }> {
-    const modelInfo = await this.modelManager.getAvailableModels();
-    const currentModelInfo = modelInfo.find(m => m.id === this.currentModel);
-
-    return {
-      modelSize: currentModelInfo?.size || 0,
-      memoryUsage: (performance as any).memory?.usedJSHeapSize || 0,
-      averageSpeed: 0, // Would need to track this over time
-    };
+  isInitialized(): boolean {
+    return this.initialized;
   }
 
   /**
-   * Clean up resources and destroy the engine
+   * Get the current model
    */
-  async destroy(): Promise<void> {
-    try {
-      // Clean up WASM module
-      if (this.module && typeof this.module.free === 'function') {
-        this.module.free();
-      }
-      
-      // Close audio context
-      if (this.audioContext) {
-        await this.audioContext.close();
-        this.audioContext = null;
-      }
+  getCurrentModel(): WhisperModel | null {
+    return this.currentModel;
+  }
 
-      // Clean up audio processor
-      if (this.audioProcessor) {
-        this.audioProcessor.dispose();
-      }
-
-      // Reset state
-      this.module = null;
-      this.context = null;
-      this.initialized = false;
-      this.currentModel = null;
-      
-      console.log('Whisper engine destroyed successfully');
-    } catch (error) {
-      console.error('Error destroying Whisper engine:', error);
-    }
+  /**
+   * Get available models
+   */
+  getAvailableModels(): WhisperModel[] {
+    return Object.keys(MODEL_MAPPING) as WhisperModel[];
   }
 }
