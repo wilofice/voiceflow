@@ -117,7 +117,7 @@ export class WhisperWebEngine {
         (window as any).SharedArrayBuffer = ArrayBuffer;
       }
       
-      // Load the whisper WASM module
+      // Load the original whisper WASM module (we'll test with correct signature first)
       await this.loadScript('/wasm/whisper.js');
       
       // Wait for module to be available
@@ -188,9 +188,20 @@ export class WhisperWebEngine {
    */
   private loadScript(src: string): Promise<void> {
     return new Promise((resolve, reject) => {
+      // Check if script already exists
+      const existingScript = document.querySelector(`script[src="${src}"]`);
+      if (existingScript) {
+        console.log(`Script already loaded: ${src}, removing it first...`);
+        existingScript.remove();
+      }
+      
       const script = document.createElement('script');
       script.src = src;
-      script.onload = () => resolve();
+      script.async = true;
+      script.onload = () => {
+        console.log(`Script loaded successfully: ${src}`);
+        resolve();
+      };
       script.onerror = () => reject(new Error(`Failed to load script: ${src}`));
       document.head.appendChild(script);
     });
@@ -376,15 +387,56 @@ export class WhisperWebEngine {
         };
         
         // Call in setTimeout to prevent blocking like the example
+        // Processing timeout should be generous for long audio files
+        const audioDurationSeconds = audioBuffer.length / 16000;
+        const processingTimeoutMs = Math.max(300000, audioDurationSeconds * 10000); // At least 5 minutes or 10x audio duration
+        
+        console.log(`Audio duration: ${audioDurationSeconds.toFixed(1)}s, processing timeout: ${(processingTimeoutMs/1000).toFixed(0)}s`);
+        
         result = await new Promise<number>((resolve, reject) => {
+          let completed = false;
+          
+          // Set up timeout for processing
+          const processingTimeout = setTimeout(() => {
+            if (!completed) {
+              completed = true;
+              // Restore original print functions
+              this.module.print = originalPrint;
+              this.module.printErr = originalPrintErr;
+              reject(new Error(`Whisper processing timed out after ${(processingTimeoutMs/1000).toFixed(0)} seconds`));
+            }
+          }, processingTimeoutMs);
+          
+          // Progress indicator - log every 30 seconds
+          const progressInterval = setInterval(() => {
+            if (!completed) {
+              console.log('🎵 Whisper still processing audio... (this may take several minutes for long files)');
+            } else {
+              clearInterval(progressInterval);
+            }
+          }, 30000);
+          
           setTimeout(() => {
             try {
+              console.log(`Starting whisper processing (max ${(processingTimeoutMs/1000).toFixed(0)}s)...`);
+              
               // Call exactly as in the example: Module.full_default(instance, audio, language, nthreads, translate)
               const ret = this.module.full_default(this.instance!, audioBuffer, language, nthreads, shouldTranslate);
-              console.log(`full_default returned: ${ret}`);
-              resolve(ret);
+              
+              if (!completed) {
+                completed = true;
+                clearTimeout(processingTimeout);
+                clearInterval(progressInterval);
+                console.log(`full_default returned: ${ret}`);
+                resolve(ret);
+              }
             } catch (error) {
-              reject(error);
+              if (!completed) {
+                completed = true;
+                clearTimeout(processingTimeout);
+                clearInterval(progressInterval);
+                reject(error);
+              }
             } finally {
               // Restore original print functions
               this.module.print = originalPrint;
