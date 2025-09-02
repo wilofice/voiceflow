@@ -50,6 +50,7 @@ declare global {
 export class WhisperWebEngine {
   private module: WhisperModule | null = null;
   private context: number | null = null;
+  private instance: number | null = null; // Whisper instance ID
   private modelManager: WhisperModelManager;
   private currentModel: WhisperModel | null = null;
   private worker: Worker | null = null;
@@ -234,11 +235,46 @@ export class WhisperWebEngine {
 
       // Initialize whisper with the model file
       console.log('Initializing Whisper context...');
-      const success = this.module.init(modelPath);
       
-      if (!success) {
+      // Temporarily capture output during initialization
+      const initOutput: string[] = [];
+      const originalPrint = this.module.print;
+      const originalPrintErr = this.module.printErr;
+      
+      this.module.print = (text: string) => {
+        initOutput.push(text);
+        console.log('[Whisper Init]:', text);
+      };
+      
+      this.module.printErr = (text: string) => {
+        initOutput.push(text);
+        console.log('[Whisper Init Error]:', text);
+      };
+      
+      let instance;
+      try {
+        instance = this.module.init(modelPath);
+      } finally {
+        // Restore original print functions
+        this.module.print = originalPrint;
+        this.module.printErr = originalPrintErr;
+      }
+      
+      // The model loading output indicates success even if instance is 0 or false
+      // Check if initialization succeeded based on the output
+      const modelLoaded = initOutput.some(line => 
+        line.includes('model size') || 
+        line.includes('whisper_init_state')
+      );
+      
+      if (!instance && !modelLoaded) {
+        console.error('Initialization failed. Output:', initOutput);
         throw new Error('Failed to initialize Whisper context');
       }
+      
+      // Store the instance (it might be 1, which is a valid instance ID)
+      this.instance = instance || 1; // Default to 1 if falsy but model loaded
+      console.log(`Whisper instance initialized: ${this.instance}`);
 
       this.context = 1; // Set as initialized
       console.log('Whisper context initialized successfully');
@@ -275,20 +311,131 @@ export class WhisperWebEngine {
       
       console.log(`Processed audio: ${processedAudio.length} samples`);
 
-      // Check if full_default function exists
+      // Check available methods and log them for debugging
+      const availableMethods = Object.keys(this.module).filter(k => typeof this.module[k] === 'function');
+      console.log('Available WASM methods:', availableMethods.slice(0, 20).join(', '));
+      
       if (typeof this.module.full_default !== 'function') {
-        console.error('Available module methods:', Object.keys(this.module).filter(k => typeof this.module[k] === 'function'));
+        console.error('full_default function not found in WASM module');
+        console.error('Available methods:', availableMethods);
         throw new Error('full_default function not found in WASM module');
       }
 
       // Run whisper transcription
-      const language = options.language || 'en';
-      const translate = options.task === 'translate' || false;
+      // Ensure language is a clean ASCII string
+      //const language = String(options.language || 'fr').toLowerCase().trim();
+      const language = 'fr';
+      const shouldTranslate = Boolean(options.task === 'translate');
       
-      console.log(`Running Whisper transcription (language: ${language}, translate: ${translate})`);
+      console.log(`Running Whisper transcription (language: ${language}, translate: ${shouldTranslate})`);
+      console.log(`Audio data type: ${processedAudio.constructor.name}, length: ${processedAudio.length}`);
+      console.log(`Language type: ${typeof language}, value: "${language}"`);
+      console.log(`Translate type: ${typeof shouldTranslate}, value: ${shouldTranslate}`);
       
-      // Call the WASM function with the correct parameters
-      const result = this.module.full_default(processedAudio, language, translate);
+      // Ensure parameters are the correct types
+      if (typeof language !== 'string') {
+        throw new Error(`Language must be a string, got ${typeof language}`);
+      }
+      
+      // Call the WASM function with proper parameter handling
+      let result: number;
+      
+      try {
+        // Check if we have a valid instance
+        if (!this.instance) {
+          throw new Error('No Whisper instance available. Call initialize() first.');
+        }
+        
+        // Prepare parameters as in the example
+        const audioBuffer = new Float32Array(processedAudio);
+        const nthreads = options.threads || navigator.hardwareConcurrency || 4;
+        
+        console.log(`Calling full_default with 5 parameters:`);
+        console.log(`- Instance: ${this.instance}`);
+        console.log(`- Audio: ${audioBuffer.length} samples (${audioBuffer.constructor.name})`);
+        console.log(`- Language: "${language}"`);
+        console.log(`- Threads: ${nthreads}`);
+        console.log(`- Translate: ${shouldTranslate}`);
+        
+        // Set up output capture like in the example
+        const capturedOutput: string[] = [];
+        const originalPrint = this.module.print;
+        const originalPrintErr = this.module.printErr;
+        
+        // Capture print output to extract transcription
+        this.module.print = (text: string) => {
+          capturedOutput.push(text);
+          console.log('[Whisper]:', text);
+          if (originalPrint) originalPrint(text);
+        };
+        
+        this.module.printErr = (text: string) => {
+          capturedOutput.push(text);  
+          console.error('[Whisper]:', text);
+          if (originalPrintErr) originalPrintErr(text);
+        };
+        
+        // Call in setTimeout to prevent blocking like the example
+        result = await new Promise<number>((resolve, reject) => {
+          setTimeout(() => {
+            try {
+              // Call exactly as in the example: Module.full_default(instance, audio, language, nthreads, translate)
+              const ret = this.module.full_default(this.instance!, audioBuffer, language, nthreads, shouldTranslate);
+              console.log(`full_default returned: ${ret}`);
+              resolve(ret);
+            } catch (error) {
+              reject(error);
+            } finally {
+              // Restore original print functions
+              this.module.print = originalPrint;
+              this.module.printErr = originalPrintErr;
+            }
+          }, 100);
+        });
+        
+        // Store captured output for result extraction
+        (this as any).lastCapturedOutput = capturedOutput;
+        
+      } catch (error: any) {
+        console.error('WASM function call failed:', error);
+        
+        // If it's a binding error, try alternative approaches
+        if (error.name === 'BindingError') {
+          console.log('Trying alternative parameter types...');
+          
+          try {
+            // Try with explicit boolean conversion
+            const translateBool = Boolean(shouldTranslate);
+            console.log(`Trying with Boolean(${shouldTranslate}) = ${translateBool}`);
+            result = this.module.full_default(processedAudio, language, translateBool);
+          } catch (secondError: any) {
+            console.error('Second attempt failed:', secondError);
+            
+            // Try with numeric boolean as last resort
+            try {
+              const translateNum = shouldTranslate ? 1 : 0;
+              console.log(`Trying with numeric boolean: ${translateNum}`);
+              result = this.module.full_default(processedAudio, language, translateNum);
+            } catch (thirdError: any) {
+              console.error('All attempts failed');
+              console.error('Original error:', error);
+              console.error('Second error:', secondError);
+              console.error('Third error:', thirdError);
+              
+              // Provide detailed debugging information
+              console.error('Debug info:');
+              console.error('- Audio data:', processedAudio);
+              console.error('- Language:', language, typeof language);
+              console.error('- Translate:', shouldTranslate, typeof shouldTranslate);
+              console.error('- Module methods:', Object.keys(this.module).filter(k => k.includes('full')));
+              
+              throw new Error(`Unable to call Whisper full_default function. ${error.message}`);
+            }
+          }
+        } else {
+          throw error;
+        }
+      }
 
       if (result !== 0) {
         throw new Error(`Whisper processing failed with code: ${result}`);
@@ -449,53 +596,68 @@ export class WhisperWebEngine {
     }
     
     try {
-      // Get the number of segments
-      const n_segments = this.module.get_n_segments ? this.module.get_n_segments() : 0;
-      console.log(`Extracting ${n_segments} segments from transcription`);
+      // Extract results from captured output 
+      const capturedOutput = (this as any).lastCapturedOutput as string[] || [];
+      
+      console.log(`Extracting results from ${capturedOutput.length} output lines`);
+      console.log('Full captured output:', capturedOutput); // Log ALL lines for debugging
       
       const segments: TranscriptionSegment[] = [];
       let fullText = '';
       
-      if (n_segments > 0) {
-        // Extract each segment
-        for (let i = 0; i < n_segments; i++) {
-          const text = this.module.get_segment_text ? this.module.get_segment_text(i) : '';
-          const t0 = this.module.get_segment_t0 ? this.module.get_segment_t0(i) : 0;
-          const t1 = this.module.get_segment_t1 ? this.module.get_segment_t1(i) : 0;
+      // Parse the captured output to extract transcription segments
+      let inTranscription = false;
+      
+      for (const line of capturedOutput) {
+        // Check for transcription markers
+        if (line.includes('==== TRANSCRIPTION START ====')) {
+          inTranscription = true;
+          continue;
+        }
+        if (line.includes('==== TRANSCRIPTION END ====')) {
+          inTranscription = false;
+          continue;
+        }
+        
+        // Only process lines within transcription markers
+        if (inTranscription) {
+          // Look for timestamp patterns like [00:00.000 --> 00:05.000]
+          const timestampMatch = line.match(/\[(\d{2}):(\d{2})\.(\d{3})\s*-->\s*(\d{2}):(\d{2})\.(\d{3})\]\s*(.+)/);
           
-          // Convert timestamps from centiseconds to seconds
-          const start = t0 / 100;
-          const end = t1 / 100;
-          
-          if (text && text.trim()) {
-            segments.push({
-              text: text.trim(),
-              start,
-              end,
-              confidence: 0.95 // Whisper doesn't provide confidence scores directly
-            });
+          if (timestampMatch) {
+            const [, startMin, startSec, startMs, endMin, endSec, endMs, text] = timestampMatch;
             
-            fullText += text + ' ';
+            const start = parseInt(startMin) * 60 + parseInt(startSec) + parseInt(startMs) / 1000;
+            const end = parseInt(endMin) * 60 + parseInt(endSec) + parseInt(endMs) / 1000;
+            
+            if (text && text.trim()) {
+              const cleanText = text.trim();
+              segments.push({
+                text: cleanText,
+                start,
+                end,
+                confidence: 0.95
+              });
+              fullText += cleanText + ' ';
+            }
           }
         }
       }
       
-      // If no segments were extracted, try to get the full text directly
-      if (segments.length === 0 && this.module.get_text) {
-        fullText = this.module.get_text() || '';
-        if (fullText) {
-          segments.push({
-            text: fullText.trim(),
-            start: 0,
-            end: 0,
-            confidence: 0.95
-          });
-        }
+      // If we found text without proper segments, create a single segment
+      if (!segments.length && fullText.trim()) {
+        segments.push({
+          text: fullText.trim(),
+          start: 0,
+          end: 0,
+          confidence: 0.95
+        });
       }
       
       // Fallback if still no text
-      if (!fullText) {
-        console.warn('No transcription text extracted from Whisper');
+      if (!fullText.trim()) {
+        console.warn('No transcription text extracted from Whisper output');
+        console.log('Raw captured output for debugging:', capturedOutput);
         fullText = '[No speech detected]';
         segments.push({
           text: fullText,
