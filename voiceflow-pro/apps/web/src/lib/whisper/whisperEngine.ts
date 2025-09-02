@@ -4,6 +4,7 @@
  */
 
 import { WhisperModelManager, WhisperModel } from './modelManager';
+import { AudioProcessor } from './audioProcessor';
 
 export interface WhisperConfig {
   model: WhisperModel;
@@ -54,9 +55,11 @@ export class WhisperWebEngine {
   private worker: Worker | null = null;
   private initialized = false;
   private audioContext: AudioContext | null = null;
+  private audioProcessor: AudioProcessor;
 
   constructor() {
     this.modelManager = WhisperModelManager.getInstance();
+    this.audioProcessor = new AudioProcessor();
   }
 
   /**
@@ -402,76 +405,16 @@ export class WhisperWebEngine {
    */
   private async fileToAudioData(file: File): Promise<Float32Array> {
     try {
-      console.log(`Processing audio file: ${file.name}, size: ${file.size}, type: ${file.type}`);
+      // Use the dedicated audio processor
+      const audioData = await this.audioProcessor.processAudioFile(file);
       
-      const arrayBuffer = await file.arrayBuffer();
-      
-      // Create AudioContext with default sample rate first for decoding
-      if (!this.audioContext) {
-        // Don't specify sample rate for decoding, let it use the default
-        this.audioContext = new AudioContext();
-      }
-
-      console.log('Decoding audio data...');
-      let audioBuffer: AudioBuffer;
-      
-      try {
-        audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer.slice(0));
-      } catch (decodeError) {
-        console.error('Failed to decode audio data:', decodeError);
-        console.log('Attempting alternative decoding method...');
-        
-        // Try creating a new context without constraints
-        const tempContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-        try {
-          audioBuffer = await tempContext.decodeAudioData(arrayBuffer.slice(0));
-        } finally {
-          await tempContext.close();
-        }
+      // Validate the audio data
+      if (!this.audioProcessor.validateAudioData(audioData)) {
+        throw new Error('Invalid audio data after processing');
       }
       
-      console.log(`Audio decoded: channels=${audioBuffer.numberOfChannels}, sampleRate=${audioBuffer.sampleRate}, length=${audioBuffer.length}`);
-      
-      // Convert to mono if stereo
-      let channelData: Float32Array;
-      if (audioBuffer.numberOfChannels > 1) {
-        console.log('Converting stereo to mono...');
-        channelData = new Float32Array(audioBuffer.length);
-        for (let i = 0; i < audioBuffer.length; i++) {
-          let sum = 0;
-          for (let channel = 0; channel < audioBuffer.numberOfChannels; channel++) {
-            sum += audioBuffer.getChannelData(channel)[i];
-          }
-          channelData[i] = sum / audioBuffer.numberOfChannels;
-        }
-      } else {
-        channelData = new Float32Array(audioBuffer.getChannelData(0));
-      }
-
-      // Resample to 16kHz if needed
-      if (audioBuffer.sampleRate !== 16000) {
-        console.log(`Resampling from ${audioBuffer.sampleRate}Hz to 16000Hz...`);
-        const ratio = 16000 / audioBuffer.sampleRate;
-        const newLength = Math.floor(channelData.length * ratio);
-        const resampled = new Float32Array(newLength);
-        
-        // Use linear interpolation for resampling
-        for (let i = 0; i < newLength; i++) {
-          const srcIndex = i / ratio;
-          const srcIndexFloor = Math.floor(srcIndex);
-          const srcIndexCeil = Math.min(srcIndexFloor + 1, channelData.length - 1);
-          const fraction = srcIndex - srcIndexFloor;
-          
-          resampled[i] = channelData[srcIndexFloor] * (1 - fraction) + 
-                         channelData[srcIndexCeil] * fraction;
-        }
-        
-        console.log(`Resampled audio length: ${resampled.length} samples (${resampled.length / 16000}s)`);
-        return resampled;
-      }
-
-      console.log(`Audio data ready: ${channelData.length} samples (${channelData.length / 16000}s)`);
-      return channelData;
+      console.log(`Audio processing completed: ${audioData.length} samples (${audioData.length / 16000}s at 16kHz)`);
+      return audioData;
       
     } catch (error) {
       console.error('Failed to process audio file:', error);
@@ -643,5 +586,38 @@ export class WhisperWebEngine {
       memoryUsage: (performance as any).memory?.usedJSHeapSize || 0,
       averageSpeed: 0, // Would need to track this over time
     };
+  }
+
+  /**
+   * Clean up resources and destroy the engine
+   */
+  async destroy(): Promise<void> {
+    try {
+      // Clean up WASM module
+      if (this.module && typeof this.module.free === 'function') {
+        this.module.free();
+      }
+      
+      // Close audio context
+      if (this.audioContext) {
+        await this.audioContext.close();
+        this.audioContext = null;
+      }
+
+      // Clean up audio processor
+      if (this.audioProcessor) {
+        this.audioProcessor.dispose();
+      }
+
+      // Reset state
+      this.module = null;
+      this.context = null;
+      this.initialized = false;
+      this.currentModel = null;
+      
+      console.log('Whisper engine destroyed successfully');
+    } catch (error) {
+      console.error('Error destroying Whisper engine:', error);
+    }
   }
 }
