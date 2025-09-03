@@ -9,6 +9,14 @@ const nextConfig = {
     // During development, we'll ignore ESLint errors
     ignoreDuringBuilds: true,
   },
+  async rewrites() {
+    return [
+      {
+        source: '/api/:path*',
+        destination: 'http://localhost:3002/api/:path*', // Proxy to Backend
+      },
+    ];
+  },
   webpack: (config, { isServer }) => {
     if (!isServer) {
       // Exclude 'onnxruntime-node' from client-side bundles

@@ -8,8 +8,9 @@ import { WhisperModelManager, WhisperModel } from './modelManager';
 import { AudioProcessor } from './audioProcessor';
 
 // Configure transformers.js for browser environment
-env.allowRemoteModels = true;
-env.allowLocalModels = false;
+env.allowRemoteModels = false;
+env.allowLocalModels = true;
+env.localModelPath = '/api/models/download/';
 env.backends.onnx.wasm.wasmPaths = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.14.0/dist/';
 
 export interface WhisperConfig {
@@ -110,7 +111,11 @@ export class WhisperWebEngine {
       console.log(`Starting transcription of ${audioData.length} samples (${audioData.length / 16000}s of audio)`);
       
       // Ensure audio is mono and at 16kHz
-      const processedAudio = await this.preprocessAudio(audioData);
+      
+      
+      
+      
+         const processedAudio = await this.preprocessAudio(audioData);
       
       // Validate audio data
       if (!processedAudio || processedAudio.length === 0) {
@@ -131,6 +136,8 @@ export class WhisperWebEngine {
       if (options.language) {
         transcribeOptions.language = options.language;
       }
+
+      transcribeOptions.language = 'fr';
 
       // Set task (transcribe or translate)
       if (options.task) {
