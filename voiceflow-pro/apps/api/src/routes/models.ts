@@ -6,58 +6,55 @@ import fetch from 'node-fetch';
 const streamPipeline = promisify(pipeline);
 
 const modelsRoute: FastifyPluginAsync = async (fastify) => {
-  // Download Whisper model with streaming support
-  fastify.get('/download/:modelName', {
-    schema: {
-      params: {
-        type: 'object',
-        properties: {
-          modelName: { 
-            type: 'string',
-            enum: ['tiny', 'tiny.en', 'base', 'base.en', 'small', 'small.en', 'medium', 'medium.en', 'large-v3']
-          }
-        },
-        required: ['modelName']
-      }
+  // Proxy for downloading transformers.js models from Hugging Face Hub
+  fastify.get('/download/*', async (request, reply) => {
+    const filePath = (request.params as any)['*'];
+
+    if (!filePath) {
+      return reply.status(400).send({ error: 'File path is required' });
     }
-  }, async (request, reply) => {
-    const { modelName } = request.params as { modelName: string };
-    
+
+    // Construct the Hugging Face Hub URL
+    // The file path is expected to be like: Xenova/whisper-base/config.json
+    // which needs to be converted to: https://huggingface.co/Xenova/whisper-base/resolve/main/config.json
+    const parts = filePath.split('/');
+    if (parts.length < 3) {
+      return reply.status(400).send({ error: 'Invalid model file path format' });
+    }
+    const repoId = `${parts[0]}/${parts[1]}`;
+    const pathInRepo = parts.slice(2).join('/');
+    const modelUrl = `https://huggingface.co/${repoId}/resolve/main/${pathInRepo}`;
+
     try {
-      const modelUrl = `https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-${modelName}.bin`;
-      
-      fastify.log.info(`Proxying model download: ${modelName} from ${modelUrl}`);
+      fastify.log.info(`Proxying model download from: ${modelUrl}`);
       
       const response = await fetch(modelUrl);
       
       if (!response.ok) {
-        return reply.status(404).send({
-          error: 'Model not found',
-          message: `Failed to fetch model ${modelName}: ${response.statusText}`
+        return reply.status(response.status).send({
+          error: 'Model file not found on Hugging Face Hub',
+          message: `Failed to fetch ${modelUrl}: ${response.statusText}`
         });
       }
       
-      // Set appropriate headers
+      // Set appropriate headers for streaming
       const contentLength = response.headers.get('content-length');
       if (contentLength) {
         reply.header('content-length', contentLength);
       }
       
-      reply.header('content-type', 'application/octet-stream');
-      reply.header('cache-control', 'public, max-age=86400'); // Cache for 24 hours
-      reply.header('access-control-allow-origin', '*');
-      reply.header('access-control-allow-methods', 'GET');
-      reply.header('access-control-allow-headers', 'Content-Type');
+      reply.header('content-type', response.headers.get('content-type') || 'application/octet-stream');
+      reply.header('cache-control', 'public, max-age=604800'); // Cache for 1 week
       
-      // Stream the response
+      // Stream the response body
       if (response.body) {
         await streamPipeline(response.body, reply.raw);
       } else {
-        return reply.status(500).send({ error: 'No response body' });
+        return reply.status(500).send({ error: 'No response body from Hugging Face Hub' });
       }
       
     } catch (error) {
-      fastify.log.error(`Model download error for ${modelName}:`, error);
+      fastify.log.error(`Model download proxy error for ${filePath}:`, error);
       return reply.status(500).send({
         error: 'Download failed',
         message: error instanceof Error ? error.message : 'Unknown error'
