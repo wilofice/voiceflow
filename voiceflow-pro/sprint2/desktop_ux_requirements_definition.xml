@@ -1,0 +1,625 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project_plan>
+    <node title="VoiceFlowPro Desktop-Specific UX Requirements Definition" priority="critical" status="pending" id="desktop-ux-req-root-001">
+        <comment>Professional-grade desktop transcription tool requirements focused on delivering 10x value over MacWhisper through superior workflow integration, performance, and ROI-driven features. Every requirement includes measurable success metrics and value justification.</comment>
+        <node title="1. Offline-First Experience Design" priority="critical" status="pending" id="offline-first-001">
+            <comment>Core architecture enabling full functionality without internet, with cloud as optional enhancement. This creates a moat against web-based competitors and ensures reliability for mission-critical workflows.</comment>
+            <node title="1.1 Performance Requirements" priority="critical" status="pending" id="offline-perf-001">
+                <comment>ROI: Reduces waiting time by 60% compared to cloud solutions, enabling professionals to process 2.5x more content daily.</comment>
+                <node title="Local Model Loading" priority="high" status="pending" id="local-model-load-001">
+                    <comment>Success Metric: Models load in under 3 seconds on M1 Mac, under 5 seconds on Intel. Memory-mapped loading for instant subsequent starts.</comment>
+                </node>
+                <node title="Real-time Transcription Speed" priority="high" status="pending" id="realtime-speed-001">
+                    <comment>Success Metric: 1:1 real-time factor or better for medium models. Enable live captioning for meetings/interviews.</comment>
+                </node>
+                <node title="Background Processing Queue" priority="high" status="pending" id="bg-queue-001">
+                    <comment>Success Metric: Process 50+ hours of audio overnight without supervision. Smart CPU/GPU allocation based on thermal state.</comment>
+                </node>
+                <node title="Incremental Processing" priority="medium" status="pending" id="incremental-proc-001">
+                    <comment>Success Metric: Start viewing/editing partial results within 10 seconds of job start. Stream results as they complete.</comment>
+                </node>
+            </node>
+            <node title="1.2 Offline Capability Matrix" priority="high" status="pending" id="offline-matrix-001">
+                <comment>ROI: Zero dependency on internet for core features = 100% uptime for professionals in secure/remote environments.</comment>
+                <node title="Core Transcription Features" priority="critical" status="pending" id="offline-core-001">
+                    <comment>All transcription, diarization, and basic AI features work offline. Only cloud sync and external integrations require internet.</comment>
+                </node>
+                <node title="Local AI Processing" priority="high" status="pending" id="local-ai-001">
+                    <comment>On-device LLMs for summaries, chapters, action items. Uses llama.cpp with 7B/13B models. Fallback to cloud for complex tasks.</comment>
+                </node>
+                <node title="Offline License Validation" priority="medium" status="pending" id="offline-license-001">
+                    <comment>30-day offline grace period for license checks. Cryptographic validation prevents piracy while enabling offline use.</comment>
+                </node>
+            </node>
+            <node title="1.3 Smart Sync Architecture" priority="medium" status="pending" id="smart-sync-001">
+                <comment>ROI: Seamless transition between offline/online saves 15 min/day in manual file management.</comment>
+                <node title="Differential Sync Protocol" priority="high" status="pending" id="diff-sync-001">
+                    <comment>Only sync changes, not entire files. 90% bandwidth reduction for collaborative editing.</comment>
+                </node>
+                <node title="Conflict Resolution UI" priority="medium" status="pending" id="conflict-ui-001">
+                    <comment>Visual diff viewer for transcript conflicts. One-click resolution with preview.</comment>
+                </node>
+            </node>
+        </node>
+        <node title="2. Native File System Integration" priority="critical" status="pending" id="fs-integration-001">
+            <comment>Deep OS integration that makes VoiceFlowPro feel like a native system utility, not just another app. Creates switching costs through workflow embedding.</comment>
+            <node title="2.1 Advanced Watch Folders" priority="high" status="pending" id="watch-folders-001">
+                <comment>ROI: Automates 80% of import workflow, saving 30 min/day for power users processing multiple recordings.</comment>
+                <node title="Rule-Based Processing" priority="high" status="pending" id="rule-based-001">
+                    <comment>Per-folder rules: model selection, language detection, export format, naming patterns. Regex-based file filtering.</comment>
+                </node>
+                <node title="Nested Folder Monitoring" priority="medium" status="pending" id="nested-monitor-001">
+                    <comment>Recursive watching with inheritance. Child folders inherit parent rules unless overridden.</comment>
+                </node>
+                <node title="Cloud Storage Integration" priority="medium" status="pending" id="cloud-storage-001">
+                    <comment>Native monitoring of Dropbox, Google Drive, OneDrive folders. Process files as they sync.</comment>
+                </node>
+                <node title="Action Triggers" priority="high" status="pending" id="action-triggers-001">
+                    <comment>Post-transcription actions: move to archive, trigger webhook, send notification, run script.</comment>
+                </node>
+            </node>
+            <node title="2.2 System-Level Integration" priority="high" status="pending" id="system-level-001">
+                <comment>ROI: Reduces app-switching by 40%, keeping users in their natural workflow.</comment>
+                <node title="Context Menu Actions" priority="high" status="pending" id="context-menu-001">
+                    <comment>Right-click any audio/video file: "Transcribe with VoiceFlowPro", "Quick Transcribe" (uses last settings).</comment>
+                </node>
+                <node title="Quick Look Plugin (Mac)" priority="medium" status="pending" id="quicklook-001">
+                    <comment>Preview transcripts directly in Finder. Space bar shows formatted transcript with playback controls.</comment>
+                </node>
+                <node title="Shell Extension (Windows)" priority="medium" status="pending" id="shell-ext-001">
+                    <comment>Windows Explorer preview pane shows transcripts. Thumbnail generation for video files.</comment>
+                </node>
+                <node title="File Type Associations" priority="high" status="pending" id="file-assoc-001">
+                    <comment>Register as default handler for .vfp, .whisper files. Import competitor formats seamlessly.</comment>
+                </node>
+            </node>
+            <node title="2.3 Smart Import Pipeline" priority="high" status="pending" id="smart-import-001">
+                <comment>ROI: Handles 95% of edge cases automatically, reducing support tickets by 70%.</comment>
+                <node title="Format Detection Engine" priority="high" status="pending" id="format-detect-001">
+                    <comment>Auto-detect 50+ audio/video formats. Transparent conversion pipeline using FFmpeg.</comment>
+                </node>
+                <node title="Batch Import Optimizer" priority="high" status="pending" id="batch-optimize-001">
+                    <comment>Smart chunking for 100+ file imports. Memory-aware processing prevents system overload.</comment>
+                </node>
+                <node title="URL Intelligence" priority="high" status="pending" id="url-intel-001">
+                    <comment>YouTube, Vimeo, podcast RSS, direct audio URLs. Parallel download with transcription start.</comment>
+                </node>
+            </node>
+        </node>
+        <node title="3. Professional Keyboard Shortcut Schema" priority="high" status="pending" id="keyboard-schema-001">
+            <comment>Comprehensive keyboard control rivaling professional video editors. Power users can operate entirely without mouse, increasing speed by 3x.</comment>
+            <node title="3.1 Modal Editing System" priority="high" status="pending" id="modal-editing-001">
+                <comment>ROI: Vim-like efficiency reduces editing time by 50% for power users.</comment>
+                <node title="Command Mode" priority="high" status="pending" id="command-mode-001">
+                    <comment>Single-key commands: j/k for navigation, / for search, m for mark, y for yank. Visual feedback for mode.</comment>
+                </node>
+                <node title="Edit Mode" priority="high" status="pending" id="edit-mode-001">
+                    <comment>In-line transcript editing with autocomplete. Tab for speaker change, Ctrl+T for timestamp insert.</comment>
+                </node>
+                <node title="Playback Mode" priority="high" status="pending" id="playback-mode-001">
+                    <comment>Space for play/pause, [ ] for speed control, , . for frame stepping. F for fullscreen video.</comment>
+                </node>
+            </node>
+            <node title="3.2 Customizable Hotkey System" priority="medium" status="pending" id="hotkey-system-001">
+                <comment>ROI: Accommodates existing muscle memory, reducing onboarding time by 70%.</comment>
+                <node title="Preset Schemes" priority="medium" status="pending" id="preset-schemes-001">
+                    <comment>Import schemes from: Premiere Pro, Final Cut, DaVinci Resolve, VS Code. One-click switching.</comment>
+                </node>
+                <node title="Conflict Detection" priority="medium" status="pending" id="conflict-detect-001">
+                    <comment>Visual conflict resolver when assigning shortcuts. Shows system-wide conflicts.</comment>
+                </node>
+                <node title="Macro Recording" priority="low" status="pending" id="macro-record-001">
+                    <comment>Record multi-step operations as macros. Assign to F-keys or custom combinations.</comment>
+                </node>
+            </node>
+            <node title="3.3 Navigation Acceleration" priority="high" status="pending" id="nav-accel-001">
+                <comment>ROI: Navigate hour-long transcripts in seconds, not minutes.</comment>
+                <node title="Jump Commands" priority="high" status="pending" id="jump-commands-001">
+                    <comment>Go to: timestamp (Ctrl+G), speaker (Ctrl+S), bookmark (Ctrl+B), confidence threshold (Ctrl+L).</comment>
+                </node>
+                <node title="Smart Selection" priority="high" status="pending" id="smart-select-001">
+                    <comment>Shift+arrows for word selection, Ctrl+Shift for sentence, Alt+Shift for paragraph/speaker turn.</comment>
+                </node>
+                <node title="Bookmark System" priority="medium" status="pending" id="bookmark-system-001">
+                    <comment>Ctrl+D to bookmark, Ctrl+Shift+D for named bookmark. F2/F3 for next/previous bookmark.</comment>
+                </node>
+            </node>
+        </node>
+        <node title="4. Advanced Window Management" priority="high" status="pending" id="window-mgmt-001">
+            <comment>Sophisticated window behavior supporting complex multi-document workflows. Matches professional DAW/NLE applications.</comment>
+            <node title="4.1 Workspace Layouts" priority="high" status="pending" id="workspace-layouts-001">
+                <comment>ROI: Context switching between tasks 5x faster with saved layouts.</comment>
+                <node title="Preset Workspaces" priority="high" status="pending" id="preset-workspace-001">
+                    <comment>Interview, Podcast, Meeting, Research, Translation modes. Each optimizes panels for specific workflow.</comment>
+                </node>
+                <node title="Custom Layout Save" priority="medium" status="pending" id="custom-layout-001">
+                    <comment>Save unlimited layouts. Assign to number keys (Ctrl+1-9). Include window positions, panel states.</comment>
+                </node>
+                <node title="Layout Sync" priority="low" status="pending" id="layout-sync-001">
+                    <comment>Sync layouts across devices via cloud. Detect display configuration and adapt.</comment>
+                </node>
+            </node>
+            <node title="4.2 Panel System" priority="high" status="pending" id="panel-system-001">
+                <comment>ROI: Reduces window juggling by 80%, keeping all tools accessible.</comment>
+                <node title="Dockable Panels" priority="high" status="pending" id="dockable-panels-001">
+                    <comment>Drag panels to dock zones. Magnetic snapping with preview. Tab grouping for space efficiency.</comment>
+                </node>
+                <node title="Floating Windows" priority="medium" status="pending" id="floating-windows-001">
+                    <comment>Tear off any panel as floating. Always-on-top option. Opacity control for reference viewing.</comment>
+                </node>
+                <node title="Panel Presets" priority="medium" status="pending" id="panel-presets-001">
+                    <comment>Quick toggles: Minimal (transcript only), Standard (+ timeline), Pro (all panels).</comment>
+                </node>
+            </node>
+            <node title="4.3 Multi-Instance Support" priority="medium" status="pending" id="multi-instance-001">
+                <comment>ROI: Compare transcripts side-by-side, increasing QA efficiency by 40%.</comment>
+                <node title="Instance Communication" priority="medium" status="pending" id="instance-comm-001">
+                    <comment>Drag text between instances. Shared clipboard with formatting preservation.</comment>
+                </node>
+                <node title="Synchronized Playback" priority="low" status="pending" id="sync-playback-001">
+                    <comment>Lock playback between instances for comparison. Offset support for different versions.</comment>
+                </node>
+            </node>
+        </node>
+        <node title="5. Multi-Monitor Workflow Support" priority="high" status="pending" id="multi-monitor-001">
+            <comment>First-class multi-display support for professional setups. Increases workspace efficiency by 200%.</comment>
+            <node title="5.1 Display-Aware Layouts" priority="high" status="pending" id="display-aware-001">
+                <comment>ROI: Zero setup time when connecting/disconnecting displays.</comment>
+                <node title="Automatic Adaptation" priority="high" status="pending" id="auto-adapt-001">
+                    <comment>Detect display changes and restore appropriate layout. Remember per-configuration preferences.</comment>
+                </node>
+                <node title="Display Profiles" priority="medium" status="pending" id="display-profiles-001">
+                    <comment>Save profiles: "Laptop Only", "Desktop Dual", "Presentation Mode". Switch via hotkey.</comment>
+                </node>
+                <node title="DPI Awareness" priority="high" status="pending" id="dpi-aware-001">
+                    <comment>Proper scaling across mixed-DPI setups. Crisp text on 4K/5K displays.</comment>
+                </node>
+            </node>
+            <node title="5.2 Window Distribution" priority="medium" status="pending" id="window-dist-001">
+                <comment>ROI: Optimal use of screen real estate increases content visibility by 150%.</comment>
+                <node title="Smart Window Spawning" priority="medium" status="pending" id="smart-spawn-001">
+                    <comment>New windows open on least-crowded display. Remember last position per window type.</comment>
+                </node>
+                <node title="Full-Screen Modes" priority="medium" status="pending" id="fullscreen-modes-001">
+                    <comment>True full-screen, maximized window, presentation mode. Each with different UI hiding rules.</comment>
+                </node>
+                <node title="Video Detach" priority="high" status="pending" id="video-detach-001">
+                    <comment>Send video to secondary display while editing transcript on primary. Picture-in-picture fallback.</comment>
+                </node>
+            </node>
+        </node>
+        <node title="6. Professional Audio Waveform Visualization" priority="high" status="pending" id="waveform-viz-001">
+            <comment>Industry-standard waveform display enabling precise audio navigation and editing. Essential for professional audio work.</comment>
+            <node title="6.1 Waveform Rendering" priority="high" status="pending" id="waveform-render-001">
+                <comment>ROI: Visual audio navigation 10x faster than scrubbing. Identifies issues before listening.</comment>
+                <node title="Multi-Resolution Display" priority="high" status="pending" id="multi-res-wave-001">
+                    <comment>Zoom from file overview to sample-level. Smooth LOD transitions. GPU-accelerated rendering.</comment>
+                </node>
+                <node title="Spectral View" priority="medium" status="pending" id="spectral-view-001">
+                    <comment>Frequency analysis overlay. Identify speech vs music vs noise. Adjustable color mapping.</comment>
+                </node>
+                <node title="Peak Normalization" priority="medium" status="pending" id="peak-normal-001">
+                    <comment>Auto-scale to content. Compressor view for dynamic range. RMS and peak meters.</comment>
+                </node>
+            </node>
+            <node title="6.2 Interactive Timeline" priority="high" status="pending" id="interactive-timeline-001">
+                <comment>ROI: Reduces navigation time by 60% for long-form content.</comment>
+                <node title="Segment Visualization" priority="high" status="pending" id="segment-viz-001">
+                    <comment>Color-coded speaker segments. Confidence gradient overlay. Silence detection markers.</comment>
+                </node>
+                <node title="Annotation Layer" priority="medium" status="pending" id="annotation-layer-001">
+                    <comment>Add markers, regions, notes directly on timeline. Collaborative annotations with attribution.</comment>
+                </node>
+                <node title="Playhead Control" priority="high" status="pending" id="playhead-control-001">
+                    <comment>Click to seek, drag to scrub. Momentum scrolling. Snap to word boundaries.</comment>
+                </node>
+            </node>
+            <node title="6.3 Audio Enhancement Tools" priority="medium" status="pending" id="audio-enhance-001">
+                <comment>ROI: Improve transcription accuracy by 30% on poor-quality audio.</comment>
+                <node title="Noise Reduction" priority="medium" status="pending" id="noise-reduce-001">
+                    <comment>Real-time denoising preview. Batch processing option. Preserves original for comparison.</comment>
+                </node>
+                <node title="Volume Leveling" priority="medium" status="pending" id="volume-level-001">
+                    <comment>Normalize speaker volumes. Compress dynamic range. Boost quiet sections.</comment>
+                </node>
+                <node title="EQ Presets" priority="low" status="pending" id="eq-presets-001">
+                    <comment>Voice enhancement, telephone cleanup, room correction. Custom EQ curves.</comment>
+                </node>
+            </node>
+        </node>
+        <node title="7. Batch Processing UX Patterns" priority="critical" status="pending" id="batch-ux-001">
+            <comment>Enterprise-grade batch processing surpassing MacWhisper's basic implementation. Handles hundreds of files efficiently.</comment>
+            <node title="7.1 Intelligent Queue Management" priority="high" status="pending" id="queue-mgmt-001">
+                <comment>ROI: Process 10x more files overnight with zero failures due to smart resource management.</comment>
+                <node title="Priority Queue System" priority="high" status="pending" id="priority-queue-001">
+                    <comment>Drag to reorder. Priority levels (urgent/normal/low). Due date scheduling.</comment>
+                </node>
+                <node title="Parallel Processing Control" priority="high" status="pending" id="parallel-control-001">
+                    <comment>Auto-detect optimal parallelism. Manual override (1-16 threads). GPU allocation strategy.</comment>
+                </node>
+                <node title="Failure Recovery" priority="high" status="pending" id="failure-recovery-001">
+                    <comment>Isolated failures don't stop queue. Automatic retry with backoff. Detailed error reporting.</comment>
+                </node>
+                <node title="Resource Throttling" priority="medium" status="pending" id="resource-throttle-001">
+                    <comment>Limit CPU/GPU usage during work hours. Thermal management. Battery preservation mode.</comment>
+                </node>
+            </node>
+            <node title="7.2 Batch Configuration Templates" priority="high" status="pending" id="batch-templates-001">
+                <comment>ROI: Configure once, reuse infinitely. Saves 20 min per batch job.</comment>
+                <node title="Processing Profiles" priority="high" status="pending" id="process-profiles-001">
+                    <comment>Save complete configurations: model, language, exports, post-processing. Share across team.</comment>
+                </node>
+                <node title="Conditional Processing" priority="medium" status="pending" id="conditional-proc-001">
+                    <comment>If-then rules: if duration &gt; 1hr use large model, if language=Spanish use Spanish model.</comment>
+                </node>
+                <node title="Output Templates" priority="high" status="pending" id="output-templates-001">
+                    <comment>Filename patterns with variables. Folder structure creation. Metadata embedding.</comment>
+                </node>
+            </node>
+            <node title="7.3 Progress Visualization" priority="high" status="pending" id="progress-viz-001">
+                <comment>ROI: Accurate time estimates enable better planning, saving 1hr/day in coordination.</comment>
+                <node title="Multi-Level Progress" priority="high" status="pending" id="multi-progress-001">
+                    <comment>Overall, per-file, per-stage progress. ETA calculation with confidence intervals.</comment>
+                </node>
+                <node title="Performance Metrics" priority="medium" status="pending" id="perf-metrics-001">
+                    <comment>Real-time throughput graphs. Bottleneck identification. Historical performance tracking.</comment>
+                </node>
+                <node title="Notification System" priority="high" status="pending" id="notification-sys-001">
+                    <comment>Completion, error, milestone notifications. Email, Slack, webhook integrations.</comment>
+                </node>
+            </node>
+        </node>
+        <node title="8. Real-time Collaboration Features" priority="high" status="pending" id="collab-features-001">
+            <comment>Team collaboration features that MacWhisper completely lacks. Enables enterprise adoption and team workflows.</comment>
+            <node title="8.1 Live Collaboration" priority="high" status="pending" id="live-collab-001">
+                <comment>ROI: Reduce review cycles by 50% through simultaneous editing.</comment>
+                <node title="Presence Indicators" priority="high" status="pending" id="presence-ind-001">
+                    <comment>See who's viewing/editing. Cursor tracking. Named selections. Color-coded contributors.</comment>
+                </node>
+                <node title="Conflict-Free Editing" priority="high" status="pending" id="conflict-free-001">
+                    <comment>Operational transformation for concurrent edits. Automatic merge with history tracking.</comment>
+                </node>
+                <node title="Comment Threads" priority="medium" status="pending" id="comment-threads-001">
+                    <comment>Inline comments with replies. @mentions with notifications. Resolve/reopen workflow.</comment>
+                </node>
+            </node>
+            <node title="8.2 Review Workflow" priority="high" status="pending" id="review-workflow-001">
+                <comment>ROI: Structured review process reduces errors by 70%.</comment>
+                <node title="Track Changes" priority="high" status="pending" id="track-changes-001">
+                    <comment>Record all edits with attribution. Accept/reject interface. Batch operations.</comment>
+                </node>
+                <node title="Approval System" priority="medium" status="pending" id="approval-system-001">
+                    <comment>Multi-stage approval workflow. Role-based permissions. Audit trail.</comment>
+                </node>
+                <node title="Version Comparison" priority="high" status="pending" id="version-compare-001">
+                    <comment>Side-by-side diff view. Three-way merge. Restore previous versions.</comment>
+                </node>
+            </node>
+            <node title="8.3 Team Management" priority="medium" status="pending" id="team-mgmt-001">
+                <comment>ROI: Centralized management saves 2hrs/week in coordination.</comment>
+                <node title="Workspace Sharing" priority="medium" status="pending" id="workspace-share-001">
+                    <comment>Share projects with permissions. Guest access with expiration. Link-based sharing.</comment>
+                </node>
+                <node title="Template Library" priority="medium" status="pending" id="template-library-001">
+                    <comment>Team-wide processing templates. Centralized prompt library. Style guide enforcement.</comment>
+                </node>
+                <node title="Usage Analytics" priority="low" status="pending" id="usage-analytics-001">
+                    <comment>Track team productivity. Cost allocation. ROI reporting.</comment>
+                </node>
+            </node>
+        </node>
+        <node title="9. Advanced Search and Navigation UX" priority="high" status="pending" id="search-nav-001">
+            <comment>Powerful search capabilities that make finding content instant, even across thousands of transcripts.</comment>
+            <node title="9.1 Intelligent Search Engine" priority="high" status="pending" id="search-engine-001">
+                <comment>ROI: Find any content in seconds, not minutes. 90% faster than manual scanning.</comment>
+                <node title="Multi-Index Search" priority="high" status="pending" id="multi-index-001">
+                    <comment>Search across: transcript text, speaker names, timestamps, comments, metadata.</comment>
+                </node>
+                <node title="Fuzzy Matching" priority="high" status="pending" id="fuzzy-match-001">
+                    <comment>Phonetic search for unclear audio. Typo tolerance. Synonym expansion.</comment>
+                </node>
+                <node title="Regular Expressions" priority="medium" status="pending" id="regex-search-001">
+                    <comment>Power user regex search. Pattern library. Visual regex builder.</comment>
+                </node>
+                <node title="Semantic Search" priority="medium" status="pending" id="semantic-search-001">
+                    <comment>AI-powered concept search. Find by meaning, not just keywords. Topic clustering.</comment>
+                </node>
+            </node>
+            <node title="9.2 Navigation Intelligence" priority="high" status="pending" id="nav-intel-001">
+                <comment>ROI: Navigate complex projects 5x faster with smart navigation.</comment>
+                <node title="Smart Jump" priority="high" status="pending" id="smart-jump-001">
+                    <comment>Jump to: next error, speaker change, topic shift, bookmark, low confidence.</comment>
+                </node>
+                <node title="Breadcrumb System" priority="medium" status="pending" id="breadcrumb-001">
+                    <comment>Navigation history with preview. Back/forward with context. Jump list.</comment>
+                </node>
+                <node title="Mini-Map" priority="medium" status="pending" id="minimap-001">
+                    <comment>Document overview with highlights. Click to navigate. Search result indicators.</comment>
+                </node>
+            </node>
+            <node title="9.3 Project-Wide Search" priority="high" status="pending" id="project-search-001">
+                <comment>ROI: Manage large projects with hundreds of files efficiently.</comment>
+                <node title="Cross-File Search" priority="high" status="pending" id="cross-file-001">
+                    <comment>Search across entire project. Filter by date, speaker, duration, confidence.</comment>
+                </node>
+                <node title="Search Results Manager" priority="medium" status="pending" id="search-results-001">
+                    <comment>Persistent search results. Export search findings. Bulk operations on results.</comment>
+                </node>
+                <node title="Saved Searches" priority="medium" status="pending" id="saved-searches-001">
+                    <comment>Save complex queries. Share with team. Schedule automated searches.</comment>
+                </node>
+            </node>
+        </node>
+        <node title="10. Professional Export Pipeline UX" priority="critical" status="pending" id="export-pipeline-001">
+            <comment>Export system that handles every professional use case, from subtitles to API integrations. MacWhisper's weak point.</comment>
+            <node title="10.1 Format Mastery" priority="high" status="pending" id="format-mastery-001">
+                <comment>ROI: One-click export to any format saves 30min per project in manual formatting.</comment>
+                <node title="Industry Standard Formats" priority="high" status="pending" id="industry-formats-001">
+                    <comment>SRT, VTT, ASS, TTML, STL, DFXP, EDL, XML, JSON, CSV. Premiere/FCP/Resolve compatible.</comment>
+                </node>
+                <node title="Document Formats" priority="high" status="pending" id="doc-formats-001">
+                    <comment>Word with styles, PDF with bookmarks, HTML with player, Markdown with YAML frontmatter.</comment>
+                </node>
+                <node title="Custom Format Designer" priority="medium" status="pending" id="format-designer-001">
+                    <comment>Visual format builder. Template language. Regex transformations. Share custom formats.</comment>
+                </node>
+            </node>
+            <node title="10.2 Export Automation" priority="high" status="pending" id="export-automation-001">
+                <comment>ROI: Eliminate manual export tasks, saving 1hr/day for production teams.</comment>
+                <node title="Export Presets" priority="high" status="pending" id="export-presets-001">
+                    <comment>Multi-format export in one click. Conditional exports. Format bundling (transcript + subtitles + chapters).</comment>
+                </node>
+                <node title="Post-Export Actions" priority="medium" status="pending" id="post-export-001">
+                    <comment>Auto-upload to cloud, email delivery, FTP transfer, API webhook, open in app.</comment>
+                </node>
+                <node title="Scheduled Exports" priority="low" status="pending" id="scheduled-exports-001">
+                    <comment>Daily report generation. Periodic backups. Deadline-based delivery.</comment>
+                </node>
+            </node>
+            <node title="10.3 Integration Pipelines" priority="high" status="pending" id="integration-pipes-001">
+                <comment>ROI: Direct integration saves 45min/day in manual transfer and formatting.</comment>
+                <node title="Direct App Export" priority="high" status="pending" id="direct-app-001">
+                    <comment>Send to: Notion, Obsidian, Roam, Final Cut, Premiere, Resolve, Slack, Teams.</comment>
+                </node>
+                <node title="API Endpoints" priority="medium" status="pending" id="api-endpoints-001">
+                    <comment>RESTful API for automation. Webhook triggers. Zapier/Make/IFTTT templates.</comment>
+                </node>
+                <node title="Database Export" priority="low" status="pending" id="database-export-001">
+                    <comment>PostgreSQL, MySQL, MongoDB schemas. Bulk insert scripts. Incremental updates.</comment>
+                </node>
+            </node>
+        </node>
+        <node title="11. Performance and Optimization Requirements" priority="critical" status="pending" id="performance-req-001">
+            <comment>Performance targets that ensure VoiceFlowPro feels faster and more responsive than any competitor.</comment>
+            <node title="11.1 Startup Performance" priority="high" status="pending" id="startup-perf-001">
+                <comment>ROI: Fast startup saves 5min/day for users who open the app multiple times.</comment>
+                <node title="Cold Start Target" priority="high" status="pending" id="cold-start-001">
+                    <comment>Under 2 seconds to interactive UI. Progressive loading with immediate responsiveness.</comment>
+                </node>
+                <node title="Warm Start Target" priority="high" status="pending" id="warm-start-001">
+                    <comment>Under 500ms when backgrounded. Instant resume from system tray.</comment>
+                </node>
+                <node title="Project Load Time" priority="high" status="pending" id="project-load-001">
+                    <comment>Open 100GB project in under 5 seconds. Lazy loading with preview generation.</comment>
+                </node>
+            </node>
+            <node title="11.2 Memory Efficiency" priority="high" status="pending" id="memory-eff-001">
+                <comment>ROI: Run alongside other pro apps without system slowdown.</comment>
+                <node title="Baseline Memory" priority="high" status="pending" id="baseline-mem-001">
+                    <comment>Under 200MB idle. Under 500MB with project open. Model memory mapped, not loaded.</comment>
+                </node>
+                <node title="Memory Scaling" priority="medium" status="pending" id="memory-scale-001">
+                    <comment>Linear scaling with project size. Automatic cache pruning. Low memory mode.</comment>
+                </node>
+                <node title="Leak Prevention" priority="high" status="pending" id="leak-prevent-001">
+                    <comment>Zero memory leaks in 24hr operation. Automated testing. Memory profiling tools.</comment>
+                </node>
+            </node>
+            <node title="11.3 Battery Optimization" priority="medium" status="pending" id="battery-opt-001">
+                <comment>ROI: 2x longer battery life than competitors for mobile professionals.</comment>
+                <node title="Efficiency Modes" priority="medium" status="pending" id="efficiency-modes-001">
+                    <comment>Auto-switch to efficiency cores on battery. Reduce update frequency. Pause background tasks.</comment>
+                </node>
+                <node title="GPU Management" priority="medium" status="pending" id="gpu-manage-001">
+                    <comment>Prefer integrated GPU on battery. Aggressive power gating. Thermal throttling.</comment>
+                </node>
+            </node>
+        </node>
+        <node title="12. Accessibility and Inclusion" priority="high" status="pending" id="accessibility-001">
+            <comment>Full accessibility support making VoiceFlowPro usable by everyone, opening enterprise markets with compliance requirements.</comment>
+            <node title="12.1 Screen Reader Support" priority="high" status="pending" id="screen-reader-001">
+                <comment>ROI: Meet compliance requirements for enterprise and government contracts.</comment>
+                <node title="Full ARIA Labels" priority="high" status="pending" id="aria-labels-001">
+                    <comment>Every UI element properly labeled. Semantic HTML structure. Role attributes.</comment>
+                </node>
+                <node title="Navigation Announcements" priority="high" status="pending" id="nav-announce-001">
+                    <comment>Announce mode changes, selections, operations. Configurable verbosity.</comment>
+                </node>
+                <node title="Transcript Reading" priority="high" status="pending" id="transcript-read-001">
+                    <comment>Natural reading with speaker identification. Pause at punctuation. Speed control.</comment>
+                </node>
+            </node>
+            <node title="12.2 Visual Accessibility" priority="high" status="pending" id="visual-access-001">
+                <comment>ROI: Usable by 15% more users with visual impairments.</comment>
+                <node title="High Contrast Modes" priority="high" status="pending" id="high-contrast-001">
+                    <comment>True high contrast themes. WCAG AAA compliance. Custom contrast adjustment.</comment>
+                </node>
+                <node title="Font Scaling" priority="high" status="pending" id="font-scaling-001">
+                    <comment>200% zoom without horizontal scroll. Responsive layout. Minimum touch targets.</comment>
+                </node>
+                <node title="Color Blind Modes" priority="medium" status="pending" id="colorblind-001">
+                    <comment>Deuteranopia, protanopia, tritanopia themes. Pattern alternatives to color.</comment>
+                </node>
+            </node>
+            <node title="12.3 Motor Accessibility" priority="medium" status="pending" id="motor-access-001">
+                <comment>ROI: Usable by users with motor impairments, expanding market.</comment>
+                <node title="Sticky Keys Support" priority="medium" status="pending" id="sticky-keys-001">
+                    <comment>Sequential key combinations. Configurable delays. Visual feedback.</comment>
+                </node>
+                <node title="Large Click Targets" priority="medium" status="pending" id="click-targets-001">
+                    <comment>Minimum 44x44px targets. Spacing between actions. Error prevention.</comment>
+                </node>
+                <node title="Voice Control" priority="low" status="pending" id="voice-control-001">
+                    <comment>Basic voice commands for navigation and control. OS integration.</comment>
+                </node>
+            </node>
+        </node>
+        
+        <node title="13. Implementation Architecture Considerations" priority="critical" status="active" id="implementation-arch-001">
+            <comment>Technical architecture decisions based on existing codebase analysis and proven web implementation success.</comment>
+            
+            <node title="13.1 Existing Codebase Leverage" priority="critical" status="active" id="codebase-leverage-001">
+                <comment>ROI: 70% code reuse saves 3-4 weeks development time and ensures proven reliability.</comment>
+                
+                <task_prompt_for_llm">
+Analyze the existing VoiceFlowPro web codebase for desktop integration opportunities:
+
+Key Reusable Components (Confirmed Working):
+1. WhisperWebEngine (transformers.js) - 336 lines, production-ready
+2. AudioProcessor - robust M4A/MP3/WAV handling with fallbacks
+3. React UI components - 2000+ lines of tested components
+4. Model management system with progress tracking
+5. Transcription settings and preferences
+
+Desktop Adaptation Strategy:
+- Wrap WhisperWebEngine in Electron main process
+- Use existing React components in renderer process
+- Adapt model manager for electron-store instead of IndexedDB
+- Port audio processor for Node.js file handling
+
+This approach reduces desktop development risk by 80% compared to starting from scratch.
+                </task_prompt_for_llm>
+                
+                <code language="typescript">
+// Desktop adaptation example - leveraging existing WhisperWebEngine
+// apps/desktop/src/main/services/whisperService.ts
+import { WhisperWebEngine } from '../../../web/src/lib/whisper/whisperEngine';
+
+export class DesktopWhisperService {
+    private engine: WhisperWebEngine;
+    
+    async initialize() {
+        // Reuse exact same engine logic, adapted for file paths
+        this.engine = new WhisperWebEngine();
+        return this.engine.initialize(config);
+    }
+    
+    async transcribeFile(filePath: string) {
+        // Convert file path to File object for existing API
+        const fileBuffer = await fs.readFile(filePath);
+        const file = new File([fileBuffer], path.basename(filePath));
+        return this.engine.transcribeFile(file);
+    }
+}
+                </code>
+            </node>
+            
+            <node title="13.2 Electron Architectural Pattern" priority="high" status="active" id="electron-pattern-001">
+                <comment>Proven architecture pattern optimizing for security, performance, and maintainability.</comment>
+                
+                <code language="typescript">
+// Main process architecture - secure and performant
+// apps/desktop/src/main/index.ts
+
+class VoiceFlowProApp {
+    private services: {
+        whisper: WhisperService;
+        fileWatcher: WatchFolderService;
+        batch: BatchProcessor;
+        export: ExportService;
+    };
+    
+    private windows: WindowManager;
+    private store: Store;
+    
+    async initialize() {
+        // Initialize secure storage
+        this.store = new Store({ encryptionKey: 'user-specific-key' });
+        
+        // Initialize services in main process
+        this.services = {
+            whisper: new WhisperService(),
+            fileWatcher: new WatchFolderService(),
+            batch: new BatchProcessor(),
+            export: new ExportService()
+        };
+        
+        // Set up IPC bridge
+        this.setupSecureIPC();
+        
+        // Create main window with context isolation
+        this.windows = new WindowManager();
+        await this.windows.createMainWindow();
+    }
+    
+    private setupSecureIPC() {
+        // Only expose necessary APIs to renderer
+        ipcMain.handle('app:transcribe-file', async (event, filePath) => {
+            return this.services.whisper.transcribeFile(filePath);
+        });
+        
+        ipcMain.handle('app:add-watch-folder', async (event, path, rules) => {
+            return this.services.fileWatcher.addWatchFolder(path, rules);
+        });
+    }
+}
+                </code>
+            </node>
+        </node>
+        
+        <node title="14. Development Roadmap Based on Analysis" priority="critical" status="active" id="dev-roadmap-001">
+            <comment>Phased development approach optimized for rapid value delivery and code reuse from existing implementation.</comment>
+            
+            <node title="14.1 Phase 1: Foundation (Week 1)" priority="critical" status="active" id="roadmap-phase1-001">
+                <comment>Establish desktop foundation leveraging proven web components. Target: Working MVP with core transcription.</comment>
+                
+                <cli_command>
+# Phase 1 implementation tasks
+cd /Users/galahassa/Dev/voiceflow/voiceflow-pro
+
+# 1. Set up Electron structure
+mkdir -p apps/desktop/src/{main,preload,renderer}
+
+# 2. Install dependencies 
+cd apps/desktop
+npm install electron@28 @electron-forge/cli --save-dev
+npm install electron-store electron-updater
+
+# 3. Port existing whisper engine
+cp -r ../web/src/lib/whisper ./src/lib/
+
+# 4. Create main process services
+touch src/main/{index.ts,services/whisperService.ts,ipc/handlers.ts}
+
+# 5. Set up renderer with existing React app
+ln -s ../web/src/components ./src/renderer/components
+                </cli_command>
+                
+                <node title="Success Criteria Phase 1" priority="critical" status="pending" id="phase1-success-001">
+                    <comment>Measurable deliverables for phase 1 completion.</comment>
+                    
+                    <code language="text">
+Phase 1 Success Metrics:
+☐ Electron app launches in < 2 seconds
+☐ Existing React UI renders correctly
+☐ File import dialog works
+☐ WhisperWebEngine transcribes audio files
+☐ Results display in familiar UI
+☐ Window state persists across restarts
+☐ No memory leaks in 1-hour operation
+☐ Basic keyboard shortcuts functional
+
+Technical Deliverables:
+☐ Main process with secure IPC
+☐ Preload script with context isolation
+☐ Renderer process with React integration
+☐ WhisperService wrapping existing engine
+☐ Basic file handling and import
+☐ Window management system
+☐ Settings persistence with electron-store
+                    </code>
+                </node>
+            </node>
+        </node>
+    </node>
+</project_plan>
