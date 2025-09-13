@@ -91,11 +91,25 @@ class VoiceFlowProApp {
 
     private async initializeServices() {
         try {
-            await this.whisperService.initialize();
-            await this.watchFolderService.initialize();
-            log.info('All services initialized successfully');
+            // Try to initialize services, but don't fail if WhisperService has issues
+            try {
+                await this.whisperService.initialize();
+                log.info('WhisperService initialized successfully');
+            } catch (error) {
+                log.warn('WhisperService initialization failed (will retry on first use):', error);
+                // Continue - we can initialize it later when actually needed
+            }
+            
+            try {
+                await this.watchFolderService.initialize();
+                log.info('WatchFolderService initialized successfully');
+            } catch (error) {
+                log.warn('WatchFolderService initialization failed:', error);
+            }
+            
+            log.info('Services initialization completed');
         } catch (error) {
-            log.error('Failed to initialize services:', error);
+            log.error('Critical error during services initialization:', error);
             throw error;
         }
     }
