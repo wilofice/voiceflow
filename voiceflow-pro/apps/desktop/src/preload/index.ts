@@ -164,7 +164,8 @@ const electronAPI: ElectronAPI = {
       ipcRenderer.on('watch-folder:event', listener);
     },
     removeEventListener: (callback: (event: string, data: any) => void) => {
-      ipcRenderer.removeListener('watch-folder:event', callback);
+      // Need to wrap callback for correct signature
+      ipcRenderer.removeAllListeners('watch-folder:event');
     }
   },
 
@@ -179,7 +180,8 @@ const electronAPI: ElectronAPI = {
       ipcRenderer.on('files:selected', listener);
     },
     removeFilesSelectedListener: (callback: (filePaths: string[]) => void) => {
-      ipcRenderer.removeListener('files:selected', callback);
+      // Need to wrap callback for correct signature
+      ipcRenderer.removeAllListeners('files:selected');
     }
   },
 
@@ -203,7 +205,8 @@ const electronAPI: ElectronAPI = {
       ipcRenderer.on('menu:preferences', listener);
     },
     removeMenuActionListener: (callback: (action: string) => void) => {
-      ipcRenderer.removeListener('menu:preferences', callback);
+      // Need to wrap callback for correct signature
+      ipcRenderer.removeAllListeners('menu:preferences');
     }
   },
 
