@@ -210,28 +210,224 @@ npm start             # ✅ Success - Electron app launched
             <node title="Task 1.2: Integrate Existing Whisper Engine" priority="critical" status="active" assignee="Lead Dev" startDate="05-Nov-2024" endDate="06-Nov-2024" id="task-whisper-integration-001">
                 <comment>Port WhisperWebEngine from web to desktop with IPC bridge. Complexity: LARGE. Status: Core structure implemented, needs ESM module compatibility fix for @xenova/transformers.</comment>
                 
-                <node title="Current Implementation Status" priority="high" status="active" id="task-1-2-status-001">
-                    <comment>WhisperService is structurally complete but requires ESM module handling for transformers.js</comment>
+                <node title="ESM Compatibility Analysis" priority="high" status="completed" id="task-1-2-analysis-001">
+                    <comment>Comprehensive analysis of ESM module compatibility issue and available solutions</comment>
                     
                     <code language="text">
-✅ COMPLETED:
-- WhisperService class structure
-- IPC handlers for all whisper methods
-- Job management system
-- Progress notification system
-- Error handling with graceful fallback
-- Type definitions for WhisperConfig and TranscriptionResult
+🔍 ROOT CAUSE ANALYSIS:
+- @xenova/transformers v3+ is ESM-only (no CommonJS support)
+- Electron main process uses CommonJS by default
+- TypeScript compiles to CommonJS (target: CommonJS in tsconfig)
+- Dynamic import() fails in Electron main due to context restrictions
 
-⚠️ ISSUE TO RESOLVE:
-- @xenova/transformers is an ESM module
-- Current TypeScript compiles to CommonJS
-- Error: ERR_REQUIRE_ESM when importing transformers.js
+📊 WEB VS DESKTOP IMPLEMENTATION:
+Web Version (apps/web):
+- Uses Next.js which handles ESM/CommonJS transpilation
+- @xenova/transformers works via Next.js module system
+- No emsdk dependency found (contrary to initial assumption)
+- Transformers.js is pure JavaScript implementation
 
-📋 NEXT STEPS:
-1. Option A: Convert to ESM module system
-2. Option B: Use dynamic import() for transformers
-3. Option C: Use a bundler like esbuild or webpack
-4. Option D: Find CommonJS-compatible alternative
+Desktop Version (apps/desktop):
+- Raw Electron main process (Node.js environment)
+- TypeScript → CommonJS compilation
+- No module bundler to handle ESM imports
+- Requires explicit ESM compatibility
+
+🔧 EMSDK INVESTIGATION RESULTS:
+- /Users/galahassa/Dev/voiceflow/emsdk exists (Emscripten SDK)
+- Used for whisper.cpp WASM compilation (deprecated approach)
+- NOT needed for @xenova/transformers (pure JS solution)
+- Current web implementation already moved away from WASM
+
+💡 IDENTIFIED SOLUTIONS (Ranked by Feasibility):
+1. ✅ OPTION A: Enable ESM in Electron Main Process
+2. ✅ OPTION B: Use Dynamic Import with Proper Error Handling  
+3. ✅ OPTION C: Module Bundler (esbuild/webpack for main process)
+4. ❌ OPTION D: emsdk Integration (not applicable - deprecated)
+                    </code>
+                </node>
+
+                <node title="Implementation Strategy" priority="high" status="active" id="task-1-2-strategy-001">
+                    <comment>Detailed implementation plan for resolving ESM compatibility</comment>
+                    
+                    <code language="text">
+🎯 RECOMMENDED SOLUTION: OPTION B - Dynamic Import with Error Handling
+
+REASONING:
+- Minimal changes to existing codebase
+- Maintains TypeScript compilation to CommonJS
+- No package.json "type": "module" changes needed
+- Already partially implemented in current WhisperService
+- Preserves Electron main process compatibility
+
+📋 IMPLEMENTATION PLAN:
+
+STEP 1: Enhanced Dynamic Import Pattern
+- Wrap dynamic imports in async initialization
+- Add proper error boundaries for ESM failures
+- Implement retry mechanisms for model loading
+- Create fallback for development vs production
+
+STEP 2: Audio Processing Integration  
+- Import existing AudioProcessor from web version
+- Adapt for Node.js file system operations
+- Replace browser-specific APIs (AudioContext, FileReader)
+- Add support for desktop audio formats
+
+STEP 3: File System Audio Loading
+- Implement proper audio decoding (not simplified buffer conversion)
+- Add support for: MP3, WAV, M4A, OGG, FLAC, MP4, MOV
+- Use Node.js audio libraries (node-ffmpeg, sharp-audio)
+- Stream large files to prevent memory issues
+
+STEP 4: Model Caching and Distribution
+- Set up local model storage in user data directory
+- Implement model download progress tracking
+- Add model version management and updates
+- Cache frequently used models (tiny, base, small)
+
+STEP 5: Performance Optimization
+- Add WebWorker equivalent for main process isolation
+- Implement model preloading on app startup
+- Add memory cleanup after transcription
+- Monitor CPU/memory usage during processing
+                    </code>
+                </node>
+
+                <node title="Technical Implementation Details" priority="high" status="active" id="task-1-2-technical-001">
+                    <comment>Specific code changes and technical approach for ESM resolution</comment>
+                    
+                    <code language="typescript">
+// Enhanced WhisperService with proper ESM handling
+export class WhisperService {
+    private transcriber: any = null;
+    private transformers: any = null;
+    
+    async initialize(): Promise<void> {
+        try {
+            // Dynamic import with proper error handling
+            const transformersModule = await import('@xenova/transformers');
+            this.transformers = transformersModule;
+            
+            // Configure for Node.js environment
+            transformersModule.env.allowRemoteModels = true;
+            transformersModule.env.allowLocalModels = true;
+            transformersModule.env.localModelPath = path.join(app.getPath('userData'), 'models');
+            
+            // Set WASM paths for Node.js
+            transformersModule.env.backends.onnx.wasm.wasmPaths = path.join(
+                __dirname, '../../node_modules/@xenova/transformers/dist/'
+            );
+            
+            this.initialized = true;
+            log.info('WhisperService initialized with ESM compatibility');
+        } catch (error) {
+            if (error.code === 'ERR_REQUIRE_ESM') {
+                log.error('ESM module compatibility issue detected');
+                // Implement fallback or alternative strategy
+            }
+            throw error;
+        }
+    }
+    
+    async loadAudioFile(filePath: string): Promise<Float32Array> {
+        // Use proper audio decoding instead of buffer conversion
+        const { spawn } = require('child_process');
+        
+        return new Promise((resolve, reject) => {
+            const ffmpeg = spawn('ffmpeg', [
+                '-i', filePath,
+                '-f', 'f32le',
+                '-ar', '16000',
+                '-ac', '1',
+                'pipe:1'
+            ]);
+            
+            let audioData: Buffer[] = [];
+            
+            ffmpeg.stdout.on('data', (chunk) => {
+                audioData.push(chunk);
+            });
+            
+            ffmpeg.on('close', (code) => {
+                if (code === 0) {
+                    const combined = Buffer.concat(audioData);
+                    const float32Array = new Float32Array(combined.buffer, combined.byteOffset, combined.length / 4);
+                    resolve(float32Array);
+                } else {
+                    reject(new Error(`FFmpeg failed with code ${code}`));
+                }
+            });
+        });
+    }
+}
+
+// Alternative: ESM-enabled package.json approach
+// If we choose Option A, these changes would be needed:
+// package.json: "type": "module"
+// tsconfig.json: "target": "ES2022", "module": "ESNext"
+// All imports: use .js extensions
+// All requires: convert to import statements
+                    </code>
+                </node>
+
+                <node title="Dependencies and Prerequisites" priority="high" status="active" id="task-1-2-deps-001">
+                    <comment>Required dependencies and system prerequisites for implementation</comment>
+                    
+                    <cli_command>
+# Install audio processing dependencies
+npm install --save fluent-ffmpeg
+npm install --save-dev @types/fluent-ffmpeg
+
+# Alternative: Pure Node.js audio libraries
+npm install --save node-wav audio-buffer-utils
+
+# For development and testing
+npm install --save-dev audio-buffer-from audio-context-mock
+
+# Model caching and download
+npm install --save node-fetch fs-extra
+
+# Optional: Performance monitoring
+npm install --save pidusage systeminformation
+                    </cli_command>
+                </node>
+
+                <node title="Testing Strategy" priority="medium" status="planned" id="task-1-2-testing-001">
+                    <comment>Comprehensive testing approach for ESM compatibility fix</comment>
+                    
+                    <code language="text">
+🧪 TESTING PHASES:
+
+PHASE 1: ESM Import Testing
+- Test dynamic import in isolated Node.js environment
+- Verify transformers.js loads without ERR_REQUIRE_ESM
+- Test model loading with different sizes (tiny → large)
+- Validate WASM backend initialization
+
+PHASE 2: Audio Processing Testing  
+- Test various audio formats (MP3, WAV, M4A, OGG, FLAC)
+- Test large file handling (>100MB audio files)
+- Verify audio quality after format conversion
+- Test concurrent file processing
+
+PHASE 3: Integration Testing
+- Test WhisperService initialization in Electron context
+- Verify IPC communication with renderer process
+- Test progress callbacks and job management
+- Test error handling and recovery scenarios
+
+PHASE 4: Performance Testing
+- Measure model loading times (target: <3s for tiny model)
+- Test memory usage during transcription (target: <2GB)
+- Test CPU usage and thermal performance
+- Benchmark against web version performance
+
+PHASE 5: Platform Testing
+- Test on macOS (M1/M2 and Intel)
+- Test on Windows (x64)
+- Test on Linux (Ubuntu/CentOS)
+- Verify cross-platform audio library compatibility
                     </code>
                 </node>
                 
