@@ -1,0 +1,3560 @@
+{
+  "meta": {
+    "spec_version": "2.1.0",
+    "app_name": "VoiceFlowPro",
+    "description": "Advanced audio transcription desktop application with cloud workflow integrations.",
+    "target_framework": "Electron + React + Node.js",
+    "platforms": ["Windows", "macOS", "Linux"],
+    "backend": "Supabase",
+    "design_language": {
+      "guidelines": ["Platform-native", "Keyboard-first", "Accessible-by-default"],
+      "ui_kit": ["Tailwind CSS", "Radix UI"],
+      "icon_set": "lucide-react",
+      "color_tokens": {
+        "primary": "#3B82F6",
+        "surface": "#101827",
+        "surface_alt": "#1F2937",
+        "text_primary": "#F9FAFB",
+        "text_secondary": "#9CA3AF",
+        "success": "#10B981",
+        "warning": "#F59E0B",
+        "danger": "#EF4444"
+      },
+      "typography": {
+        "brand_family": "Inter",
+        "mono_family": "JetBrains Mono",
+        "scale": [12, 14, 16, 18, 20, 24, 32, 40]
+      }
+    },
+    "personas": [
+      {
+        "id": "persona_journalist",
+        "label": "Investigative Journalist",
+        "goals": ["Turn interviews into clean copy within minutes", "Rely on keyboard-first workflow while traveling", "Keep sources private with offline transcription"],
+        "pain_points": ["Manual clean-up of AI transcripts", "Limited time to fact-check", "Needs cross-device access without risking leaks"]
+      },
+      {
+        "id": "persona_podcaster",
+        "label": "Podcast Producer",
+        "goals": ["Batch transcribe weekly episodes", "Generate show notes and chapter markers automatically", "Push deliverables to Notion, Slack, and cloud storage"],
+        "pain_points": ["MacWhisper batch queue stalls on long jobs", "Manual exports to multiple destinations", "Difficult to coordinate edits with team"]
+      },
+      {
+        "id": "persona_researcher",
+        "label": "UX Research Lead",
+        "goals": ["Record multi-hour sessions with diarization", "Search across hundreds of transcripts instantly", "Share findings securely with stakeholders and sync to project management tools"],
+        "pain_points": ["Cloud-only tools blocked by security", "Noisy audio reduces accuracy", "Conflicts when multiple teammates edit"]
+      }
+    ],
+    "release_phases": [
+      {
+        "id": "phase_m1",
+        "name": "Ship Value Now",
+        "duration": "2 weeks",
+        "deliverables": ["URL ingest MVP", "One-click summary & chapters", "Batch Turbo core", "Export V1"],
+        "success_metrics": ["First transcription success rate > 90%", "Average time-to-first-summary < 3 minutes"]
+      },
+      {
+        "id": "phase_m2",
+        "name": "Differentiators",
+        "duration": "4-6 weeks",
+        "deliverables": ["Auto model/provider selector", "On-device diarization + highlights", "Watch folders 2.0", "Prompt recipe library"],
+        "success_metrics": ["Batch throughput +20% vs sequential", "Diarization accuracy > 90% on curated dataset"]
+      },
+      {
+        "id": "phase_m3",
+        "name": "Growth & Integrations",
+        "duration": "6-10 weeks",
+        "deliverables": ["System audio capture wizard", "Inline editor AI actions", "Notion/Obsidian/Slack connectors", "Cloud Drive Integration (Google Drive, Dropbox)", "n8n/Zapier Webhook Support"],
+        "success_metrics": ["System audio setup completion > 80%", "Integration exports triggered by 40% of pro users"]
+      }
+    ]
+  },
+  "data_layer": {
+    "models": {
+      "User": {
+        "schema": {
+          "id": {"type": "uuid", "required": true},
+          "email": {"type": "string", "required": true, "format": "email"},
+          "name": {"type": "string", "maxLength": 120},
+          "role": {"type": "enum", "values": ["individual", "team_admin", "viewer"], "default": "individual"},
+          "planId": {"type": "uuid"},
+          "avatarUrl": {"type": "string", "format": "uri"},
+          "preferences": {
+            "type": "object",
+            "properties": {
+              "theme": {"type": "enum", "values": ["system", "light", "dark", "high_contrast"], "default": "system"},
+              "language": {"type": "string", "pattern": "^[a-z]{2}(-[A-Z]{2})?$", "default": "en"},
+              "keyboardLayout": {"type": "string", "default": "default"},
+              "showTooltips": {"type": "boolean", "default": true}
+            }
+          },
+          "createdAt": {"type": "datetime", "required": true},
+          "updatedAt": {"type": "datetime", "required": true},
+          "lastActiveAt": {"type": "datetime"},
+          "tenantId": {"type": "uuid"}
+        },
+        "relations": {
+          "plan": "belongsTo(PaymentPlan)",
+          "projects": "hasMany(Project)",
+          "license": "hasOne(License)",
+          "notificationPreferences": "hasMany(NotificationPreference)"
+        },
+        "validation": {
+          "email": "required|email",
+          "role": "required|in:individual,team_admin,viewer"
+        }
+      },
+      "Transcript": {
+        "schema": {
+          "id": {"type": "uuid", "required": true},
+          "projectId": {"type": "uuid", "required": true},
+          "title": {"type": "string", "required": true, "maxLength": 255},
+          "description": {"type": "string", "maxLength": 2048},
+          "status": {"type": "enum", "values": ["idle", "queued", "downloading", "processing", "review", "completed", "error", "archived"], "default": "idle"},
+          "sourceType": {"type": "enum", "values": ["upload", "microphone", "system_audio", "url", "watch_folder", "realtime", "integration"], "required": true},
+          "language": {"type": "string", "required": true, "pattern": "^[a-z]{2}(-[A-Z]{2})?$"},
+          "durationMs": {"type": "integer", "minimum": 0},
+          "sampleRate": {"type": "integer", "minimum": 8000},
+          "fileSizeBytes": {"type": "integer", "minimum": 0},
+          "audioSourceId": {"type": "uuid"},
+          "modelPresetId": {"type": "uuid"},
+          "engine": {"type": "string"},
+          "confidenceScore": {"type": "number", "minimum": 0, "maximum": 1},
+          "tags": {"type": "array", "items": {"type": "string", "maxLength": 32}},
+          "starred": {"type": "boolean", "default": false},
+          "pinned": {"type": "boolean", "default": false},
+          "summaryId": {"type": "uuid"},
+          "chapterIds": {"type": "array", "items": "uuid"},
+          "actionItemIds": {"type": "array", "items": "uuid"},
+          "speakerProfileIds": {"type": "array", "items": "uuid"},
+          "syncStatus": {"type": "enum", "values": ["dirty", "synced", "conflicted"], "default": "dirty"},
+          "errorCode": {"type": "string"},
+          "metadata": {
+            "type": "object",
+            "properties": {
+              "captureDevice": {"type": "string"},
+              "sourceUri": {"type": "string"},
+              "watchFolderId": {"type": "uuid"},
+              "integrationConnectionId": {"type": "uuid"},
+              "processingProfileId": {"type": "uuid"},
+              "autoGenerated": {"type": "boolean"},
+              "timezone": {"type": "string"}
+            }
+          },
+          "createdAt": {"type": "datetime", "required": true},
+          "updatedAt": {"type": "datetime", "required": true},
+          "completedAt": {"type": "datetime"}
+        },
+        "relations": {
+          "project": "belongsTo(Project)",
+          "segments": "hasMany(Segment)",
+          "summary": "hasOne(Summary)",
+          "chapters": "hasMany(Chapter)",
+          "actionItems": "hasMany(ActionItem)",
+          "speakerProfiles": "hasMany(SpeakerProfile)",
+          "exportRuns": "hasMany(ExportRun)"
+        },
+        "validation": {
+          "title": "required|string|max:255",
+          "language": "required|regex:^[a-z]{2}(-[A-Z]{2})?$",
+          "status": "required|in:idle,queued,downloading,processing,review,completed,error,archived"
+        }
+      },
+      "Segment": {
+        "schema": {
+          "id": {"type": "uuid", "required": true},
+          "transcriptId": {"type": "uuid", "required": true},
+          "startMs": {"type": "integer", "minimum": 0, "required": true},
+          "endMs": {"type": "integer", "minimum": 0, "required": true},
+          "text": {"type": "string", "required": true},
+          "speakerId": {"type": "uuid"},
+          "confidence": {"type": "number", "minimum": 0, "maximum": 1},
+          "isIgnored": {"type": "boolean", "default": false},
+          "annotations": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "type": {"type": "enum", "values": ["comment", "bookmark", "issue"]},
+                "payload": {"type": "object"},
+                "authorId": {"type": "uuid"},
+                "createdAt": {"type": "datetime"}
+              }
+            }
+          },
+          "wordTimings": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "word": {"type": "string"},
+                "startMs": {"type": "integer"},
+                "endMs": {"type": "integer"},
+                "confidence": {"type": "number", "minimum": 0, "maximum": 1}
+              }
+            }
+          }
+        },
+        "relations": {
+          "transcript": "belongsTo(Transcript)",
+          "speaker": "belongsTo(SpeakerProfile)"
+        },
+        "validation": {
+          "endMs": "gt:startMs",
+          "text": "required|string"
+        }
+      },
+      "SpeakerProfile": {
+        "schema": {
+          "id": {"type": "uuid", "required": true},
+          "transcriptId": {"type": "uuid", "required": true},
+          "label": {"type": "string", "required": true, "maxLength": 64},
+          "color": {"type": "string", "pattern": "^#(?:[0-9a-fA-F]{3}){1,2}$"},
+          "avatarInitials": {"type": "string", "maxLength": 4},
+          "isDefault": {"type": "boolean", "default": false},
+          "diarizationConfidence": {"type": "number", "minimum": 0, "maximum": 1},
+          "metadata": {"type": "object"}
+        },
+        "relations": {
+          "transcript": "belongsTo(Transcript)",
+          "segments": "hasMany(Segment)"
+        },
+        "validation": {
+          "label": "required|string"
+        }
+      },
+      "Chapter": {
+        "schema": {
+          "id": {"type": "uuid", "required": true},
+          "transcriptId": {"type": "uuid", "required": true},
+          "title": {"type": "string", "required": true, "maxLength": 160},
+          "startMs": {"type": "integer", "minimum": 0, "required": true},
+          "endMs": {"type": "integer", "minimum": 0, "required": true},
+          "summary": {"type": "string", "maxLength": 1024},
+          "recipeId": {"type": "uuid"},
+          "createdAt": {"type": "datetime", "required": true}
+        },
+        "relations": {
+          "transcript": "belongsTo(Transcript)",
+          "recipe": "belongsTo(PromptRecipe)"
+        },
+        "validation": {
+          "endMs": "gt:startMs"
+        }
+      },
+      "ActionItem": {
+        "schema": {
+          "id": {"type": "uuid", "required": true},
+          "transcriptId": {"type": "uuid", "required": true},
+          "description": {"type": "string", "required": true, "maxLength": 512},
+          "owner": {"type": "string", "maxLength": 120},
+          "priority": {"type": "enum", "values": ["low", "medium", "high"], "default": "medium"},
+          "dueDate": {"type": "date"},
+          "status": {"type": "enum", "values": ["open", "in_progress", "done"], "default": "open"},
+          "recipeId": {"type": "uuid"},
+          "createdAt": {"type": "datetime", "required": true}
+        },
+        "relations": {
+          "transcript": "belongsTo(Transcript)",
+          "recipe": "belongsTo(PromptRecipe)"
+        },
+        "validation": {
+          "description": "required|string|min:3"
+        }
+      },
+      "Summary": {
+        "schema": {
+          "id": {"type": "uuid", "required": true},
+          "transcriptId": {"type": "uuid", "required": true},
+          "recipeId": {"type": "uuid"},
+          "tone": {"type": "enum", "values": ["neutral", "executive", "casual", "academic"], "default": "neutral"},
+          "length": {"type": "enum", "values": ["tweet", "short", "detailed"], "default": "short"},
+          "language": {"type": "string", "pattern": "^[a-z]{2}(-[A-Z]{2})?$"},
+          "content": {"type": "string", "required": true},
+          "tokensUsed": {"type": "integer", "minimum": 0},
+          "generatedAt": {"type": "datetime", "required": true}
+        },
+        "relations": {
+          "transcript": "belongsTo(Transcript)",
+          "recipe": "belongsTo(PromptRecipe)"
+        },
+        "validation": {
+          "content": "required|string"
+        }
+      },
+      "Project": {
+        "schema": {
+          "id": {"type": "uuid", "required": true},
+          "ownerId": {"type": "uuid", "required": true},
+          "teamId": {"type": "uuid"},
+          "name": {"type": "string", "required": true, "maxLength": 120},
+          "description": {"type": "string", "maxLength": 1024},
+          "status": {"type": "enum", "values": ["active", "archived"], "default": "active"},
+          "color": {"type": "string", "default": "#3B82F6"},
+          "defaultModelPresetId": {"type": "uuid"},
+          "defaultExportPresetId": {"type": "uuid"},
+          "tags": {"type": "array", "items": "string"},
+          "autoArchiveAfterDays": {"type": "integer", "minimum": 0},
+          "createdAt": {"type": "datetime", "required": true},
+          "updatedAt": {"type": "datetime", "required": true}
+        },
+        "relations": {
+          "owner": "belongsTo(User)",
+          "transcripts": "hasMany(Transcript)",
+          "watchFolders": "hasMany(WatchFolder)",
+          "batchJobs": "hasMany(BatchJob)",
+          "exportPresets": "hasMany(ExportPreset)"
+        },
+        "validation": {
+          "name": "required|string|max:120"
+        }
+      },
+      "AudioSource": {
+        "schema": {
+          "id": {"type": "uuid", "required": true},
+          "type": {"type": "enum", "values": ["upload", "url", "recording", "system_audio", "watch_folder", "integration"], "required": true},
+          "originalName": {"type": "string"},
+          "sourceUri": {"type": "string"},
+          "localPath": {"type": "string"},
+          "storageProvider": {"type": "enum", "values": ["local", "supabase", "external"], "default": "local"},
+          "hash": {"type": "string"},
+          "durationMs": {"type": "integer", "minimum": 0},
+          "sampleRate": {"type": "integer"},
+          "channelCount": {"type": "integer"},
+          "capturedAt": {"type": "datetime"},
+          "metadata": {
+            "type": "object",
+            "properties": {
+              "device": {"type": "string"},
+              "appBundleId": {"type": "string"},
+              "watchFolderId": {"type": "uuid"},
+              "downloadedVia": {"type": "string"}
+            }
+          }
+        },
+        "relations": {
+          "transcript": "hasOne(Transcript)",
+          "batchItems": "hasMany(BatchJobItem)"
+        },
+        "validation": {
+          "type": "required|in:upload,url,recording,system_audio,watch_folder,integration"
+        }
+      },
+      "BatchJob": {
+        "schema": {
+          "id": {"type": "uuid", "required": true},
+          "projectId": {"type": "uuid"},
+          "label": {"type": "string", "required": true, "maxLength": 120},
+          "status": {"type": "enum", "values": ["draft", "queued", "running", "paused", "completed", "error", "cancelled"], "default": "draft"},
+          "concurrency": {"type": "integer", "minimum": 1, "default": 1},
+          "priority": {"type": "enum", "values": ["low", "normal", "high"], "default": "normal"},
+          "totalItems": {"type": "integer", "minimum": 0},
+          "completedItems": {"type": "integer", "minimum": 0},
+          "failedItems": {"type": "integer", "minimum": 0},
+          "retryLimit": {"type": "integer", "minimum": 0, "default": 3},
+          "startedAt": {"type": "datetime"},
+          "completedAt": {"type": "datetime"},
+          "createdBy": {"type": "uuid", "required": true},
+          "resumeOfJobId": {"type": "uuid"},
+          "exportPresetIds": {"type": "array", "items": "uuid"}
+        },
+        "relations": {
+          "project": "belongsTo(Project)",
+          "items": "hasMany(BatchJobItem)",
+          "exportPresets": "hasMany(ExportPreset)",
+          "creator": "belongsTo(User)"
+        },
+        "validation": {
+          "label": "required|string",
+          "concurrency": "integer|min:1|max:16"
+        }
+      },
+      "BatchJobItem": {
+        "schema": {
+          "id": {"type": "uuid", "required": true},
+          "batchJobId": {"type": "uuid", "required": true},
+          "audioSourceId": {"type": "uuid", "required": true},
+          "transcriptId": {"type": "uuid"},
+          "status": {"type": "enum", "values": ["pending", "downloading", "processing", "completed", "error", "skipped"], "default": "pending"},
+          "progress": {"type": "number", "minimum": 0, "maximum": 1},
+          "attempts": {"type": "integer", "minimum": 0, "default": 0},
+          "errorCode": {"type": "string"},
+          "etaMs": {"type": "integer", "minimum": 0}
+        },
+        "relations": {
+          "batchJob": "belongsTo(BatchJob)",
+          "audioSource": "belongsTo(AudioSource)",
+          "transcript": "belongsTo(Transcript)"
+        },
+        "validation": {
+          "status": "required|in:pending,downloading,processing,completed,error,skipped"
+        }
+      },
+      "WatchFolder": {
+        "schema": {
+          "id": {"type": "uuid", "required": true},
+          "projectId": {"type": "uuid"},
+          "name": {"type": "string", "required": true, "maxLength": 120},
+          "path": {"type": "string", "required": true},
+          "provider": {"type": "enum", "values": ["local", "dropbox", "google_drive", "onedrive", "icloud_drive"], "default": "local"},
+          "isRecursive": {"type": "boolean", "default": true},
+          "status": {"type": "enum", "values": ["active", "paused", "error"], "default": "active"},
+          "rules": {
+            "type": "object",
+            "properties": {
+              "autoTranscribe": {"type": "boolean", "default": true},
+              "modelPresetId": {"type": "uuid"},
+              "language": {"type": "string", "pattern": "^[a-z]{2}(-[A-Z]{2})?$"},
+              "exportPresetIds": {"type": "array", "items": "uuid"},
+              "postProcessRecipeIds": {"type": "array", "items": "uuid"},
+              "renameTemplate": {"type": "string"},
+              "priority": {"type": "enum", "values": ["low", "normal", "high"], "default": "normal"},
+              "schedule": {"type": "string", "description": "CRON expression or human schedule"},
+              "conflictStrategy": {"type": "enum", "values": ["skip", "overwrite", "version"], "default": "version"}
+            }
+          },
+          "excludedPatterns": {"type": "array", "items": "string"},
+          "lastScanAt": {"type": "datetime"},
+          "createdAt": {"type": "datetime", "required": true},
+          "updatedAt": {"type": "datetime", "required": true}
+        },
+        "relations": {
+          "project": "belongsTo(Project)",
+          "transcripts": "hasMany(Transcript)",
+          "exportPresets": "hasMany(ExportPreset)",
+          "postProcessRecipes": "hasMany(PromptRecipe)"
+        },
+        "validation": {
+          "name": "required|string",
+          "path": "required|string"
+        }
+      },
+      "ModelPreset": {
+        "schema": {
+          "id": {"type": "uuid", "required": true},
+          "label": {"type": "string", "required": true},
+          "engine": {"type": "enum", "values": ["whisper_cpp", "whisperkit", "parakeet", "cloud_openai", "cloud_anthropic", "custom"]},
+          "size": {"type": "string"},
+          "downloadSizeMb": {"type": "number"},
+          "supportsRealtime": {"type": "boolean", "default": false},
+          "supportsDiarization": {"type": "boolean", "default": false},
+          "requiresLicense": {"type": "boolean", "default": false},
+          "locale": {"type": "string", "pattern": "^[a-z]{2}(-[A-Z]{2})?$"},
+          "defaultFor": {"type": "array", "items": "string"},
+          "costPerMinute": {"type": "number", "minimum": 0},
+          "latencyClass": {"type": "enum", "values": ["realtime", "fast", "balanced", "accurate"], "default": "balanced"},
+          "lastBenchmark": {
+            "type": "object",
+            "properties": {
+              "hardware": {"type": "string"},
+              "rtf": {"type": "number"},
+              "accuracy": {"type": "number", "minimum": 0, "maximum": 1}
+            }
+          },
+          "installedAt": {"type": "datetime"},
+          "version": {"type": "string"}
+        },
+        "relations": {
+          "transcripts": "hasMany(Transcript)",
+          "batchJobs": "hasMany(BatchJob)",
+          "watchFolders": "hasMany(WatchFolder)"
+        },
+        "validation": {
+          "label": "required|string"
+        }
+      },
+      "PromptRecipe": {
+        "schema": {
+          "id": {"type": "uuid", "required": true},
+          "name": {"type": "string", "required": true, "maxLength": 140},
+          "category": {"type": "enum", "values": ["summary", "chapters", "action_items", "rewrite", "translation", "custom"], "default": "summary"},
+          "promptTemplate": {"type": "string", "required": true},
+          "variables": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {"type": "string"},
+                "label": {"type": "string"},
+                "type": {"type": "enum", "values": ["text", "select", "number", "boolean"]},
+                "defaultValue": {"type": "string"},
+                "options": {"type": "array", "items": "string"}
+              }
+            }
+          },
+          "outputSections": {
+            "type": "array",
+            "items": {"type": "enum", "values": ["tl_dr", "chapters", "action_items", "highlights", "custom"]}
+          },
+          "defaultModelPresetId": {"type": "uuid"},
+          "tokenBudget": {"type": "integer", "minimum": 0},
+          "estimatedCostUsd": {"type": "number", "minimum": 0},
+          "isSystem": {"type": "boolean", "default": false},
+          "shareStatus": {"type": "enum", "values": ["private", "team", "public"], "default": "private"},
+          "createdBy": {"type": "uuid"},
+          "createdAt": {"type": "datetime", "required": true},
+          "updatedAt": {"type": "datetime", "required": true}
+        },
+        "relations": {
+          "owner": "belongsTo(User)",
+          "summary": "hasMany(Summary)",
+          "chapters": "hasMany(Chapter)",
+          "actionItems": "hasMany(ActionItem)"
+        },
+        "validation": {
+          "name": "required|string",
+          "promptTemplate": "required|string"
+        }
+      },
+      "RealtimeSession": {
+        "schema": {
+          "id": {"type": "uuid", "required": true},
+          "transcriptId": {"type": "uuid"},
+          "mode": {"type": "enum", "values": ["microphone", "system", "url_stream"], "required": true},
+          "status": {"type": "enum", "values": ["initializing", "running", "paused", "stopped", "error"], "default": "initializing"},
+          "deviceId": {"type": "string"},
+          "latencyTargetMs": {"type": "integer", "default": 500},
+          "bufferMs": {"type": "integer", "default": 200},
+          "participants": {"type": "array", "items": "uuid"},
+          "startedAt": {"type": "datetime"},
+          "endedAt": {"type": "datetime"},
+          "errorCode": {"type": "string"}
+        },
+        "relations": {
+          "transcript": "belongsTo(Transcript)",
+          "modelPreset": "belongsTo(ModelPreset)"
+        },
+        "validation": {
+          "mode": "required|in:microphone,system,url_stream"
+        }
+      },
+      "ExportPreset": {
+        "schema": {
+          "id": {"type": "uuid", "required": true},
+          "projectId": {"type": "uuid"},
+          "name": {"type": "string", "required": true},
+          "style": {"type": "enum", "values": ["transcript", "subtitles", "segments", "custom"], "required": true},
+          "format": {"type": "enum", "values": ["md", "txt", "srt", "vtt", "json", "docx", "pdf", "html", "csv", "ass"], "required": true},
+          "grouping": {"type": "enum", "values": ["none", "sentences", "speakers", "chapters"], "default": "none"},
+          "includeSections": {"type": "array", "items": "string"},
+          "includeTimestamps": {"type": "boolean", "default": true},
+          "includeSpeakers": {"type": "boolean", "default": true},
+          "includeChapters": {"type": "boolean", "default": false},
+          "includeActionItems": {"type": "boolean", "default": false},
+          "postActions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "type": {"type": "enum", "values": ["open", "upload", "webhook", "email", "integration"]},
+                "config": {"type": "object"}
+              }
+            }
+          },
+          "outputPathTemplate": {"type": "string"},
+          "autoShareTargets": {"type": "array", "items": "uuid"},
+          "default": {"type": "boolean", "default": false},
+          "createdBy": {"type": "uuid", "required": true},
+          "createdAt": {"type": "datetime", "required": true},
+          "updatedAt": {"type": "datetime", "required": true}
+        },
+        "relations": {
+          "project": "belongsTo(Project)",
+          "watchFolders": "hasMany(WatchFolder)",
+          "batchJobs": "hasMany(BatchJob)",
+          "exportRuns": "hasMany(ExportRun)"
+        },
+        "validation": {
+          "name": "required|string"
+        }
+      },
+      "ExportRun": {
+        "schema": {
+          "id": {"type": "uuid", "required": true},
+          "transcriptId": {"type": "uuid", "required": true},
+          "exportPresetId": {"type": "uuid", "required": true},
+          "status": {"type": "enum", "values": ["pending", "rendering", "uploading", "completed", "error"], "default": "pending"},
+          "outputs": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "format": {"type": "string"},
+                "path": {"type": "string"},
+                "sizeBytes": {"type": "integer"},
+                "downloadUrl": {"type": "string", "format": "uri"}
+              }
+            }
+          },
+          "errorCode": {"type": "string"},
+          "startedAt": {"type": "datetime"},
+          "completedAt": {"type": "datetime"},
+          "triggeredBy": {"type": "uuid"}
+        },
+        "relations": {
+          "transcript": "belongsTo(Transcript)",
+          "exportPreset": "belongsTo(ExportPreset)"
+        },
+        "validation": {
+          "status": "required|in:pending,rendering,uploading,completed,error"
+        }
+      },
+      "IntegrationConnection": {
+        "schema": {
+          "id": {"type": "uuid", "required": true},
+          "userId": {"type": "uuid", "required": true},
+          "provider": {"type": "enum", "values": ["notion", "obsidian", "slack", "zapier", "n8n", "google_drive", "dropbox", "onedrive", "custom_webhook"], "required": true},
+          "status": {"type": "enum", "values": ["connected", "expired", "error", "revoked"], "default": "connected"},
+          "scopes": {"type": "array", "items": "string"},
+          "metadata": {"type": "object"},
+          "lastSyncAt": {"type": "datetime"},
+          "createdAt": {"type": "datetime", "required": true},
+          "updatedAt": {"type": "datetime", "required": true}
+        },
+        "relations": {
+          "user": "belongsTo(User)",
+          "exportRuns": "hasMany(ExportRun)"
+        },
+        "validation": {
+          "provider": "required|in:notion,obsidian,slack,zapier,n8n,google_drive,dropbox,onedrive,custom_webhook"
+        }
+      },
+      "SyncState": {
+        "schema": {
+          "id": {"type": "uuid", "required": true},
+          "entityType": {"type": "string", "required": true},
+          "entityId": {"type": "uuid", "required": true},
+          "userId": {"type": "uuid", "required": true},
+          "version": {"type": "integer", "default": 1},
+          "lastPulledAt": {"type": "datetime"},
+          "lastPushedAt": {"type": "datetime"},
+          "conflictState": {"type": "enum", "values": ["none", "pending", "resolved", "manual"], "default": "none"},
+          "checksum": {"type": "string"}
+        },
+        "relations": {
+          "user": "belongsTo(User)"
+        },
+        "validation": {
+          "entityType": "required|string"
+        }
+      },
+      "License": {
+        "schema": {
+          "id": {"type": "uuid", "required": true},
+          "userId": {"type": "uuid", "required": true},
+          "planId": {"type": "uuid", "required": true},
+          "status": {"type": "enum", "values": ["trial", "active", "grace", "past_due", "cancelled"], "default": "trial"},
+          "seatId": {"type": "string"},
+          "deviceId": {"type": "string"},
+          "activatedAt": {"type": "datetime"},
+          "expiresAt": {"type": "datetime"},
+          "offlineValidUntil": {"type": "datetime"},
+          "verificationHash": {"type": "string"},
+          "createdAt": {"type": "datetime", "required": true},
+          "updatedAt": {"type": "datetime", "required": true}
+        },
+        "relations": {
+          "user": "belongsTo(User)",
+          "plan": "belongsTo(PaymentPlan)"
+        },
+        "validation": {
+          "status": "required|in:trial,active,grace,past_due,cancelled"
+        }
+      },
+      "PaymentPlan": {
+        "schema": {
+          "id": {"type": "uuid", "required": true},
+          "name": {"type": "string", "required": true},
+          "priceUsd": {"type": "number", "required": true, "minimum": 0},
+          "billingCycle": {"type": "enum", "values": ["one_time", "monthly", "yearly"], "required": true},
+          "stripePriceId": {"type": "string"},
+          "features": {"type": "array", "items": "string"},
+          "tier": {"type": "enum", "values": ["free", "pro", "premium", "enterprise"], "required": true},
+          "storageQuotaGb": {"type": "number", "minimum": 0},
+          "minutesIncluded": {"type": "integer", "minimum": 0},
+          "createdAt": {"type": "datetime", "required": true},
+          "updatedAt": {"type": "datetime", "required": true}
+        },
+        "relations": {
+          "licenses": "hasMany(License)",
+          "users": "hasMany(User)"
+        },
+        "validation": {
+          "name": "required|string",
+          "tier": "required|in:free,pro,premium,enterprise"
+        }
+      },
+      "NotificationPreference": {
+        "schema": {
+          "id": {"type": "uuid", "required": true},
+          "userId": {"type": "uuid", "required": true},
+          "channel": {"type": "enum", "values": ["in_app", "email", "slack", "desktop"], "required": true},
+          "eventType": {"type": "string", "required": true},
+          "enabled": {"type": "boolean", "default": true},
+          "snoozedUntil": {"type": "datetime"}
+        },
+        "relations": {
+          "user": "belongsTo(User)"
+        },
+        "validation": {
+          "channel": "required|in:in_app,email,slack,desktop"
+        }
+      }
+    },
+    "api": {
+      "openapi": "3.0.0",
+      "info": {
+        "title": "VoiceFlowPro API",
+        "version": "1.0.0",
+        "description": "Supabase-backed REST API powering desktop sync, premium entitlements, and integrations."
+      },
+      "servers": [
+        {"url": "https://api.voiceflowpro.app", "description": "Production"},
+        {"url": "https://staging.api.voiceflowpro.app", "description": "Staging"}
+      ],
+      "security": [{"bearerAuth": []}],
+      "paths": {
+        "/api/auth/register": {
+          "post": {
+            "summary": "Register a new user",
+            "requestBody": {
+              "required": true,
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "required": ["email", "password"],
+                    "properties": {
+                      "email": {"type": "string", "format": "email"},
+                      "password": {"type": "string", "minLength": 10},
+                      "name": {"type": "string"},
+                      "planId": {"type": "string", "format": "uuid"}
+                    }
+                  }
+                }
+              }
+            },
+            "responses": {
+              "201": {
+                "description": "User created",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "user": {"$ref": "#/components/schemas/User"},
+                        "session": {"$ref": "#/components/schemas/AuthSession"}
+                      }
+                    }
+                  }
+                }
+              },
+              "409": {"description": "Email already registered"}
+            }
+          }
+        },
+        "/api/auth/login": {
+          "post": {
+            "summary": "Authenticate and retrieve access token",
+            "requestBody": {
+              "required": true,
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "required": ["email", "password"],
+                    "properties": {
+                      "email": {"type": "string", "format": "email"},
+                      "password": {"type": "string"},
+                      "deviceId": {"type": "string"}
+                    }
+                  }
+                }
+              }
+            },
+            "responses": {
+              "200": {
+                "description": "Login successful",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "accessToken": {"type": "string"},
+                        "refreshToken": {"type": "string"},
+                        "expiresIn": {"type": "integer"},
+                        "user": {"$ref": "#/components/schemas/User"}
+                      }
+                    }
+                  }
+                }
+              },
+              "401": {"description": "Invalid credentials"}
+            }
+          }
+        },
+        "/api/auth/session": {
+          "get": {
+            "summary": "Get current session",
+            "responses": {
+              "200": {
+                "description": "Current session",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "session": {"$ref": "#/components/schemas/AuthSession"},
+                        "user": {"$ref": "#/components/schemas/User"}
+                      }
+                    }
+                  }
+                }
+              },
+              "401": {"description": "Not authenticated"}
+            }
+          },
+          "delete": {
+            "summary": "Revoke session",
+            "responses": {
+              "204": {"description": "Session revoked"}
+            }
+          }
+        },
+        "/api/users/me": {
+          "get": {
+            "summary": "Retrieve profile",
+            "responses": {
+              "200": {
+                "description": "User profile",
+                "content": {
+                  "application/json": {
+                    "schema": {"$ref": "#/components/schemas/User"}
+                  }
+                }
+              }
+            }
+          },
+          "patch": {
+            "summary": "Update profile",
+            "requestBody": {
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "name": {"type": "string"},
+                      "preferences": {"type": "object"}
+                    }
+                  }
+                }
+              }
+            },
+            "responses": {
+              "200": {"description": "Profile updated"}
+            }
+          }
+        },
+        "/api/projects": {
+          "get": {
+            "summary": "List projects",
+            "parameters": [
+              {"name": "status", "in": "query", "schema": {"type": "string"}},
+              {"name": "search", "in": "query", "schema": {"type": "string"}}
+            ],
+            "responses": {
+              "200": {
+                "description": "Project list",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "items": {
+                          "type": "array",
+                          "items": {"$ref": "#/components/schemas/Project"}
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "post": {
+            "summary": "Create project",
+            "requestBody": {
+              "required": true,
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "required": ["name"],
+                    "properties": {
+                      "name": {"type": "string"},
+                      "description": {"type": "string"},
+                      "color": {"type": "string"}
+                    }
+                  }
+                }
+              }
+            },
+            "responses": {
+              "201": {
+                "description": "Project created",
+                "content": {
+                  "application/json": {
+                    "schema": {"$ref": "#/components/schemas/Project"}
+                  }
+                }
+              }
+            }
+          }
+        },
+        "/api/projects/{projectId}": {
+          "get": {
+            "summary": "Get project",
+            "responses": {
+              "200": {
+                "description": "Project",
+                "content": {
+                  "application/json": {
+                    "schema": {"$ref": "#/components/schemas/Project"}
+                  }
+                }
+              },
+              "404": {"description": "Not found"}
+            }
+          },
+          "patch": {
+            "summary": "Update project",
+            "requestBody": {
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "name": {"type": "string"},
+                      "description": {"type": "string"},
+                      "status": {"type": "string"}
+                    }
+                  }
+                }
+              }
+            },
+            "responses": {
+              "200": {"description": "Project updated"}
+            }
+          },
+          "delete": {
+            "summary": "Archive project",
+            "responses": {
+              "204": {"description": "Archived"}
+            }
+          }
+        },
+        "/api/transcripts": {
+          "get": {
+            "summary": "List transcripts",
+            "parameters": [
+              {"name": "projectId", "in": "query", "schema": {"type": "string", "format": "uuid"}},
+              {"name": "status", "in": "query", "schema": {"type": "string"}},
+              {"name": "search", "in": "query", "schema": {"type": "string"}},
+              {"name": "tags", "in": "query", "schema": {"type": "string"}}
+            ],
+            "responses": {
+              "200": {
+                "description": "Transcript list",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "items": {
+                          "type": "array",
+                          "items": {"$ref": "#/components/schemas/Transcript"}
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "post": {
+            "summary": "Create transcription job",
+            "requestBody": {
+              "required": true,
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "required": ["projectId", "source"],
+                    "properties": {
+                      "projectId": {"type": "string", "format": "uuid"},
+                      "title": {"type": "string"},
+                      "language": {"type": "string"},
+                      "modelPresetId": {"type": "string", "format": "uuid"},
+                      "source": {
+                        "type": "object",
+                        "required": ["type"],
+                        "properties": {
+                          "type": {"type": "string", "enum": ["upload", "url", "recording", "system_audio"]},
+                          "audioSourceId": {"type": "string", "format": "uuid"},
+                          "url": {"type": "string", "format": "uri"},
+                          "watchFolderId": {"type": "string", "format": "uuid"}
+                        }
+                      },
+                      "options": {
+                        "type": "object",
+                        "properties": {
+                          "autoSummarize": {"type": "boolean"},
+                          "autoChapters": {"type": "boolean"},
+                          "diarization": {"type": "boolean"},
+                          "targetSections": {"type": "array", "items": "string"}
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "responses": {
+              "202": {
+                "description": "Job accepted",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "transcript": {"$ref": "#/components/schemas/Transcript"},
+                        "job": {"$ref": "#/components/schemas/BatchJobItem"}
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "/api/transcripts/{id}": {
+          "get": {
+            "summary": "Get transcript",
+            "responses": {
+              "200": {
+                "description": "Transcript",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "transcript": {"$ref": "#/components/schemas/Transcript"},
+                        "segments": {
+                          "type": "array",
+                          "items": {"$ref": "#/components/schemas/Segment"}
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "404": {"description": "Not found"}
+            }
+          },
+          "patch": {
+            "summary": "Update transcript metadata",
+            "requestBody": {
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "title": {"type": "string"},
+                      "description": {"type": "string"},
+                      "tags": {"type": "array", "items": "string"},
+                      "status": {"type": "string"},
+                      "starred": {"type": "boolean"}
+                    }
+                  }
+                }
+              }
+            },
+            "responses": {
+              "200": {"description": "Updated"}
+            }
+          },
+          "delete": {
+            "summary": "Soft delete transcript",
+            "responses": {
+              "204": {"description": "Deleted"}
+            }
+          }
+        },
+        "/api/transcripts/{id}/segments": {
+          "get": {
+            "summary": "Fetch segments with pagination",
+            "parameters": [
+              {"name": "cursor", "in": "query", "schema": {"type": "string"}},
+              {"name": "limit", "in": "query", "schema": {"type": "integer", "default": 200}}
+            ],
+            "responses": {
+              "200": {
+                "description": "Segment list",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "items": {
+                          "type": "array",
+                          "items": {"$ref": "#/components/schemas/Segment"}
+                        },
+                        "nextCursor": {"type": "string"}
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "/api/transcripts/{id}/segments/{segmentId}": {
+          "patch": {
+            "summary": "Update a segment",
+            "requestBody": {
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "text": {"type": "string"},
+                      "speakerId": {"type": "string", "format": "uuid"},
+                      "isIgnored": {"type": "boolean"},
+                      "annotations": {"type": "array"}
+                    }
+                  }
+                }
+              }
+            },
+            "responses": {
+              "200": {"description": "Segment updated"}
+            }
+          }
+        },
+        "/api/transcripts/{id}/summary": {
+          "post": {
+            "summary": "Generate or refresh summary via recipe",
+            "requestBody": {
+              "required": true,
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "recipeId": {"type": "string", "format": "uuid"},
+                      "variables": {"type": "object"},
+                      "sections": {"type": "array", "items": "string"}
+                    }
+                  }
+                }
+              }
+            },
+            "responses": {
+              "202": {
+                "description": "Summary job accepted",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "summaryId": {"type": "string", "format": "uuid"},
+                        "status": {"type": "string"}
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "/api/transcripts/{id}/exports": {
+          "post": {
+            "summary": "Trigger export run",
+            "requestBody": {
+              "required": true,
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "required": ["exportPresetId"],
+                    "properties": {
+                      "exportPresetId": {"type": "string", "format": "uuid"},
+                      "overrides": {"type": "object"}
+                    }
+                  }
+                }
+              }
+            },
+            "responses": {
+              "202": {
+                "description": "Export queued",
+                "content": {
+                  "application/json": {
+                    "schema": {"$ref": "#/components/schemas/ExportRun"}
+                  }
+                }
+              }
+            }
+          }
+        },
+        "/api/transcripts/{id}/exports/{exportId}": {
+          "get": {
+            "summary": "Get export status",
+            "responses": {
+              "200": {
+                "description": "Export run",
+                "content": {
+                  "application/json": {
+                    "schema": {"$ref": "#/components/schemas/ExportRun"}
+                  }
+                }
+              }
+            }
+          }
+        },
+        "/api/audio/uploads": {
+          "post": {
+            "summary": "Upload media via signed URL",
+            "requestBody": {
+              "required": true,
+              "content": {
+                "multipart/form-data": {
+                  "schema": {
+                    "type": "object",
+                    "required": ["file"],
+                    "properties": {
+                      "file": {"type": "string", "format": "binary"},
+                      "projectId": {"type": "string", "format": "uuid"}
+                    }
+                  }
+                }
+              }
+            },
+            "responses": {
+              "201": {
+                "description": "Upload stored",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "audioSourceId": {"type": "string", "format": "uuid"},
+                        "url": {"type": "string", "format": "uri"}
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "/api/audio/url": {
+          "post": {
+            "summary": "Resolve remote URL for transcription",
+            "requestBody": {
+              "required": true,
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "required": ["url"],
+                    "properties": {
+                      "url": {"type": "string", "format": "uri"},
+                      "cookies": {"type": "string"},
+                      "headers": {"type": "object"}
+                    }
+                  }
+                }
+              }
+            },
+            "responses": {
+              "202": {
+                "description": "Download job accepted",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "audioSourceId": {"type": "string", "format": "uuid"},
+                        "status": {"type": "string"}
+                      }
+                    }
+                  }
+                }
+              },
+              "422": {"description": "Unsupported URL"}
+            }
+          }
+        },
+        "/api/batch-jobs": {
+          "get": {
+            "summary": "List batch jobs",
+            "responses": {
+              "200": {
+                "description": "Jobs",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "items": {"type": "array", "items": {"$ref": "#/components/schemas/BatchJob"}}
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "post": {
+            "summary": "Create batch job",
+            "requestBody": {
+              "required": true,
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "required": ["label", "items"],
+                    "properties": {
+                      "projectId": {"type": "string", "format": "uuid"},
+                      "label": {"type": "string"},
+                      "concurrency": {"type": "integer"},
+                      "items": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "audioSourceId": {"type": "string", "format": "uuid"},
+                            "options": {"type": "object"}
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "responses": {
+              "201": {
+                "description": "Batch job created",
+                "content": {
+                  "application/json": {
+                    "schema": {"$ref": "#/components/schemas/BatchJob"}
+                  }
+                }
+              }
+            }
+          }
+        },
+        "/api/batch-jobs/{id}": {
+          "get": {
+            "summary": "Get batch job",
+            "responses": {
+              "200": {
+                "description": "Job detail",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "job": {"$ref": "#/components/schemas/BatchJob"},
+                        "items": {"type": "array", "items": {"$ref": "#/components/schemas/BatchJobItem"}}
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "patch": {
+            "summary": "Control batch job",
+            "requestBody": {
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "status": {"type": "string", "enum": ["paused", "running", "cancelled"]},
+                      "concurrency": {"type": "integer"}
+                    }
+                  }
+                }
+              }
+            },
+            "responses": {
+              "200": {"description": "Job updated"}
+            }
+          }
+        },
+        "/api/watch-folders": {
+          "get": {
+            "summary": "List watch folders",
+            "responses": {
+              "200": {
+                "description": "Watch folders",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "items": {
+                          "type": "array",
+                          "items": {"$ref": "#/components/schemas/WatchFolder"}
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "post": {
+            "summary": "Create watch folder",
+            "requestBody": {
+              "required": true,
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "required": ["name", "path"],
+                    "properties": {
+                      "name": {"type": "string"},
+                      "path": {"type": "string"},
+                      "provider": {"type": "string"},
+                      "rules": {"type": "object"}
+                    }
+                  }
+                }
+              }
+            },
+            "responses": {
+              "201": {
+                "description": "Created",
+                "content": {
+                  "application/json": {
+                    "schema": {"$ref": "#/components/schemas/WatchFolder"}
+                  }
+                }
+              }
+            }
+          }
+        },
+        "/api/watch-folders/{id}": {
+          "patch": {
+            "summary": "Update watch folder",
+            "requestBody": {
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "status": {"type": "string"},
+                      "rules": {"type": "object"}
+                    }
+                  }
+                }
+              }
+            },
+            "responses": {
+              "200": {"description": "Updated"}
+            }
+          },
+          "delete": {
+            "summary": "Delete watch folder",
+            "responses": {
+              "204": {"description": "Deleted"}
+            }
+          }
+        },
+        "/api/prompt-recipes": {
+          "get": {
+            "summary": "List prompt recipes",
+            "responses": {
+              "200": {
+                "description": "Recipes",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "items": {"type": "array", "items": {"$ref": "#/components/schemas/PromptRecipe"}}
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "post": {
+            "summary": "Create recipe",
+            "requestBody": {
+              "required": true,
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "required": ["name", "promptTemplate"],
+                    "properties": {
+                      "name": {"type": "string"},
+                      "category": {"type": "string"},
+                      "promptTemplate": {"type": "string"},
+                      "variables": {"type": "array"}
+                    }
+                  }
+                }
+              }
+            },
+            "responses": {
+              "201": {
+                "description": "Recipe created",
+                "content": {
+                  "application/json": {
+                    "schema": {"$ref": "#/components/schemas/PromptRecipe"}
+                  }
+                }
+              }
+            }
+          }
+        },
+        "/api/prompt-recipes/{id}": {
+          "patch": {
+            "summary": "Update recipe",
+            "requestBody": {
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "name": {"type": "string"},
+                      "promptTemplate": {"type": "string"},
+                      "variables": {"type": "array"},
+                      "shareStatus": {"type": "string"}
+                    }
+                  }
+                }
+              }
+            },
+            "responses": {
+              "200": {"description": "Updated"}
+            }
+          },
+          "delete": {
+            "summary": "Delete recipe",
+            "responses": {
+              "204": {"description": "Deleted"}
+            }
+          }
+        },
+        "/api/model-presets": {
+          "get": {
+            "summary": "List installed and available models",
+            "responses": {
+              "200": {
+                "description": "Model presets",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "items": {"type": "array", "items": {"$ref": "#/components/schemas/ModelPreset"}},
+                        "updates": {"type": "array", "items": {"type": "string"}}
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "/api/model-presets/{id}/download": {
+          "post": {
+            "summary": "Request model download",
+            "responses": {
+              "202": {"description": "Download scheduled"},
+              "409": {"description": "Model already installed"}
+            }
+          }
+        },
+        "/api/realtime/sessions": {
+          "post": {
+            "summary": "Start realtime transcription session",
+            "requestBody": {
+              "required": true,
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "required": ["mode"],
+                    "properties": {
+                      "mode": {"type": "string", "enum": ["microphone", "system", "url_stream"]},
+                      "modelPresetId": {"type": "string", "format": "uuid"},
+                      "transcriptId": {"type": "string", "format": "uuid"}
+                    }
+                  }
+                }
+              }
+            },
+            "responses": {
+              "201": {
+                "description": "Session started",
+                "content": {
+                  "application/json": {
+                    "schema": {"$ref": "#/components/schemas/RealtimeSession"}
+                  }
+                }
+              }
+            }
+          },
+          "delete": {
+            "summary": "Stop realtime session",
+            "parameters": [
+              {"name": "sessionId", "in": "query", "required": true, "schema": {"type": "string", "format": "uuid"}}
+            ],
+            "responses": {
+              "204": {"description": "Session stopped"}
+            }
+          }
+        },
+        "/api/integrations": {
+          "get": {
+            "summary": "List integration connections",
+            "responses": {
+              "200": {
+                "description": "Connections",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "items": {"type": "array", "items": {"$ref": "#/components/schemas/IntegrationConnection"}}
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "post": {
+            "summary": "Create or authorize integration",
+            "requestBody": {
+              "required": true,
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "required": ["provider"],
+                    "properties": {
+                      "provider": {"type": "string"},
+                      "code": {"type": "string"},
+                      "metadata": {"type": "object"}
+                    }
+                  }
+                }
+              }
+            },
+            "responses": {
+              "201": {
+                "description": "Integration connected",
+                "content": {
+                  "application/json": {
+                    "schema": {"$ref": "#/components/schemas/IntegrationConnection"}
+                  }
+                }
+              }
+            }
+          }
+        },
+        "/api/integrations/{id}": {
+          "patch": {
+            "summary": "Update integration status",
+            "requestBody": {
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "status": {"type": "string"},
+                      "metadata": {"type": "object"}
+                    }
+                  }
+                }
+              }
+            },
+            "responses": {
+              "200": {"description": "Updated"}
+            }
+          },
+          "delete": {
+            "summary": "Disconnect integration",
+            "responses": {
+              "204": {"description": "Disconnected"}
+            }
+          }
+        },
+        "/api/sync/events": {
+          "post": {
+            "summary": "Push local changes for synchronization",
+            "requestBody": {
+              "required": true,
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "entityType": {"type": "string"},
+                      "payload": {"type": "object"},
+                      "version": {"type": "integer"},
+                      "checksum": {"type": "string"}
+                    }
+                  }
+                }
+              }
+            },
+            "responses": {
+              "200": {
+                "description": "Sync acknowledged",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "mergeStrategy": {"type": "string"},
+                        "serverVersion": {"type": "integer"}
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "/api/payments/checkout": {
+          "post": {
+            "summary": "Create Stripe checkout session",
+            "requestBody": {
+              "required": true,
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "planId": {"type": "string", "format": "uuid"},
+                      "mode": {"type": "string", "enum": ["payment", "subscription"]},
+                      "successUrl": {"type": "string", "format": "uri"},
+                      "cancelUrl": {"type": "string", "format": "uri"}
+                    }
+                  }
+                }
+              }
+            },
+            "responses": {
+              "200": {
+                "description": "Checkout session",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "checkoutUrl": {"type": "string", "format": "uri"},
+                        "clientSecret": {"type": "string"}
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "/api/payments/license/validate": {
+          "post": {
+            "summary": "Validate offline license payload",
+            "requestBody": {
+              "required": true,
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "licenseId": {"type": "string", "format": "uuid"},
+                      "deviceId": {"type": "string"},
+                      "signature": {"type": "string"}
+                    }
+                  }
+                }
+              }
+            },
+            "responses": {
+              "200": {
+                "description": "License validation result",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "valid": {"type": "boolean"},
+                        "graceUntil": {"type": "string", "format": "date-time"}
+                      }
+                    }
+                  }
+                }
+              },
+              "401": {"description": "Invalid signature"}
+            }
+          }
+        },
+        "/api/notifications/preferences": {
+          "get": {
+            "summary": "Fetch notification preferences",
+            "responses": {
+              "200": {
+                "description": "Preferences",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "items": {"type": "array", "items": {"$ref": "#/components/schemas/NotificationPreference"}}
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "patch": {
+            "summary": "Update notification preferences",
+            "requestBody": {
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "items": {"type": "array", "items": {"$ref": "#/components/schemas/NotificationPreference"}}
+                    }
+                  }
+                }
+              }
+            },
+            "responses": {
+              "200": {"description": "Preferences updated"}
+            }
+          }
+        },
+        "/api/system/health": {
+          "get": {
+            "summary": "System health probe",
+            "responses": {
+              "200": {
+                "description": "Health info",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "status": {"type": "string"},
+                        "timestamp": {"type": "string", "format": "date-time"}
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "components": {
+        "securitySchemes": {
+          "bearerAuth": {
+            "type": "http",
+            "scheme": "bearer",
+            "bearerFormat": "JWT"
+          }
+        },
+        "schemas": {
+          "User": {"type": "object"},
+          "AuthSession": {
+            "type": "object",
+            "properties": {
+              "accessToken": {"type": "string"},
+              "refreshToken": {"type": "string"},
+              "expiresAt": {"type": "string", "format": "date-time"}
+            }
+          },
+          "Project": {"type": "object"},
+          "Transcript": {"type": "object"},
+          "Segment": {"type": "object"},
+          "BatchJob": {"type": "object"},
+          "BatchJobItem": {"type": "object"},
+          "WatchFolder": {"type": "object"},
+          "PromptRecipe": {"type": "object"},
+          "ExportRun": {"type": "object"},
+          "RealtimeSession": {"type": "object"},
+          "IntegrationConnection": {"type": "object"},
+          "ModelPreset": {"type": "object"},
+          "NotificationPreference": {"type": "object"}
+        }
+      }
+    },
+    "state_management": {
+      "store": "zustand",
+      "middlewares": ["immer", "persist", "devtools"],
+      "shape": {
+        "auth": {
+          "user": "User | null",
+          "status": "'idle' | 'loading' | 'authenticated' | 'error'",
+          "error": "string | null",
+          "session": "AuthSession | null",
+          "actions": "{ login(credentials: LoginPayload): Promise<void>; logout(): Promise<void>; refresh(): Promise<void>; }"
+        },
+        "projects": {
+          "byId": "Record<string, Project>",
+          "allIds": "string[]",
+          "activeId": "string | null",
+          "filters": "{ status?: string; search?: string; tags?: string[] }",
+          "actions": "{ setActive(id: string | null): void; fetch(): Promise<void>; create(input: NewProject): Promise<string>; }"
+        },
+        "transcripts": {
+          "byId": "Record<string, Transcript>",
+          "allIds": "string[]",
+          "activeId": "string | null",
+          "loading": "boolean",
+          "filters": "{ projectId?: string; status?: string; tag?: string }",
+          "pendingUploads": "Array<{ audioSourceId: string; progress: number; status: 'queued' | 'uploading' | 'processed' | 'error'; error?: string }>",
+          "actions": "{ fetch(params?: TranscriptQuery): Promise<void>; queueUpload(file: File): Promise<void>; update(id: string, patch: Partial<Transcript>): void; }"
+        },
+        "segments": {
+          "byTranscriptId": "Record<string, string[]>",
+          "entities": "Record<string, Segment>",
+          "pagination": "Record<string, { cursor: string | null; hasMore: boolean }>",
+          "actions": "{ fetch(transcriptId: string, opts?: { cursor?: string; limit?: number }): Promise<void>; update(id: string, patch: Partial<Segment>): Promise<void>; }"
+        },
+        "editor": {
+          "mode": "'command' | 'edit' | 'playback'",
+          "selection": "{ segmentId?: string; wordIndex?: number }",
+          "playback": "{ isPlaying: boolean; positionMs: number; rate: number }",
+          "markers": "Array<{ id: string; timeMs: number; label: string; color: string }>",
+          "aiPanel": "{ open: boolean; activeRecipeId?: string; pending?: boolean; error?: string }",
+          "actions": "{ setMode(mode: EditorMode): void; seek(ms: number): void; togglePlayback(): void; runRecipe(recipeId: string, params: Record<string, unknown>): Promise<void>; }"
+        },
+        "batch": {
+          "jobs": "Record<string, BatchJob>",
+          "itemsByJobId": "Record<string, string[]>",
+          "activeJobId": "string | null",
+          "analytics": "{ avgThroughput: number; successRate: number }",
+          "actions": "{ fetch(): Promise<void>; create(input: NewBatchJob): Promise<string>; control(id: string, command: BatchCommand): Promise<void>; }"
+        },
+        "watchFolders": {
+          "byId": "Record<string, WatchFolder>",
+          "allIds": "string[]",
+          "status": "'idle' | 'syncing' | 'error'",
+          "lastScan": "Record<string, string>",
+          "actions": "{ fetch(): Promise<void>; create(input: NewWatchFolder): Promise<string>; update(id: string, patch: Partial<WatchFolder>): Promise<void>; remove(id: string): Promise<void>; triggerScan(id: string): Promise<void>; }"
+        },
+        "recipes": {
+          "byId": "Record<string, PromptRecipe>",
+          "allIds": "string[]",
+          "library": "{ featured: string[]; user: string[]; team: string[] }",
+          "variablesCache": "Record<string, Record<string, unknown>>",
+          "actions": "{ fetch(scope?: 'system' | 'user' | 'team'): Promise<void>; save(recipe: PromptRecipe): Promise<void>; run(recipeId: string, payload: RecipeInput): Promise<RecipeOutput>; }"
+        },
+        "models": {
+          "installedIds": "string[]",
+          "availableIds": "string[]",
+          "entities": "Record<string, ModelPreset>",
+          "downloadQueue": "Array<{ id: string; status: 'pending' | 'downloading' | 'installed' | 'error'; progress: number }>",
+          "actions": "{ refresh(): Promise<void>; download(id: string): Promise<void>; setDefault(id: string): void; }"
+        },
+        "realtime": {
+          "session": "RealtimeSession | null",
+          "latency": "number",
+          "deviceState": "{ microphone?: string; systemAudio?: string; priorityList: string[] }",
+          "transcriptId": "string | null",
+          "actions": "{ start(config: RealtimeConfig): Promise<void>; stop(): Promise<void>; updateDevice(deviceId: string): void; }"
+        },
+        "exports": {
+          "presets": "Record<string, ExportPreset>",
+          "runsByTranscriptId": "Record<string, string[]>",
+          "statusByRunId": "Record<string, { status: ExportStatus; progress: number; error?: string }>",
+          "actions": "{ fetchPresets(projectId?: string): Promise<void>; run(transcriptId: string, presetId: string, overrides?: Record<string, unknown>): Promise<string>; poll(runId: string): Promise<void>; }"
+        },
+        "integrations": {
+          "connections": "Record<string, IntegrationConnection>",
+          "availableProviders": "Array<{ id: string; label: string; scopes: string[] }>",
+          "actions": "{ fetch(): Promise<void>; connect(providerId: string, payload?: Record<string, unknown>): Promise<void>; disconnect(id: string): Promise<void>; sync(id: string): Promise<void>; }"
+        },
+        "sync": {
+          "queue": "Array<{ id: string; entityType: string; payload: unknown; attempts: number; status: 'pending' | 'retrying' | 'failed' }>",
+          "lastSyncedAt": "string | null",
+          "status": "'idle' | 'syncing' | 'conflicted' | 'offline'",
+          "actions": "{ enqueue(event: SyncEvent): void; flush(): Promise<void>; resolveConflict(eventId: string, resolution: unknown): Promise<void>; setStatus(status: SyncStatus): void; }"
+        },
+        "ui": {
+          "theme": "'system' | 'light' | 'dark' | 'high_contrast'",
+          "sidebar": "{ collapsed: boolean; width: number }",
+          "modals": "Record<string, { open: boolean; payload?: unknown }>",
+          "toasts": "Array<{ id: string; title: string; description?: string; variant: 'default' | 'success' | 'warning' | 'destructive'; timeoutMs?: number }>",
+          "actions": "{ setTheme(theme: ThemeOption): void; toggleSidebar(): void; showModal(key: string, payload?: unknown): void; dismissModal(key: string): void; pushToast(toast: ToastPayload): void; removeToast(id: string): void; }"
+        },
+        "notifications": {
+          "inbox": "Array<{ id: string; message: string; createdAt: string; read: boolean; action?: { label: string; href?: string; command?: string } }>",
+          "unreadCount": "number",
+          "settings": "Record<string, boolean>",
+          "actions": "{ fetch(): Promise<void>; markRead(id: string): Promise<void>; markAllRead(): Promise<void>; updateSettings(prefs: Record<string, boolean>): Promise<void>; }"
+        },
+        "analytics": {
+          "metrics": "{ transcriptionSpeedRtf: number; averageAccuracy: number; cpuLoad: number; batteryDrainPerHour: number }",
+          "jobHistory": "Array<{ id: string; startedAt: string; durationMs: number; status: string }>",
+          "actions": "{ track(event: AnalyticsEvent): void; refresh(): Promise<void>; }"
+        }
+      }
+    }
+  },
+  "ui_layer": {
+    "features": [
+      {
+        "id": "feat_onboarding",
+        "name": "Desktop Onboarding Journey",
+        "description": "Guided first-run flow covering installation checks, microphone permissions, sample transcription, and pricing orientation.",
+        "requirements": {
+          "functional": [
+            "Detect hardware capabilities and suggest optimal model preset",
+            "Show progress bar for initial model download with ability to skip",
+            "Offer import of example audio for first transcription",
+            "Prompt user to enable optional Supabase account sync"
+          ],
+          "nonFunctional": [
+            "Must complete in under 5 minutes with 3 or fewer dialogs",
+            "Keyboard navigable with focus rings and skip actions"
+          ]
+        },
+        "key_screens": ["screen_onboarding_welcome", "screen_onboarding_model", "screen_onboarding_permissions"],
+        "api_endpoints": ["/api/model-presets", "/api/auth/register", "/api/payments/license/validate"],
+        "state_dependencies": ["auth", "models", "ui"]
+      },
+      {
+        "id": "feat_home_dashboard",
+        "name": "Command Center Dashboard",
+        "description": "Home view with URL ingest field, drag-and-drop area, quick actions, transcript history, and Pro upsell banner.",
+        "requirements": {
+          "functional": [
+            "Support paste detection to auto-focus URL field",
+            "Display quick action tiles for Open Files, New Recording, Batch, Record App Audio, Cloud Transcription",
+            "Show grouped history with fuzzy search",
+            "Expose contextual Pro upsell for gated actions"
+          ],
+          "nonFunctional": [
+            "Render in under 200ms with history of 1000 transcripts",
+            "Responsive layout down to 1024px width"
+          ]
+        },
+        "key_screens": ["screen_home_dashboard"],
+        "api_endpoints": ["/api/transcripts", "/api/audio/url", "/api/projects"],
+        "state_dependencies": ["transcripts", "projects", "ui", "auth"]
+      },
+      {
+        "id": "feat_drag_drop_import",
+        "name": "Drag & Drop Import",
+        "description": "Dropzone handling audio/video files, batches, or folders with preview and validation.",
+        "requirements": {
+          "functional": [
+            "Accept MP3, WAV, M4A, MP4, MOV, AIFF, CAF, OGG",
+            "Display modal for multi-file selection to assign project and model",
+            "Show per-file validation errors with remediation guidance",
+            "Queue uploads with resumable progress"
+          ],
+          "nonFunctional": [
+            "Handle 50 files drag-drop without UI freeze",
+            "Surface accessible status updates via ARIA live regions"
+          ]
+        },
+        "key_screens": ["screen_import_dialog", "screen_batch_manager"],
+        "api_endpoints": ["/api/audio/uploads", "/api/transcripts"],
+        "state_dependencies": ["transcripts", "batch", "ui"]
+      },
+      {
+        "id": "feat_url_ingest",
+        "name": "URL & Streaming Ingest",
+        "description": "Download pipeline for YouTube, Vimeo, podcast RSS, and direct file URLs with fallback strategies.",
+        "requirements": {
+          "functional": [
+            "Validate URLs and detect provider to show tailored instructions",
+            "Support cookies.json import for protected content",
+            "Auto-detect language sample before transcription",
+            "Display resolving, downloading, and transcription progress"
+          ],
+          "nonFunctional": [
+            "90% success rate on top 200 YouTube URLs",
+            "Recoverable errors with actionable next steps"
+          ]
+        },
+        "key_screens": ["screen_home_dashboard", "screen_transcription_progress"],
+        "api_endpoints": ["/api/audio/url", "/api/transcripts"],
+        "state_dependencies": ["transcripts", "ui", "notifications"]
+      },
+      {
+        "id": "feat_batch_turbo",
+        "name": "Batch Turbo Queue",
+        "description": "Parallel batch processing with per-file status, retry, and resume after crash.",
+        "requirements": {
+          "functional": [
+            "Auto-select optimal concurrency based on CPU/GPU cores",
+            "Persist queue state to resume after restart",
+            "Allow manual priority adjustments and filtering",
+            "Expose ETA and throughput metrics"
+          ],
+          "nonFunctional": [
+            "20% faster throughput compared to sequential baseline",
+            "No single file failure may abort entire batch"
+          ]
+        },
+        "key_screens": ["screen_batch_manager"],
+        "api_endpoints": ["/api/batch-jobs", "/api/batch-jobs/{id}", "/api/transcripts"],
+        "state_dependencies": ["batch", "transcripts", "analytics", "notifications"]
+      },
+      {
+        "id": "feat_watch_folders",
+        "name": "Watch Folders 2.0",
+        "description": "Rule-based automation for local and cloud directories with recursion, export presets, and post-process actions.",
+        "requirements": {
+          "functional": [
+            "Support provider-specific auth (Dropbox, Google Drive, OneDrive)",
+            "Allow per-folder rules for model, language, exports, prompts",
+            "Provide status indicators for last scan and pending files",
+            "Enable manual scan trigger and log of actions"
+          ],
+          "nonFunctional": [
+            "Process 100 new files/hour without blocking UI",
+            "Handle offline queueing with eventual consistency"
+          ]
+        },
+        "key_screens": ["screen_watch_folder_rules", "screen_watch_folder_logs"],
+        "api_endpoints": ["/api/watch-folders", "/api/watch-folders/{id}", "/api/transcripts"],
+        "state_dependencies": ["watchFolders", "transcripts", "exports", "recipes", "sync"]
+      },
+      {
+        "id": "feat_realtime_transcription",
+        "name": "Realtime Transcription & Captioning",
+        "description": "Low-latency recording via microphone or system audio with live transcript streaming.",
+        "requirements": {
+          "functional": [
+            "Show waveform and latency indicator",
+            "Allow insertion of markers during recording",
+            "Provide pause/resume with local buffering",
+            "Offer live caption mode with adjustable font size"
+          ],
+          "nonFunctional": [
+            "Maintain latency under 500ms on Apple Silicon",
+            "Fail gracefully when audio device is unavailable"
+          ]
+        },
+        "key_screens": ["screen_realtime_console"],
+        "api_endpoints": ["/api/realtime/sessions"],
+        "state_dependencies": ["realtime", "segments", "notifications"]
+      },
+      {
+        "id": "feat_transcript_editor",
+        "name": "Timeline-Synced Editor",
+        "description": "Full-featured transcript editor with inline playback, modal keyboard system, and AI-assisted editing.",
+        "requirements": {
+          "functional": [
+            "Provide command/edit/playback modes with shortcuts",
+            "Link text selection to waveform and video overlay",
+            "Allow speaker label editing with color assignment",
+            "Integrate AI actions for rewrite, translate, highlight"
+          ],
+          "nonFunctional": [
+            "Handle 3-hour transcripts without frame drops",
+            "Auto-save edits locally every 5 seconds"
+          ]
+        },
+        "key_screens": ["screen_transcript_editor"],
+        "api_endpoints": ["/api/transcripts/{id}", "/api/transcripts/{id}/segments", "/api/transcripts/{id}/segments/{segmentId}", "/api/transcripts/{id}/summary"],
+        "state_dependencies": ["segments", "transcripts", "editor", "recipes", "exports"]
+      },
+      {
+        "id": "feat_ai_summary",
+        "name": "One-click Summary & Chapters",
+        "description": "Recipes pane to generate TL;DR, chapters, action items with cost/time estimate and inline insertion.",
+        "requirements": {
+          "functional": [
+            "Default recipe templates with editable prompt variables",
+            "Estimate tokens and runtime before execution",
+            "Insert generated sections with undo stack",
+            "Include outputs in export formats when toggled"
+          ],
+          "nonFunctional": [
+            "Complete 10-minute transcript summary in <20s on M-series",
+            "Cache recipe variables per project"
+          ]
+        },
+        "key_screens": ["screen_transcript_editor", "screen_prompt_recipes"],
+        "api_endpoints": ["/api/transcripts/{id}/summary", "/api/prompt-recipes"],
+        "state_dependencies": ["recipes", "transcripts", "segments", "exports"]
+      },
+      {
+        "id": "feat_prompt_library",
+        "name": "Prompt Recipes Library",
+        "description": "Curated, shareable prompt recipes with guardrails, categories, and token budgeting.",
+        "requirements": {
+          "functional": [
+            "Filter by category (summary, rewrite, action items, translation)",
+            "Allow cloning and customization of system recipes",
+            "Show estimated cost per run and recommended models",
+            "Enable sharing to team workspace with permissions"
+          ],
+          "nonFunctional": [
+            "Local search across 200 recipes in <50ms",
+            "Audit trail for edits and versioning"
+          ]
+        },
+        "key_screens": ["screen_prompt_recipes"],
+        "api_endpoints": ["/api/prompt-recipes", "/api/prompt-recipes/{id}"],
+        "state_dependencies": ["recipes", "auth", "ui"]
+      },
+      {
+        "id": "feat_translation",
+        "name": "Translation Workspace",
+        "description": "Side-by-side translation with Apple, DeepL, or local engines, including export toggles.",
+        "requirements": {
+          "functional": [
+            "Switch translation provider with credential validation",
+            "Display original and translated text columns",
+            "Allow export mode selection (transcript, segments, subtitles)",
+            "Track translation status per language"
+          ],
+          "nonFunctional": [
+            "Latency under 2 seconds for 5k characters",
+            "Offline translation fallback when provider unavailable"
+          ]
+        },
+        "key_screens": ["screen_translation_settings", "screen_transcript_editor"],
+        "api_endpoints": ["/api/transcripts/{id}", "/api/prompt-recipes"],
+        "state_dependencies": ["transcripts", "recipes", "editor", "exports"]
+      },
+      {
+        "id": "feat_diarization_highlights",
+        "name": "Speaker Diarization & Highlights",
+        "description": "Offline diarization with highlight extraction, speaker timeline, and review workflow.",
+        "requirements": {
+          "functional": [
+            "Visualize speaker segments with color-coded timeline",
+            "Allow manual merge/split of speaker clusters",
+            "Generate highlight cards with quote, summary, timestamp",
+            "Sync speaker labels across transcripts within a project"
+          ],
+          "nonFunctional": [
+            "On-device diarization must complete 60-minute audio < 8 minutes",
+            "Accuracy > 90% on curated dataset"
+          ]
+        },
+        "key_screens": ["screen_transcript_editor", "screen_diarization_review"],
+        "api_endpoints": ["/api/transcripts/{id}", "/api/prompt-recipes", "/api/transcripts/{id}/segments"],
+        "state_dependencies": ["segments", "transcripts", "recipes", "analytics"]
+      },
+      {
+        "id": "feat_advanced_search",
+        "name": "Advanced Search & Navigation",
+        "description": "Regex, semantic, and project-wide search with jump navigation and saved queries.",
+        "requirements": {
+          "functional": [
+            "Provide inline search with regex builder and phonetic matching",
+            "Allow cross-project search with filters (speaker, date, confidence)",
+            "Offer smart jump commands for next speaker change, bookmark, or low confidence",
+            "Save complex queries and share with team"
+          ],
+          "nonFunctional": [
+            "Return results across 500 transcripts in <1s",
+            "Accessible keyboard navigation with arrow keys"
+          ]
+        },
+        "key_screens": ["screen_search_overlay", "screen_project_library"],
+        "api_endpoints": ["/api/transcripts", "/api/transcripts/{id}/segments"],
+        "state_dependencies": ["transcripts", "segments", "ui", "analytics"]
+      },
+      {
+        "id": "feat_export_pipeline",
+        "name": "Professional Export Pipeline",
+        "description": "Multi-format export presets, bundling, post-actions, and scheduled deliveries.",
+        "requirements": {
+          "functional": [
+            "Support Markdown, SRT/VTT, JSON, DOCX, PDF, HTML, CSV, ASS",
+            "Allow bundling of transcript + subtitles + chapters in one preset",
+            "Configure post-actions like upload to storage, send email, run webhook",
+            "Provide export history with status and download links"
+          ],
+          "nonFunctional": [
+            "Rendering pipeline must stream output to avoid blocking UI",
+            "Allow concurrent exports without data corruption"
+          ]
+        },
+        "key_screens": ["screen_export_center", "screen_export_history"],
+        "api_endpoints": ["/api/transcripts/{id}/exports", "/api/transcripts/{id}/exports/{exportId}", "/api/export-presets"],
+        "state_dependencies": ["exports", "transcripts", "recipes", "integrations"]
+      },
+      {
+        "id": "feat_integrations",
+        "name": "Integrations & Automations",
+        "description": "Connectors for Notion, Obsidian, Slack, Zapier with background jobs and rate-limit handling.",
+        "requirements": {
+          "functional": [
+            "OAuth onboarding with token refresh",
+            "Field mapping UI per integration",
+            "Background job queue with failure alerts",
+            "Webhook trigger for third-party automations (n8n, Zapier)"
+          ],
+          "nonFunctional": [
+            "Respect provider rate limits with adaptive backoff",
+            "Log integration activity for troubleshooting"
+          ]
+        },
+        "key_screens": ["screen_integrations_hub", "screen_export_center"],
+        "api_endpoints": ["/api/integrations", "/api/integrations/{id}", "/api/transcripts/{id}/exports"],
+        "state_dependencies": ["integrations", "exports", "notifications", "sync"]
+      },
+      {
+        "id": "feat_cloud_storage_integration",
+        "name": "Cloud Storage Integration",
+        "description": "Directly connect and sync with Google Drive, Dropbox, and OneDrive for seamless file management.",
+        "requirements": {
+          "functional": [
+            "OAuth-based connection to Google Drive, Dropbox, and OneDrive",
+            "Allow setting a cloud folder as a 'Watch Folder'",
+            "Enable direct export of transcripts and media to cloud storage",
+            "Two-way sync of specified folders for offline access"
+          ],
+          "nonFunctional": [
+            "Handle API rate limits and connection interruptions gracefully",
+            "Securely store auth tokens in system keychain"
+          ]
+        },
+        "key_screens": ["screen_integrations_hub", "screen_watch_folder_rules"],
+        "api_endpoints": ["/api/integrations", "/api/watch-folders"],
+        "state_dependencies": ["integrations", "watchFolders", "sync"]
+      },
+      {
+        "id": "feat_cloud_sync",
+        "name": "Supabase Sync & Backup",
+        "description": "Offline-first sync queue, selective backup, and conflict resolution UI.",
+        "requirements": {
+          "functional": [
+            "Allow metadata-only or full backup per transcript",
+            "Show sync status indicator (synced, dirty, conflicted)",
+            "Provide diff view for manual conflict resolution",
+            "Encrypt data client-side before upload"
+          ],
+          "nonFunctional": [
+            "Queue actions while offline and replay with exponential backoff",
+            "Ensure no data loss if Supabase unreachable for 30 days"
+          ]
+        },
+        "key_screens": ["screen_sync_center", "screen_transcript_editor"],
+        "api_endpoints": ["/api/sync/events", "/api/transcripts", "/api/watch-folders"],
+        "state_dependencies": ["sync", "transcripts", "projects", "notifications"]
+      },
+      {
+        "id": "feat_system_audio_capture",
+        "name": "System Audio Capture Wizard",
+        "description": "Guided setup for virtual device, permissions, per-app capture, and QA checks.",
+        "requirements": {
+          "functional": [
+            "Detect existing audio routing tools and suggest configuration",
+            "Provide step-by-step instructions with screenshots",
+            "Verify capture via test recording and waveform",
+            "Persist capture profiles for apps (Zoom, Meet, Teams)"
+          ],
+          "nonFunctional": [
+            "Completion rate >80% on first attempt",
+            "Support macOS, Windows (WASAPI loopback), Linux (PipeWire)"
+          ]
+        },
+        "key_screens": ["screen_system_audio_wizard"],
+        "api_endpoints": ["/api/realtime/sessions", "/api/transcripts"],
+        "state_dependencies": ["realtime", "ui", "notifications"]
+      },
+      {
+        "id": "feat_model_manager",
+        "name": "Model & Provider Manager",
+        "description": "Manage local and cloud Whisper models with benchmarking, favorites, and auto-selection rules.",
+        "requirements": {
+          "functional": [
+            "Display installed models with size, engine, speaker recognition badges",
+            "Benchmark hardware to recommend models",
+            "Auto model/provider selector based on duration, hardware, cost",
+            "Allow favorites and default overrides per project"
+          ],
+          "nonFunctional": [
+            "Download progress resilient to connection drop",
+            "Provide CLI fallback for headless installs"
+          ]
+        },
+        "key_screens": ["screen_model_manager"],
+        "api_endpoints": ["/api/model-presets", "/api/model-presets/{id}/download"],
+        "state_dependencies": ["models", "projects", "analytics"]
+      },
+      {
+        "id": "feat_pricing",
+        "name": "Pricing & Upsell",
+        "description": "In-app pricing table, ROI calculator, and upgrade flows aligned with one-time and subscription options.",
+        "requirements": {
+          "functional": [
+            "Display Free, Pro, Premium tiers with feature comparison",
+            "Integrate ROI calculator for time savings",
+            "Handle Stripe checkout and license validation",
+            "Offer upgrade prompts in gated features"
+          ],
+          "nonFunctional": [
+            "Localized currency formatting",
+            "Telemetry to track conversion funnel"
+          ]
+        },
+        "key_screens": ["screen_pricing_modal", "screen_home_dashboard"],
+        "api_endpoints": ["/api/payments/checkout", "/api/payments/license/validate"],
+        "state_dependencies": ["auth", "notifications", "ui"]
+      },
+      {
+        "id": "feat_accessibility",
+        "name": "Accessibility Toolkit",
+        "description": "High contrast themes, font scaling, screen reader enhancements, sticky keys, and voice control.",
+        "requirements": {
+          "functional": [
+            "Provide theme switcher (dark, light, high contrast)",
+            "Allow font scaling up to 200% without layout break",
+            "Expose ARIA labels and announcements for mode changes",
+            "Support sticky key commands and voice shortcuts"
+          ],
+          "nonFunctional": [
+            "Meet WCAG 2.2 AA for default themes",
+            "Accessibility regression tests in CI"
+          ]
+        },
+        "key_screens": ["screen_accessibility_settings", "screen_transcript_editor"],
+        "api_endpoints": ["/api/users/me"],
+        "state_dependencies": ["ui", "auth"]
+      }
+    ],
+    "navigation": {
+      "router": "React Router v6",
+      "initial_route": "/dashboard",
+      "routes": [
+        {
+          "path": "/",
+          "redirect": "/dashboard"
+        },
+        {
+          "path": "/dashboard",
+          "component": "HomeDashboardPage",
+          "layout": "AppShell",
+          "data": {
+            "requiresAuth": false,
+            "featureFlags": ["feat_home_dashboard"]
+          }
+        },
+        {
+          "path": "/projects",
+          "component": "ProjectLibraryPage",
+          "children": [
+            {
+              "path": ":projectId",
+              "component": "ProjectDetailPage",
+              "children": [
+                {"path": "overview", "component": "ProjectOverviewPanel"},
+                {"path": "settings", "component": "ProjectSettingsPanel"}
+              ]
+            }
+          ]
+        },
+        {
+          "path": "/transcripts/:transcriptId",
+          "component": "TranscriptLayout",
+          "children": [
+            {"path": "", "component": "TranscriptEditorPage"},
+            {"path": "timeline", "component": "TimelinePanel"},
+            {"path": "export", "component": "ExportPanel"},
+            {"path": "analytics", "component": "TranscriptAnalyticsPanel"}
+          ]
+        },
+        {
+          "path": "/batch",
+          "component": "BatchManagerPage"
+        },
+        {
+          "path": "/watch-folders",
+          "component": "WatchFoldersPage"
+        },
+        {
+          "path": "/realtime",
+          "component": "RealtimeConsolePage"
+        },
+        {
+          "path": "/recipes",
+          "component": "PromptRecipesPage",
+          "children": [
+            {"path": "category/:categoryId", "component": "PromptCategoryView"},
+            {"path": ":recipeId", "component": "RecipeDetailPanel"}
+          ]
+        },
+        {
+          "path": "/models",
+          "component": "ModelManagerPage"
+        },
+        {
+          "path": "/integrations",
+          "component": "IntegrationsHubPage"
+        },
+        {
+          "path": "/settings",
+          "component": "SettingsLayout",
+          "children": [
+            {"path": "general", "component": "SettingsGeneral"},
+            {"path": "audio", "component": "SettingsAudio"},
+            {"path": "ai-services", "component": "SettingsAiServices"},
+            {"path": "translation", "component": "SettingsTranslation"},
+            {"path": "shortcuts", "component": "SettingsShortcuts"},
+            {"path": "accessibility", "component": "SettingsAccessibility"},
+            {"path": "account", "component": "SettingsAccount"}
+          ]
+        },
+        {
+          "path": "/analytics",
+          "component": "AnalyticsDashboardPage"
+        },
+        {
+          "path": "/pricing",
+          "component": "PricingPage"
+        }
+      ],
+      "modal_routes": [
+        {"path": "/transcripts/:transcriptId/share", "component": "ShareModal"},
+        {"path": "/transcripts/:transcriptId/ai", "component": "AiActionsDrawer"},
+        {"path": "/import", "component": "ImportDialog"},
+        {"path": "/support", "component": "SupportModal"}
+      ],
+      "windowing": {
+        "main_window": {
+          "minSize": [1280, 800],
+          "titleBarStyle": "hiddenInset",
+          "traySupport": true,
+          "backgroundColor": "#101827"
+        },
+        "secondary_windows": [
+          {
+            "id": "floating_timeline",
+            "size": [480, 320],
+            "resizable": true,
+            "alwaysOnTop": true,
+            "purpose": "Detached waveform or caption window"
+          }
+        ],
+        "system_tray": {
+          "menu": [
+            {"label": "Open VoiceFlowPro", "action": "open"},
+            {"label": "Start Quick Recording", "action": "startRecording"},
+            {"separator": true},
+            {"label": "Recent Transcripts", "action": "openRecent"},
+            {"separator": true},
+            {"label": "Quit", "action": "quit"}
+          ]
+        }
+      }
+    },
+    "screen_specs": [
+      {
+        "id": "screen_onboarding_welcome",
+        "name": "Onboarding Welcome",
+        "purpose": "Introduce value proposition, detect hardware, and seed preferences for new users.",
+        "persona": "Investigative Journalist",
+        "data_requirements": {
+          "props": {
+            "recommendedModel": "ModelPreset | null",
+            "hasLicense": "boolean",
+            "pendingDownloads": "Array<{ id: string; progress: number }>"
+          },
+          "queries": [
+            {"endpoint": "/api/model-presets", "cache": "stale-while-revalidate"},
+            {"endpoint": "/api/payments/license/validate", "method": "POST", "trigger": "onContinue"}
+          ],
+          "state": ["models.installedIds", "auth.user", "ui.theme"]
+        },
+        "components": [
+          {"type": "HeroBanner", "props": {"icon": "sparkles", "title": "Welcome to VoiceFlowPro", "subtitle": "Fast, private, pro-grade transcription."}},
+          {"type": "HardwareChecklist", "props": {"items": ["CPU", "GPU", "RAM", "Disk Space"]}},
+          {"type": "ModelRecommendationCard", "props": {"onDownload": "() => void"}},
+          {"type": "PrimaryButton", "props": {"label": "Start Setup", "action": "onContinue"}}
+        ],
+        "interactions": [
+          {"name": "Start Setup", "type": "primary", "shortcut": "Enter", "success": "Navigate to /onboarding/model", "failure": "Show toast"},
+          {"name": "Skip Setup", "type": "link", "shortcut": "Esc", "success": "Navigate to /dashboard"}
+        ],
+        "api_dependencies": ["/api/model-presets", "/api/payments/license/validate"],
+        "empty_states": [
+          {"id": "no_internet", "message": "You're offline. We'll finish onboarding when you're back online.", "action": "Enable offline mode"}
+        ],
+        "error_states": [
+          {"id": "download_failed", "message": "Model download failed", "recovery": "Retry"}
+        ],
+        "accessibility": {
+          "focus_order": ["HeroBanner", "HardwareChecklist", "ModelRecommendationCard", "PrimaryButton"],
+          "aria": ["Role=dialog with aria-labelledby hero title"]
+        },
+        "metrics": {
+          "kpis": ["onboarding_completion_rate", "model_download_conversion"],
+          "events": ["onboarding_start", "onboarding_skip", "model_download_click"]
+        }
+      },
+      {
+        "id": "screen_home_dashboard",
+        "name": "Home Dashboard",
+        "purpose": "Provide quick entry points for import, recording, batch processing, and upsell.",
+        "persona": "Podcast Producer",
+        "data_requirements": {
+          "props": {
+            "recentTranscripts": "Transcript[]",
+            "quickActions": "Array<{ id: string; label: string; icon: string; gated?: boolean }>"
+          },
+          "queries": [
+            {"endpoint": "/api/transcripts", "params": {"limit": 20}},
+            {"endpoint": "/api/projects", "params": {"status": "active"}}
+          ],
+          "state": ["transcripts.allIds", "projects.allIds", "ui.theme", "auth.user"]
+        },
+        "components": [
+          {"type": "UrlInput", "props": {"placeholder": "Enter YouTube, Audio or Video URL", "icon": "link-2"}},
+          {"type": "QuickActionGrid", "props": {"columns": 3}},
+          {"type": "DragDropZone", "props": {"acceptedTypes": ["audio/*", "video/*"]}},
+          {"type": "HistoryList", "props": {"groupBy": "date"}},
+          {"type": "UpsellBanner", "props": {"plan": "pro"}}
+        ],
+        "interactions": [
+          {"name": "Paste URL", "type": "text", "shortcut": "Cmd+V", "success": "Trigger /api/audio/url", "failure": "Show error toast"},
+          {"name": "Open Files", "type": "button", "shortcut": "Cmd+O", "success": "Open file dialog"},
+          {"name": "Start Batch", "type": "button", "shortcut": "B", "success": "Navigate to /batch"}
+        ],
+        "api_dependencies": ["/api/audio/url", "/api/transcripts", "/api/projects"],
+        "empty_states": [
+          {"id": "no_transcripts", "message": "Drop your first audio file to get started", "action": "Open Files"}
+        ],
+        "error_states": [
+          {"id": "url_invalid", "message": "We couldn't read that URL", "recovery": "Show documentation"}
+        ],
+        "accessibility": {
+          "focus_order": ["UrlInput", "QuickActionGrid", "DragDropZone", "HistoryList"],
+          "aria": ["Live region announcing upload progress", "ARIA-selected for quick actions"]
+        },
+        "metrics": {
+          "kpis": ["url_ingest_success_rate", "drag_drop_usage", "upsell_click_through"],
+          "events": ["url_ingest_start", "drag_drop_start", "pro_banner_click"]
+        }
+      },
+      {
+        "id": "screen_transcription_progress",
+        "name": "Transcription Progress",
+        "purpose": "Monitor download, processing, diarization, and post-processing steps for a job.",
+        "persona": "Podcast Producer",
+        "data_requirements": {
+          "props": {
+            "jobId": "string",
+            "status": "BatchJobItem['status']",
+            "progress": "number",
+            "etaMs": "number | null",
+            "stage": "'download' | 'transcribe' | 'summarize' | 'export'"
+          },
+          "queries": [
+            {"endpoint": "/api/batch-jobs/{id}", "pollIntervalMs": 2000}
+          ],
+          "state": ["batch.itemsByJobId", "notifications"]
+        },
+        "components": [
+          {"type": "ProgressStepper", "props": {"steps": ["Downloading", "Transcribing", "AI Recipes", "Exports"]}},
+          {"type": "SegmentProgressList", "props": {"showRetry": true}},
+          {"type": "PerformanceStats", "props": {"metrics": ["speed", "cpu", "gpu", "temperature"]}},
+          {"type": "RetryButton", "props": {"label": "Retry Failed"}}
+        ],
+        "interactions": [
+          {"name": "Cancel Job", "type": "destructive", "shortcut": "Cmd+." , "success": "PATCH /api/batch-jobs/{id}", "failure": "Show alert"},
+          {"name": "Retry Failed", "type": "secondary", "shortcut": "Cmd+Shift+R", "success": "Retry individual items"}
+        ],
+        "api_dependencies": ["/api/batch-jobs/{id}"],
+        "empty_states": [
+          {"id": "queue_empty", "message": "No files in this batch yet", "action": "Add files"}
+        ],
+        "error_states": [
+          {"id": "job_failed", "message": "A file failed repeatedly", "recovery": "Show troubleshooting doc"}
+        ],
+        "accessibility": {
+          "focus_order": ["ProgressStepper", "SegmentProgressList", "RetryButton"],
+          "aria": ["Role=progressbar for each step", "Announce ETA updates via polite region"]
+        },
+        "metrics": {
+          "kpis": ["batch_throughput", "batch_success_rate"],
+          "events": ["job_cancel", "job_retry", "job_completed"]
+        }
+      },
+      {
+        "id": "screen_transcript_editor",
+        "name": "Transcript Editor",
+        "purpose": "Edit transcripts with synchronized playback, AI assistance, comments, and export tools.",
+        "persona": "UX Research Lead",
+        "data_requirements": {
+          "props": {
+            "transcript": "Transcript",
+            "segments": "Segment[]",
+            "summary": "Summary | null",
+            "chapters": "Chapter[]",
+            "actionItems": "ActionItem[]",
+            "speakerProfiles": "SpeakerProfile[]"
+          },
+          "queries": [
+            {"endpoint": "/api/transcripts/{id}", "prefetch": true},
+            {"endpoint": "/api/transcripts/{id}/segments", "params": {"limit": 500}}
+          ],
+          "state": ["transcripts.byId", "segments.entities", "editor", "recipes", "exports", "sync"]
+        },
+        "components": [
+          {"type": "TitleBar", "props": {"editable": true, "breadcrumbs": true}},
+          {"type": "PlaybackBar", "props": {"waveform": true, "rateControl": true}},
+          {"type": "TranscriptPane", "props": {"mode": "editor"}},
+          {"type": "TimelineMiniMap", "props": {"showChapters": true}},
+          {"type": "SidePanelTabs", "props": {"tabs": ["Info", "Translate", "AI", "Share", "Favorite"]}}
+        ],
+        "interactions": [
+          {"name": "Toggle Mode", "type": "keyboard", "shortcut": "CapsLock", "success": "Switch editor mode"},
+          {"name": "Add Comment", "type": "keyboard", "shortcut": "Cmd+Shift+C", "success": "Open comment form"},
+          {"name": "Run AI Recipe", "type": "button", "shortcut": "Cmd+Shift+R", "success": "POST /api/transcripts/{id}/summary"}
+        ],
+        "api_dependencies": ["/api/transcripts/{id}", "/api/transcripts/{id}/segments", "/api/transcripts/{id}/summary", "/api/transcripts/{id}/exports"],
+        "empty_states": [
+          {"id": "no_summary", "message": "Generate a summary to see highlights here", "action": "Open AI Recipes"}
+        ],
+        "error_states": [
+          {"id": "save_failed", "message": "Couldn't save your edits", "recovery": "Retry sync"}
+        ],
+        "accessibility": {
+          "focus_order": ["TitleBar", "TranscriptPane", "PlaybackBar", "SidePanelTabs"],
+          "aria": ["Role=application with keyboard instructions", "Aria-live for playback status"]
+        },
+        "metrics": {
+          "kpis": ["editing_time", "ai_recipe_usage", "export_conversion"],
+          "events": ["segment_edit", "speaker_change", "ai_recipe_trigger", "export_click"]
+        }
+      },
+      {
+        "id": "screen_batch_manager",
+        "name": "Batch Manager",
+        "purpose": "Configure and monitor batch jobs with queue management and presets.",
+        "persona": "Podcast Producer",
+        "data_requirements": {
+          "props": {
+            "jobs": "BatchJob[]",
+            "selectedJobId": "string | null",
+            "presets": "ExportPreset[]"
+          },
+          "queries": [
+            {"endpoint": "/api/batch-jobs"},
+            {"endpoint": "/api/export-presets", "params": {"projectId": null}}
+          ],
+          "state": ["batch.jobs", "batch.itemsByJobId", "exports.presets"]
+        },
+        "components": [
+          {"type": "PageHeader", "props": {"title": "Batch Turbo", "actions": [{"label": "New Batch", "icon": "plus"}]}},
+          {"type": "BatchQueueTable", "props": {"sortable": true}},
+          {"type": "JobDetailPanel", "props": {"tabs": ["Summary", "Files", "Logs"]}},
+          {"type": "ExportPresetSelector", "props": {"allowMultiple": true}}
+        ],
+        "interactions": [
+          {"name": "Create Batch", "type": "primary", "shortcut": "Cmd+N", "success": "Open batch builder", "failure": "Show validation"},
+          {"name": "Pause Job", "type": "toggle", "shortcut": "Space", "success": "PATCH /api/batch-jobs/{id}"}
+        ],
+        "api_dependencies": ["/api/batch-jobs", "/api/batch-jobs/{id}", "/api/export-presets"],
+        "empty_states": [
+          {"id": "no_jobs", "message": "Create your first batch to speed up workflow", "action": "Create Batch"}
+        ],
+        "error_states": [
+          {"id": "control_failed", "message": "Unable to update job", "recovery": "Retry"}
+        ],
+        "accessibility": {
+          "focus_order": ["New Batch", "BatchQueueTable", "JobDetailPanel"],
+          "aria": ["Table rows have aria-expanded for details", "Use aria-live for queue updates"]
+        },
+        "metrics": {
+          "kpis": ["batch_created", "batch_retry_rate"],
+          "events": ["batch_pause", "batch_resume", "batch_delete"]
+        }
+      },
+      {
+        "id": "screen_watch_folder_rules",
+        "name": "Watch Folder Rules",
+        "purpose": "Configure automation rules for watch folders including providers, exports, and post-actions.",
+        "persona": "Podcast Producer",
+        "data_requirements": {
+          "props": {
+            "folder": "WatchFolder",
+            "availableExports": "ExportPreset[]",
+            "availableRecipes": "PromptRecipe[]"
+          },
+          "queries": [
+            {"endpoint": "/api/watch-folders"},
+            {"endpoint": "/api/export-presets"},
+            {"endpoint": "/api/prompt-recipes"}
+          ],
+          "state": ["watchFolders.byId", "exports.presets", "recipes.byId"]
+        },
+        "components": [
+          {"type": "Breadcrumb", "props": {"items": ["Settings", "Watch Folders", "Folder"]}},
+          {"type": "RuleForm", "props": {"sections": ["General", "Model", "Exports", "Post Actions"]}},
+          {"type": "SchedulePicker", "props": {"supportCron": true}},
+          {"type": "PreviewList", "props": {"title": "Pending Files"}}
+        ],
+        "interactions": [
+          {"name": "Save Rules", "type": "primary", "shortcut": "Cmd+S", "success": "PATCH /api/watch-folders/{id}", "failure": "Highlight errors"},
+          {"name": "Trigger Scan", "type": "secondary", "shortcut": "Cmd+Shift+S", "success": "Enqueue scan job"}
+        ],
+        "api_dependencies": ["/api/watch-folders/{id}", "/api/export-presets", "/api/prompt-recipes"],
+        "empty_states": [
+          {"id": "no_files", "message": "Waiting for new files in this folder"}
+        ],
+        "error_states": [
+          {"id": "provider_error", "message": "Cannot reach provider", "recovery": "Reconnect"}
+        ],
+        "accessibility": {
+          "focus_order": ["RuleForm", "SchedulePicker", "Save Rules"],
+          "aria": ["Section headings use aria-labelledby", "Live region for scan results"]
+        },
+        "metrics": {
+          "kpis": ["watch_folder_processed_count", "automation_success_rate"],
+          "events": ["watch_folder_rule_save", "watch_folder_scan"]
+        }
+      },
+      {
+        "id": "screen_realtime_console",
+        "name": "Realtime Console",
+        "purpose": "Control live transcription sessions with latency metrics, captions, and markers.",
+        "persona": "Investigative Journalist",
+        "data_requirements": {
+          "props": {
+            "session": "RealtimeSession | null",
+            "captions": "Array<{ text: string; startMs: number; speaker?: string }>",
+            "latencyMs": "number"
+          },
+          "queries": [
+            {"endpoint": "/api/realtime/sessions", "method": "POST", "trigger": "onStart"}
+          ],
+          "state": ["realtime", "segments.byTranscriptId"]
+        },
+        "components": [
+          {"type": "SessionHeader", "props": {"statusIndicator": true}},
+          {"type": "LiveCaptionPanel", "props": {"fontScaling": true}},
+          {"type": "LatencyMeter", "props": {"thresholdMs": 500}},
+          {"type": "MarkerToolbar", "props": {"shortcuts": ["Cmd+M", "Cmd+Shift+M"]}}
+        ],
+        "interactions": [
+          {"name": "Start Session", "type": "primary", "shortcut": "Cmd+R", "success": "POST /api/realtime/sessions"},
+          {"name": "Stop Session", "type": "destructive", "shortcut": "Cmd+Esc", "success": "DELETE /api/realtime/sessions"},
+          {"name": "Drop Marker", "type": "secondary", "shortcut": "Cmd+M", "success": "Add marker"}
+        ],
+        "api_dependencies": ["/api/realtime/sessions"],
+        "empty_states": [
+          {"id": "no_session", "message": "Start a realtime session to see captions", "action": "Start Session"}
+        ],
+        "error_states": [
+          {"id": "device_busy", "message": "Microphone in use", "recovery": "Show release instructions"}
+        ],
+        "accessibility": {
+          "focus_order": ["SessionHeader", "LiveCaptionPanel", "MarkerToolbar"],
+          "aria": ["Live captions announced via polite region", "Buttons have aria-pressed states"]
+        },
+        "metrics": {
+          "kpis": ["realtime_session_duration", "marker_usage"],
+          "events": ["realtime_start", "realtime_stop", "marker_add"]
+        }
+      },
+      {
+        "id": "screen_prompt_recipes",
+        "name": "Prompt Recipes Library",
+        "purpose": "Browse, search, and customize AI prompt recipes.",
+        "persona": "UX Research Lead",
+        "data_requirements": {
+          "props": {
+            "categories": "Array<{ id: string; name: string }>",
+            "recipes": "PromptRecipe[]",
+            "activeRecipe": "PromptRecipe | null"
+          },
+          "queries": [
+            {"endpoint": "/api/prompt-recipes", "params": {"scope": "system"}},
+            {"endpoint": "/api/prompt-recipes", "params": {"scope": "user"}}
+          ],
+          "state": ["recipes.byId", "recipes.library", "ui.modals"]
+        },
+        "components": [
+          {"type": "SearchBar", "props": {"placeholder": "Search recipes"}},
+          {"type": "CategoryPills", "props": {"items": "categories"}},
+          {"type": "RecipeGrid", "props": {"columns": 3}},
+          {"type": "RecipeDetailPanel", "props": {"editable": true}}
+        ],
+        "interactions": [
+          {"name": "Clone Recipe", "type": "button", "shortcut": "Cmd+D", "success": "POST /api/prompt-recipes"},
+          {"name": "Save Recipe", "type": "primary", "shortcut": "Cmd+S", "success": "PATCH /api/prompt-recipes/{id}"}
+        ],
+        "api_dependencies": ["/api/prompt-recipes", "/api/prompt-recipes/{id}"],
+        "empty_states": [
+          {"id": "no_recipes", "message": "No recipes yet", "action": "Create Recipe"}
+        ],
+        "error_states": [
+          {"id": "save_failed", "message": "Couldn't save recipe", "recovery": "Retry"}
+        ],
+        "accessibility": {
+          "focus_order": ["SearchBar", "CategoryPills", "RecipeGrid", "RecipeDetailPanel"],
+          "aria": ["Role=grid with keyboard support", "Aria-live for cost estimates"]
+        },
+        "metrics": {
+          "kpis": ["recipe_clone_rate", "recipe_share_rate"],
+          "events": ["recipe_search", "recipe_save", "recipe_share"]
+        }
+      },
+      {
+        "id": "screen_model_manager",
+        "name": "Model Manager",
+        "purpose": "Manage local models, download updates, benchmark hardware, and configure auto-selection rules.",
+        "persona": "Investigative Journalist",
+        "data_requirements": {
+          "props": {
+            "installed": "ModelPreset[]",
+            "available": "ModelPreset[]",
+            "benchmarks": "Array<{ modelId: string; rtf: number; accuracy: number }>",
+            "autoSelectRules": "Array<{ condition: string; presetId: string }>"
+          },
+          "queries": [
+            {"endpoint": "/api/model-presets"}
+          ],
+          "state": ["models.entities", "models.downloadQueue", "projects.byId"]
+        },
+        "components": [
+          {"type": "ModelList", "props": {"sections": ["Installed", "Available"]}},
+          {"type": "BenchmarkTable", "props": {"columns": ["Model", "RTF", "Accuracy", "Last Run"]}},
+          {"type": "AutoSelectConfigurator", "props": {"rules": "autoSelectRules"}},
+          {"type": "DownloadQueue", "props": {"showProgress": true}}
+        ],
+        "interactions": [
+          {"name": "Download Model", "type": "button", "shortcut": "Enter", "success": "POST /api/model-presets/{id}/download"},
+          {"name": "Benchmark", "type": "secondary", "shortcut": "Cmd+B", "success": "Trigger local benchmark"}
+        ],
+        "api_dependencies": ["/api/model-presets", "/api/model-presets/{id}/download"],
+        "empty_states": [
+          {"id": "no_models", "message": "Install your first model to start transcribing", "action": "Download Model"}
+        ],
+        "error_states": [
+          {"id": "download_failed", "message": "Download interrupted", "recovery": "Retry"}
+        ],
+        "accessibility": {
+          "focus_order": ["ModelList", "AutoSelectConfigurator", "BenchmarkTable", "DownloadQueue"],
+          "aria": ["Progress bars have aria-valuenow", "Download buttons have aria-describedby with file size"]
+        },
+        "metrics": {
+          "kpis": ["model_downloads", "auto_select_usage"],
+          "events": ["model_download_start", "model_download_complete", "auto_select_rule_save"]
+        }
+      },
+      {
+        "id": "screen_export_center",
+        "name": "Export Center",
+        "purpose": "Manage export presets, run exports, review history, and schedule deliveries.",
+        "persona": "Podcast Producer",
+        "data_requirements": {
+          "props": {
+            "presets": "ExportPreset[]",
+            "recentRuns": "ExportRun[]",
+            "selectedTranscript": "Transcript | null"
+          },
+          "queries": [
+            {"endpoint": "/api/export-presets"},
+            {"endpoint": "/api/transcripts", "params": {"status": "completed"}}
+          ],
+          "state": ["exports.presets", "exports.statusByRunId", "transcripts.byId"]
+        },
+        "components": [
+          {"type": "PresetList", "props": {"sortable": true}},
+          {"type": "PresetEditor", "props": {"fields": ["Name", "Style", "Format", "Grouping", "Post Actions"]}},
+          {"type": "ExportHistoryTable", "props": {"columns": ["Transcript", "Preset", "Status", "Size", "Date"]}},
+          {"type": "SchedulePanel", "props": {"supportsCron": true}}
+        ],
+        "interactions": [
+          {"name": "Create Preset", "type": "primary", "shortcut": "Cmd+Shift+N", "success": "Create preset form"},
+          {"name": "Run Export", "type": "primary", "shortcut": "Cmd+E", "success": "POST /api/transcripts/{id}/exports"}
+        ],
+        "api_dependencies": ["/api/export-presets", "/api/transcripts/{id}/exports", "/api/transcripts/{id}/exports/{exportId}"],
+        "empty_states": [
+          {"id": "no_presets", "message": "Build presets for faster exports", "action": "Create Preset"}
+        ],
+        "error_states": [
+          {"id": "export_failed", "message": "Export failed to generate", "recovery": "Retry"}
+        ],
+        "accessibility": {
+          "focus_order": ["PresetList", "PresetEditor", "ExportHistoryTable", "SchedulePanel"],
+          "aria": ["Use aria-expanded for preset details", "Status column uses aria-live"]
+        },
+        "metrics": {
+          "kpis": ["exports_run", "scheduled_export_usage"],
+          "events": ["preset_create", "export_run", "post_action_trigger"]
+        }
+      },
+      {
+        "id": "screen_settings_general",
+        "name": "Settings - General",
+        "purpose": "Configure general application preferences such as save location, visibility, confirmations, auto launch.",
+        "persona": "Investigative Journalist",
+        "data_requirements": {
+          "props": {
+            "settings": "Record<string, unknown>",
+            "savePath": "string"
+          },
+          "queries": [
+            {"endpoint": "/api/users/me"}
+          ],
+          "state": ["auth.user", "ui.theme"]
+        },
+        "components": [
+          {"type": "PathPicker", "props": {"label": "Default Save Location"}},
+          {"type": "ToggleField", "props": {"label": "Play sound when finished"}},
+          {"type": "SelectField", "props": {"label": "App visibility mode"}},
+          {"type": "ToggleField", "props": {"label": "Launch at login"}}
+        ],
+        "interactions": [
+          {"name": "Change Save Path", "type": "secondary", "shortcut": "Cmd+Shift+S", "success": "Update preference"},
+          {"name": "Toggle Launch", "type": "checkbox", "shortcut": "Space", "success": "Save preference"}
+        ],
+        "api_dependencies": ["/api/users/me"],
+        "empty_states": [],
+        "error_states": [
+          {"id": "save_failed", "message": "Unable to update settings", "recovery": "Retry"}
+        ],
+        "accessibility": {
+          "focus_order": ["PathPicker", "Play sound", "Visibility mode", "Launch at login"],
+          "aria": ["Each control uses aria-describedby with help text"]
+        },
+        "metrics": {
+          "kpis": ["settings_update_rate"],
+          "events": ["preference_change", "launch_toggle"]
+        }
+      },
+      {
+        "id": "screen_settings_ai_services",
+        "name": "Settings - AI Services",
+        "purpose": "Manage external AI providers, API keys, and default prompt recipes.",
+        "persona": "UX Research Lead",
+        "data_requirements": {
+          "props": {
+            "providers": "Array<{ id: string; name: string; status: string }>",
+            "recipes": "PromptRecipe[]"
+          },
+          "queries": [
+            {"endpoint": "/api/integrations"},
+            {"endpoint": "/api/prompt-recipes", "params": {"scope": "user"}}
+          ],
+          "state": ["integrations.connections", "recipes.byId"]
+        },
+        "components": [
+          {"type": "ProviderTileGrid", "props": {"columns": 3}},
+          {"type": "KeyInputDrawer", "props": {"masked": true}},
+          {"type": "DefaultRecipeSelector", "props": {"categories": ["summary", "chapters", "action_items"]}}
+        ],
+        "interactions": [
+          {"name": "Connect Provider", "type": "button", "shortcut": "Enter", "success": "POST /api/integrations"},
+          {"name": "Remove Provider", "type": "destructive", "shortcut": "Delete", "success": "DELETE /api/integrations/{id}"}
+        ],
+        "api_dependencies": ["/api/integrations", "/api/prompt-recipes"],
+        "empty_states": [
+          {"id": "no_providers", "message": "Connect a provider to unlock AI services", "action": "Connect"}
+        ],
+        "error_states": [
+          {"id": "auth_failed", "message": "Provider rejected credentials", "recovery": "Retry"}
+        ],
+        "accessibility": {
+          "focus_order": ["ProviderTileGrid", "KeyInputDrawer", "DefaultRecipeSelector"],
+          "aria": ["Tiles announce connection status", "Key fields use aria-describedby for storage policy"]
+        },
+        "metrics": {
+          "kpis": ["provider_connection_rate", "recipe_default_changes"],
+          "events": ["provider_connect", "provider_disconnect", "default_recipe_change"]
+        }
+      },
+      {
+        "id": "screen_system_audio_wizard",
+        "name": "System Audio Wizard",
+        "purpose": "Guide users through installing and validating system audio capture.",
+        "persona": "Podcast Producer",
+        "data_requirements": {
+          "props": {
+            "platform": "'macos' | 'windows' | 'linux'",
+            "steps": "Array<{ id: string; title: string; status: 'pending' | 'active' | 'complete' | 'error' }>",
+            "diagnostics": "Array<{ name: string; status: 'pass' | 'warn' | 'fail'; details?: string }>"
+          },
+          "queries": [],
+          "state": ["realtime.deviceState", "ui.modals"]
+        },
+        "components": [
+          {"type": "StepSidebar", "props": {"orientation": "vertical"}},
+          {"type": "InstructionPanel", "props": {"supportsMedia": true}},
+          {"type": "DiagnosticList", "props": {"showRetry": true}},
+          {"type": "FooterButtons", "props": {"primary": "Next", "secondary": "Back"}}
+        ],
+        "interactions": [
+          {"name": "Next Step", "type": "primary", "shortcut": "Enter", "success": "Advance step"},
+          {"name": "Run Diagnostic", "type": "secondary", "shortcut": "Cmd+R", "success": "Execute local diagnostic"}
+        ],
+        "api_dependencies": [],
+        "empty_states": [
+          {"id": "no_steps", "message": "Wizard not configured"}
+        ],
+        "error_states": [
+          {"id": "driver_missing", "message": "Virtual device not installed", "recovery": "Open install instructions"}
+        ],
+        "accessibility": {
+          "focus_order": ["StepSidebar", "InstructionPanel", "DiagnosticList", "FooterButtons"],
+          "aria": ["Use aria-current on active step", "Diagnostics announce status via polite region"]
+        },
+        "metrics": {
+          "kpis": ["wizard_completion_rate", "diagnostic_fail_rate"],
+          "events": ["wizard_step_complete", "wizard_exit"]
+        }
+      },
+      {
+        "id": "screen_sync_center",
+        "name": "Sync Center",
+        "purpose": "Monitor sync queue, conflicts, and backup status for Supabase integration.",
+        "persona": "UX Research Lead",
+        "data_requirements": {
+          "props": {
+            "queue": "Array<{ id: string; entityType: string; status: string; attempts: number }>",
+            "conflicts": "Array<{ entityId: string; local: unknown; remote: unknown }>",
+            "status": "'idle' | 'syncing' | 'conflicted' | 'offline'"
+          },
+          "queries": [
+            {"endpoint": "/api/sync/events", "method": "POST", "trigger": "onResolve"}
+          ],
+          "state": ["sync.queue", "sync.status", "sync.lastSyncedAt"]
+        },
+        "components": [
+          {"type": "StatusBanner", "props": {"showTimestamp": true}},
+          {"type": "QueueTable", "props": {"columns": ["Entity", "Status", "Attempts"]}},
+          {"type": "ConflictDiffViewer", "props": {"diffMode": "side-by-side"}},
+          {"type": "BackupControls", "props": {"selective": true}}
+        ],
+        "interactions": [
+          {"name": "Resolve Conflict", "type": "primary", "shortcut": "Cmd+Shift+M", "success": "Resolve via diff"},
+          {"name": "Retry Sync", "type": "secondary", "shortcut": "Cmd+R", "success": "Flush queue"}
+        ],
+        "api_dependencies": ["/api/sync/events"],
+        "empty_states": [
+          {"id": "queue_empty", "message": "All synced!"}
+        ],
+        "error_states": [
+          {"id": "sync_failed", "message": "Sync failed", "recovery": "Retry"}
+        ],
+        "accessibility": {
+          "focus_order": ["StatusBanner", "QueueTable", "ConflictDiffViewer", "BackupControls"],
+          "aria": ["Queue rows announce status changes", "Conflict diff has aria-describedby instructions"]
+        },
+        "metrics": {
+          "kpis": ["sync_backlog_size", "conflict_resolution_time"],
+          "events": ["sync_retry", "conflict_resolve"]
+        }
+      },
+      {
+        "id": "screen_analytics_dashboard",
+        "name": "Analytics Dashboard",
+        "purpose": "Surface productivity metrics, performance benchmarks, and ROI summaries.",
+        "persona": "UX Research Lead",
+        "data_requirements": {
+          "props": {
+            "widgets": "Array<{ id: string; type: 'chart' | 'stat' | 'table'; data: unknown }>",
+            "timeRange": "{ start: string; end: string }"
+          },
+          "queries": [
+            {"endpoint": "/api/analytics/metrics", "method": "GET", "params": {"range": "7d"}}
+          ],
+          "state": ["analytics.metrics", "analytics.jobHistory", "auth.user"]
+        },
+        "components": [
+          {"type": "TimeRangePicker", "props": {"options": ["7d", "30d", "90d"]}},
+          {"type": "MetricCards", "props": {"metrics": ["Hours Saved", "Exports", "Realtime Sessions"]}},
+          {"type": "PerformanceChart", "props": {"series": ["CPU Load", "GPU Load", "RTF"]}},
+          {"type": "UsageTable", "props": {"columns": ["Project", "Minutes", "Exports", "AI Runs"]}}
+        ],
+        "interactions": [
+          {"name": "Change Range", "type": "segmented", "shortcut": null, "success": "Refresh metrics"},
+          {"name": "Export Report", "type": "primary", "shortcut": "Cmd+Shift+E", "success": "Generate PDF"}
+        ],
+        "api_dependencies": ["/api/analytics/metrics"],
+        "empty_states": [
+          {"id": "no_data", "message": "No analytics yet", "action": "Transcribe audio"}
+        ],
+        "error_states": [
+          {"id": "analytics_failed", "message": "Couldn't load metrics", "recovery": "Retry"}
+        ],
+        "accessibility": {
+          "focus_order": ["TimeRangePicker", "MetricCards", "PerformanceChart", "UsageTable"],
+          "aria": ["Charts expose data table toggle", "Metric cards have aria-describedby for context"]
+        },
+        "metrics": {
+          "kpis": ["active_users", "hours_saved"],
+          "events": ["analytics_range_change", "analytics_export"]
+        }
+      }
+    ]
+  },
+  "flows": [
+    {
+      "id": "flow_import_to_export",
+      "name": "Complete Transcription Workflow",
+      "steps": [
+        {"step": 1, "actor": "User", "screen": "screen_home_dashboard", "action": "Drag audio or paste URL", "system": "UI validates and queues upload"},
+        {"step": 2, "actor": "System", "screen": "screen_transcription_progress", "action": "Download or normalize audio", "system": "POST /api/audio/uploads or /api/audio/url"},
+        {"step": 3, "actor": "System", "screen": "screen_transcription_progress", "action": "Transcribe via local model", "system": "Job runner executes whisper.cpp / metal"},
+        {"step": 4, "actor": "System", "screen": "screen_transcription_progress", "action": "Run AI recipes", "system": "POST /api/transcripts/{id}/summary"},
+        {"step": 5, "actor": "User", "screen": "screen_transcript_editor", "action": "Review and edit transcript", "system": "Segments saved locally then synced"},
+        {"step": 6, "actor": "User", "screen": "screen_export_center", "action": "Run export preset", "system": "POST /api/transcripts/{id}/exports"}
+      ],
+      "data_flow": {
+        "1": "UI → API: POST /api/audio/uploads",
+        "2": "Worker → Queue: local download & normalization",
+        "3": "Transcriber → Transcript store",
+        "4": "AI service → Summary/Chapter/ActionItem models",
+        "5": "Editor → Segment updates (optimistic)",
+        "6": "Export service → File outputs + integrations"
+      }
+    },
+    {
+      "id": "flow_url_ingest",
+      "name": "URL Ingest",
+      "steps": [
+        {"step": 1, "actor": "User", "screen": "screen_home_dashboard", "action": "Paste URL", "system": "Client extracts provider metadata"},
+        {"step": 2, "actor": "System", "screen": "screen_home_dashboard", "action": "Validate and request download", "system": "POST /api/audio/url"},
+        {"step": 3, "actor": "Worker", "screen": "screen_transcription_progress", "action": "Download via yt-dlp with fallback", "system": "Reports status over WebSocket"},
+        {"step": 4, "actor": "System", "screen": "screen_transcription_progress", "action": "Auto detect language and select model", "system": "Auto selector in electron main"},
+        {"step": 5, "actor": "User", "screen": "screen_transcript_editor", "action": "Edit result", "system": "Persist transcript"}
+      ],
+      "data_flow": {
+        "1": "User clipboard → UI", "2": "UI → /api/audio/url", "3": "Worker → temp storage", "4": "Selector → models.downloadQueue", "5": "Editor → local + sync"
+      }
+    },
+    {
+      "id": "flow_batch_resume",
+      "name": "Batch Resume After Crash",
+      "steps": [
+        {"step": 1, "actor": "System", "screen": "screen_batch_manager", "action": "On launch, load persisted queue", "system": "Read from SQLite"},
+        {"step": 2, "actor": "User", "screen": "screen_batch_manager", "action": "Confirm resume", "system": "UI toggles status"},
+        {"step": 3, "actor": "System", "screen": "screen_transcription_progress", "action": "Resume processing pending items", "system": "Batch worker uses concurrency configuration"},
+        {"step": 4, "actor": "System", "screen": "screen_transcription_progress", "action": "Retry failed items individually", "system": "Backoff with exponential delay"},
+        {"step": 5, "actor": "User", "screen": "screen_transcription_progress", "action": "Mark job completed", "system": "UI sends PATCH /api/batch-jobs/{id}"}
+      ],
+      "data_flow": {
+        "1": "Electron store → batch.jobs", "2": "User → UI", "3": "Worker → transcripts", "4": "Worker → error queue", "5": "UI → API"
+      }
+    },
+    {
+      "id": "flow_realtime_capture",
+      "name": "Realtime Capture & Caption",
+      "steps": [
+        {"step": 1, "actor": "User", "screen": "screen_realtime_console", "action": "Select microphone/system audio", "system": "UI updates realtime.deviceState"},
+        {"step": 2, "actor": "System", "screen": "screen_realtime_console", "action": "Start session", "system": "POST /api/realtime/sessions"},
+        {"step": 3, "actor": "System", "screen": "screen_realtime_console", "action": "Stream audio frames", "system": "Native module captures audio → whisper realtime"},
+        {"step": 4, "actor": "System", "screen": "screen_realtime_console", "action": "Display live captions", "system": "UI updates captions list"},
+        {"step": 5, "actor": "User", "screen": "screen_transcript_editor", "action": "Save session transcript", "system": "Transcript created locally and synced"}
+      ],
+      "data_flow": {
+        "1": "Device settings → realtime slice", "2": "UI → /api/realtime/sessions", "3": "Audio driver → realtime engine", "4": "Engine → captions store", "5": "UI → /api/transcripts"
+      }
+    },
+    {
+      "id": "flow_watch_folder_automation",
+      "name": "Watch Folder Automation",
+      "steps": [
+        {"step": 1, "actor": "User", "screen": "screen_watch_folder_rules", "action": "Define rules", "system": "PATCH /api/watch-folders/{id}"},
+        {"step": 2, "actor": "System", "screen": "screen_watch_folder_logs", "action": "Monitor folder", "system": "Electron watcher or cloud provider webhooks"},
+        {"step": 3, "actor": "System", "screen": "screen_transcription_progress", "action": "Apply rules (model, exports, prompts)", "system": "Batch queue adds tasks"},
+        {"step": 4, "actor": "System", "screen": "screen_export_center", "action": "Execute post-actions", "system": "Integrations triggered"}
+      ],
+      "data_flow": {
+        "1": "UI → API", "2": "File system → watcher service", "3": "Watcher → batch queue", "4": "Export service → integrations"
+      }
+    },
+    {
+      "id": "flow_ai_recipe_summary",
+      "name": "AI Summary Recipe",
+      "steps": [
+        {"step": 1, "actor": "User", "screen": "screen_prompt_recipes", "action": "Select recipe", "system": "UI loads variables"},
+        {"step": 2, "actor": "User", "screen": "screen_transcript_editor", "action": "Run recipe", "system": "POST /api/transcripts/{id}/summary"},
+        {"step": 3, "actor": "System", "screen": "screen_transcription_progress", "action": "Queue local LLM or cloud call", "system": "Supabase edge function or local llama.cpp"},
+        {"step": 4, "actor": "System", "screen": "screen_transcript_editor", "action": "Insert output sections", "system": "Update summary, chapters, action items"},
+        {"step": 5, "actor": "User", "screen": "screen_export_center", "action": "Export with new sections", "system": "POST /api/transcripts/{id}/exports"}
+      ],
+      "data_flow": {
+        "1": "Recipes store → editor", "2": "UI → API", "3": "AI service → Summary store", "4": "Summary store → UI", "5": "Exports → integrations"
+      }
+    },
+    {
+      "id": "flow_auto_model_selection",
+      "name": "Auto Model/Provider Selection",
+      "steps": [
+        {"step": 1, "actor": "System", "screen": "screen_home_dashboard", "action": "Analyze audio duration and hardware", "system": "Electron collects CPU/GPU/Neural Engine"},
+        {"step": 2, "actor": "System", "screen": "screen_home_dashboard", "action": "Check provider credentials and quota", "system": "Integrations store"},
+        {"step": 3, "actor": "System", "screen": "screen_home_dashboard", "action": "Select best preset with heuristics", "system": "Auto selector service"},
+        {"step": 4, "actor": "User", "screen": "screen_home_dashboard", "action": "Confirm or override", "system": "UI updates transcripts.create options"}
+      ],
+      "data_flow": {
+        "1": "Audio metadata → selector", "2": "Integrations → selector", "3": "Selector → UI recommendation", "4": "UI → /api/transcripts"
+      }
+    },
+    {
+      "id": "flow_cloud_sync_conflict",
+      "name": "Sync Conflict Resolution",
+      "steps": [
+        {"step": 1, "actor": "System", "screen": "screen_sync_center", "action": "Detect divergent transcript edits", "system": "Supabase RLS triggers"},
+        {"step": 2, "actor": "System", "screen": "screen_sync_center", "action": "Fetch diff data", "system": "GET /api/transcripts/{id}"},
+        {"step": 3, "actor": "User", "screen": "screen_sync_center", "action": "Review diff and choose version", "system": "UI merges selection"},
+        {"step": 4, "actor": "System", "screen": "screen_sync_center", "action": "Push resolved version", "system": "POST /api/sync/events"}
+      ],
+      "data_flow": {
+        "1": "Supabase → sync.queue", "2": "API → UI", "3": "User decision → UI", "4": "UI → API"
+      }
+    },
+    {
+      "id": "flow_upgrade_to_pro",
+      "name": "Upgrade to Pro",
+      "steps": [
+        {"step": 1, "actor": "User", "screen": "screen_home_dashboard", "action": "Click Pro upsell", "system": "Open pricing modal"},
+        {"step": 2, "actor": "User", "screen": "screen_pricing_modal", "action": "Select plan", "system": "POST /api/payments/checkout"},
+        {"step": 3, "actor": "System", "screen": "screen_pricing_modal", "action": "Open Stripe checkout", "system": "Stripe web view"},
+        {"step": 4, "actor": "System", "screen": "screen_pricing_modal", "action": "Validate license", "system": "POST /api/payments/license/validate"},
+        {"step": 5, "actor": "System", "screen": "screen_home_dashboard", "action": "Unlock gated features", "system": "Update auth.plan"}
+      ],
+      "data_flow": {
+        "1": "UI → pricing modal", "2": "UI → /api/payments/checkout", "3": "Stripe → payment intent", "4": "Stripe webhook → license", "5": "License → feature flags"
+      }
+    },
+    {
+      "id": "flow_system_audio_setup",
+      "name": "System Audio Capture Setup",
+      "steps": [
+        {"step": 1, "actor": "System", "screen": "screen_system_audio_wizard", "action": "Detect OS and installed drivers", "system": "Native module"},
+        {"step": 2, "actor": "User", "screen": "screen_system_audio_wizard", "action": "Install virtual device", "system": "Open download link"},
+        {"step": 3, "actor": "User", "screen": "screen_system_audio_wizard", "action": "Grant permissions", "system": "Guide through OS dialogs"},
+        {"step": 4, "actor": "System", "screen": "screen_system_audio_wizard", "action": "Run test recording", "system": "Realtime engine verifies audio"}
+      ],
+      "data_flow": {
+        "1": "OS → wizard", "2": "Wizard → download", "3": "Wizard → OS security", "4": "Realtime → diagnostics"
+      }
+    }
+  ],
+  "platform_specific": {
+    "electron": {
+      "main_process": {
+        "entry": "src/main/index.ts",
+        "ipc_channels": [
+          {"name": "transcription:start", "request": "{ audioSourceId: string; options: TranscriptionOptions }", "response": "{ transcriptId: string; status: string }"},
+          {"name": "transcription:progress", "event": "{ jobId: string; progress: number; stage: string }"},
+          {"name": "batch:resume", "request": "{ jobId: string }"},
+          {"name": "realtime:start", "request": "{ mode: string; modelPresetId: string }", "response": "{ sessionId: string }"},
+          {"name": "realtime:stop", "request": "{ sessionId: string }"},
+          {"name": "system-audio:diagnose", "request": "{ platform: string }", "response": "DiagnosticsResult"},
+          {"name": "watcher:subscribe", "request": "{ folderId: string }", "response": "SubscriptionHandle"},
+          {"name": "sync:status", "event": "{ status: string; queueLength: number }"}
+        ],
+        "background_services": [
+          "ModelDownloadManager",
+          "BatchQueueWorker",
+          "RealtimeEngineAdapter",
+          "SyncQueueProcessor",
+          "IntegrationJobRunner"
+        ]
+      },
+      "security": {
+        "contextIsolation": true,
+        "sandbox": true,
+        "allowlistProtocols": ["voiceflowpro"],
+        "csp": "default-src 'self'; connect-src 'self' https://api.voiceflowpro.app https://*.supabase.co https://checkout.stripe.com; img-src 'self' data:"
+      },
+      "native_modules": [
+        {"name": "whisper-node-bindings", "purpose": "Accelerated transcription via whisper.cpp/Metal"},
+        {"name": "audio-device-bridge", "purpose": "CoreAudio/WASAPI/PipeWire capture"},
+        {"name": "gpu-info", "purpose": "Query GPU and Neural Engine metrics"}
+      ]
+    },
+    "desktop_integration": {
+      "file_associations": [".wav", ".mp3", ".m4a", ".flac", ".ogg", ".vfp"],
+      "protocols": ["voiceflowpro://import?url=", "voiceflowpro://record"],
+      "context_menus": {
+        "macos": [
+          {"title": "Transcribe with VoiceFlowPro", "command": "open --args --import"}
+        ],
+        "windows": [
+          {"title": "Transcribe with VoiceFlowPro", "command": "voiceflowpro.exe --import"}
+        ]
+      },
+      "quick_actions": {
+        "macos": ["Start Recording", "Open Recent Transcript"],
+        "windows": ["Start Recording", "Open Dashboard"],
+        "linux": ["Start Recording"]
+      }
+    },
+    "macos": {
+      "frameworks": ["CoreAudio", "AVFoundation", "MetalPerformanceShaders"],
+      "menu_bar": {
+        "menus": [
+          {"label": "VoiceFlowPro", "items": ["About", "Preferences", "Services", "Hide", "Quit"]},
+          {"label": "File", "items": ["New Recording", "Open", "Close", "Import URL"]},
+          {"label": "Edit", "items": ["Undo", "Redo", "Copy", "Paste", "Find", "Replace"]},
+          {"label": "View", "items": ["Toggle Sidebar", "Show Timeline", "Enter Full Screen"]},
+          {"label": "Tools", "items": ["Batch Manager", "Watch Folders", "Model Manager"]},
+          {"label": "Window", "items": ["Minimize", "Zoom", "Bring All to Front"]},
+          {"label": "Help", "items": ["VoiceFlowPro Help", "Release Notes"]}
+        ]
+      },
+      "touch_bar": {
+        "controls": ["Play/Pause", "Add Marker", "Toggle Mode", "Export"]
+      },
+      "spotlight_integration": {
+        "metadata_importer": "com.voiceflowpro.transcript.spotlight",
+        "fields": ["title", "speakers", "keywords", "transcript_text"]
+      },
+      "siri_shortcuts": [
+        {"intent": "com.voiceflowpro.startRecording", "phrase": "Start transcription with VoiceFlow"},
+        {"intent": "com.voiceflowpro.transcribeClip", "phrase": "Transcribe latest recording"}
+      ]
+    },
+    "windows": {
+      "audio_pipeline": "WASAPI loopback with optional virtual cable",
+      "shell_extension": {
+        "name": "VoiceFlowProShellExt",
+        "features": ["Context menu", "Preview pane transcript"],
+        "technology": "C# .NET isolated COM"
+      },
+      "notifications": {
+        "toast": true,
+        "actions": ["Open Transcript", "Dismiss"]
+      },
+      "auto_updates": "Squirrel.Windows or electron-builder differential"
+    },
+    "linux": {
+      "supported_desktops": ["GNOME", "KDE Plasma", "XFCE"],
+      "audio_stack": "PipeWire with fallback to PulseAudio",
+      "package_formats": ["AppImage", "deb", "rpm"],
+      "dbus_interfaces": ["org.voiceflowpro.Transcribe", "org.voiceflowpro.Sync"],
+      "tray_menu": ["Open", "Start Recording", "Quit"]
+    }
+  },
+  "quality_requirements": {
+    "performance": {
+      "transcription_speed": "1 hour audio < 5 minutes on M-series (RTF <= 0.08)",
+      "ui_responsiveness": "60fps animations; frame budget < 16ms",
+      "startup_time": "Cold start < 3s, warm start < 500ms",
+      "memory": "Idle < 200MB, active project < 500MB"
+    },
+    "reliability": {
+      "offline_mode": "Full functionality without network, queue sync for up to 30 days",
+      "error_budget": "< 1% transcription failures per 100 jobs",
+      "retry_policy": "Exponential backoff (1s, 5s, 15s, 60s) with jitter"
+    },
+    "security": {
+      "data_encryption": "Client-side encryption for Supabase backups using libsodium",
+      "license_protection": "Offline grace period 30 days with cryptographic signature",
+      "sandboxing": "Hardened electron sandbox, disable remote module"
+    },
+    "accessibility": {
+      "standards": ["WCAG 2.2 AA"],
+      "keyboard_navigation": "100% screens reachable via keyboard",
+      "screen_reader": "Full ARIA roles and live regions for dynamic content",
+      "high_contrast": "Dedicated theme meeting WCAG AAA for text" 
+    },
+    "testing": {
+      "unit_coverage": ">= 80% for core logic",
+      "integration_tests": ["Batch queue resume", "Realtime session start/stop", "Watch folder rule execution"],
+      "e2e_scenarios": ["URL ingest to export", "Upgrade to Pro flow", "Conflict resolution"],
+      "performance_benchmarks": ["RTF benchmark suite", "GPU utilization", "Batch throughput"]
+    },
+    "observability": {
+      "logging": "Structured logs via pino to local file + optional Supabase log table",
+      "telemetry": "Opt-in analytics using Supabase Functions",
+      "crash_reporting": "Electron crash reporter integrated with Sentry",
+      "metrics": "Expose Prometheus-style counters for transcription jobs and AI calls"
+    }
+  },
+  "error_handling": {
+    "error_codes": {
+      "AUDIO_FORMAT_UNSUPPORTED": {
+        "code": "E001",
+        "httpStatus": 400,
+        "userMessage": "Please upload MP3, WAV, M4A, FLAC, CAF, AIFF, or OGG files",
+        "uiHandler": "ShowToast",
+        "recovery": "OpenFormatGuide"
+      },
+      "DOWNLOAD_FAILED": {
+        "code": "E010",
+        "httpStatus": 502,
+        "userMessage": "We couldn't download that URL. It may be protected or unsupported.",
+        "uiHandler": "ShowInlineError",
+        "recovery": "OfferCookiesUpload"
+      },
+      "MODEL_DOWNLOAD_FAILED": {
+        "code": "E020",
+        "httpStatus": 500,
+        "userMessage": "Model download interrupted",
+        "uiHandler": "ShowRetryModal",
+        "recovery": "RetryDownload"
+      },
+      "REALTIME_DEVICE_BUSY": {
+        "code": "E030",
+        "httpStatus": 409,
+        "userMessage": "Your audio device is in use by another app",
+        "uiHandler": "ShowDialog",
+        "recovery": "OpenDeviceInstructions"
+      },
+      "SYNC_CONFLICT": {
+        "code": "E040",
+        "httpStatus": 409,
+        "userMessage": "Edits conflict with changes from another device",
+        "uiHandler": "OpenConflictResolution",
+        "recovery": "PresentDiff"
+      },
+      "PAYMENT_REQUIRED": {
+        "code": "E050",
+        "httpStatus": 402,
+        "userMessage": "Upgrade to VoiceFlowPro to use this feature",
+        "uiHandler": "OpenPricingModal",
+        "recovery": "StartUpgradeFlow"
+      },
+      "EXPORT_FAILED": {
+        "code": "E060",
+        "httpStatus": 500,
+        "userMessage": "Export failed to generate",
+        "uiHandler": "ShowRetryButton",
+        "recovery": "RetryExport"
+      }
+    },
+    "empty_states": [
+      {"id": "no_transcripts", "title": "No transcripts yet", "description": "Drop an audio file or paste a URL to begin", "actions": ["Open Files", "Paste URL"]},
+      {"id": "no_models", "title": "Install a model", "description": "Download a Whisper model to get started", "actions": ["Open Model Manager"]},
+      {"id": "no_sync", "title": "Sync disabled", "description": "Create an account to enable cloud sync", "actions": ["Create Account"]}
+    ],
+    "offline_behavior": {
+      "queue_actions": true,
+      "sync_on_reconnect": true,
+      "ui_signals": ["Offline badge in header", "Toast when connection restored"],
+      "disabled_features": ["Stripe checkout", "Cloud-only providers"]
+    },
+    "retry_policies": {
+      "default": {"attempts": 4, "strategy": "exponential", "baseMs": 1000, "maxMs": 60000},
+      "model_download": {"attempts": 3, "strategy": "progressive", "baseMs": 2000, "maxMs": 120000},
+      "sync_conflict": {"attempts": 1, "strategy": "manual"}
+    }
+  }
+}
