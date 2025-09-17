@@ -1,3 +1,6 @@
 [submodule "voiceflow-pro/libs/whisper.cpp"]
 	path = voiceflow-pro/libs/whisper.cpp
 	url = https://github.com/ggerganov/whisper.cpp.git
+[submodule "voiceflowpro/crossfade-ui"]
+	path = voiceflowpro/crossfade-ui
+	url = https://github.com/wilofice/crossfade-ui.git
