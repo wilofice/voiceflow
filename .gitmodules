@@ -4,3 +4,6 @@
 [submodule "voiceflowpro/crossfade-ui"]
 	path = voiceflowpro/crossfade-ui
 	url = https://github.com/wilofice/crossfade-ui.git
+[submodule "voiceflowpro/manager"]
+	path = voiceflowpro/manager
+	url = https://github.com/wilofice/voiceflowpro-manager.git
