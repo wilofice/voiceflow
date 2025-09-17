@@ -32,6 +32,15 @@ interface ElectronAPI {
     removeEventListener: (callback: (event: string, data: any) => void) => void;
   };
 
+  // File Import APIs
+  fileImport: {
+    openDialog: () => Promise<any>;
+    openFolder: () => Promise<any>;
+    getSupportedFormats: () => Promise<string[]>;
+    validatePaths: (filePaths: string[]) => Promise<any>;
+    processDropped: (filePaths: string[]) => Promise<any>;
+  };
+
   // File System APIs
   fs: {
     showOpenDialog: (options?: any) => Promise<{ success: boolean; canceled?: boolean; filePaths?: string[]; error?: string }>;
@@ -77,6 +86,13 @@ const ALLOWED_CHANNELS = {
     'app:get-info',
     'app:show-about',
     'app:open-external',
+    
+    // File import channels
+    'file-import:open-dialog',
+    'file-import:open-folder',
+    'file-import:get-formats',
+    'file-import:validate-paths',
+    'file-import:process-dropped',
     
     // Whisper channels
     'whisper:initialize-model',
@@ -167,6 +183,15 @@ const electronAPI: ElectronAPI = {
       // Need to wrap callback for correct signature
       ipcRenderer.removeAllListeners('watch-folder:event');
     }
+  },
+
+  // File Import APIs
+  fileImport: {
+    openDialog: () => ipcRenderer.invoke('file-import:open-dialog'),
+    openFolder: () => ipcRenderer.invoke('file-import:open-folder'),
+    getSupportedFormats: () => ipcRenderer.invoke('file-import:get-formats'),
+    validatePaths: (filePaths: string[]) => ipcRenderer.invoke('file-import:validate-paths', filePaths),
+    processDropped: (filePaths: string[]) => ipcRenderer.invoke('file-import:process-dropped', filePaths)
   },
 
   // File System APIs
