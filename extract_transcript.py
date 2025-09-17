@@ -40,9 +40,10 @@ def extract_transcript_text(file_path):
 
 class TranscriptChangeHandler(FileSystemEventHandler):
     """Handles events on the transcript file."""
-    def __init__(self, file_path):
+    def __init__(self, file_path, output_file_path):
         self.file_path = file_path
         self.filename = os.path.basename(file_path)
+        self.output_file_path = output_file_path
         self._process() # Process the file on startup
 
     def on_modified(self, event):
@@ -52,6 +53,10 @@ class TranscriptChangeHandler(FileSystemEventHandler):
 
     def _process(self):
         cleaned_text = extract_transcript_text(self.file_path)
+
+        with open(self.output_file_path, 'w') as f:
+            f.write(cleaned_text)
+            
         print("--- Cleaned Transcript ---")
         print(cleaned_text)
         print("\nWatching for file changes... (Press Ctrl+C to stop)")
@@ -59,7 +64,11 @@ class TranscriptChangeHandler(FileSystemEventHandler):
 
 if __name__ == '__main__':
     transcript_file = 'transcript.txt'
+    output_file = 'cleaned_transcript.txt'
     script_dir = os.path.dirname(os.path.abspath(__file__))
+
+    output_path = os.path.join(script_dir, output_file)
+
     file_path = os.path.join(script_dir, transcript_file)
 
     if not os.path.exists(file_path):
@@ -67,7 +76,7 @@ if __name__ == '__main__':
         exit()
 
     # Set up the watchdog observer
-    event_handler = TranscriptChangeHandler(file_path)
+    event_handler = TranscriptChangeHandler(file_path, output_path)
     observer = Observer()
     # Watch the directory containing the file
     observer.schedule(event_handler, path=script_dir, recursive=False)

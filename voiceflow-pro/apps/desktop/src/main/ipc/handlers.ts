@@ -1,13 +1,15 @@
 import { ipcMain, IpcMainInvokeEvent, dialog, shell } from 'electron';
 import * as log from 'electron-log';
 import Store from 'electron-store';
-import { WhisperService } from '../services/whisperService';
+import { DesktopWhisperService } from '../services/desktopWhisperService';
+import { FileImportService } from '../services/fileImportService';
 import { WatchFolderService } from '../services/watchFolderService';
 import { WindowManager } from '../services/windowManager';
-import { WhisperConfig, WatchRule } from '../types/whisper';
+import { WatchRule } from '../types/whisper';
 
 interface Services {
-  whisper: WhisperService;
+  whisper: DesktopWhisperService;
+  fileImport: FileImportService;
   watchFolder: WatchFolderService;
   store: Store<any>;
   windowManager: WindowManager;
@@ -82,11 +84,11 @@ function setupWhisperHandlers(services: Services) {
   const { whisper } = services;
 
   // Initialize Whisper model
-  ipcMain.handle('whisper:initialize-model', async (event: IpcMainInvokeEvent, config: WhisperConfig) => {
+  ipcMain.handle('whisper:initialize-model', async (event: IpcMainInvokeEvent, config: any) => {
     try {
       log.info('IPC: Initializing Whisper model', config);
-      await whisper.initializeModel(config);
-      return { success: true };
+      const result = await whisper.initializeModel(config);
+      return result;
     } catch (error) {
       log.error('IPC: Failed to initialize Whisper model:', error);
       return { success: false, error: error instanceof Error ? error.message : String(error) };
@@ -94,11 +96,11 @@ function setupWhisperHandlers(services: Services) {
   });
 
   // Transcribe file
-  ipcMain.handle('whisper:transcribe-file', async (event: IpcMainInvokeEvent, filePath: string, config: WhisperConfig) => {
+  ipcMain.handle('whisper:transcribe-file', async (event: IpcMainInvokeEvent, filePath: string, config: any) => {
     try {
       log.info('IPC: Transcribing file', { filePath, config });
       const result = await whisper.transcribeFile(filePath, config);
-      return { success: true, result };
+      return result;
     } catch (error) {
       log.error('IPC: Failed to transcribe file:', error);
       return { success: false, error: error instanceof Error ? error.message : String(error) };
@@ -108,8 +110,8 @@ function setupWhisperHandlers(services: Services) {
   // Get processing jobs
   ipcMain.handle('whisper:get-processing-jobs', async () => {
     try {
-      const jobs = await whisper.getProcessingJobs();
-      return { success: true, jobs };
+      const result = await whisper.getProcessingJobs();
+      return result;
     } catch (error) {
       log.error('IPC: Failed to get processing jobs:', error);
       return { success: false, error: error instanceof Error ? error.message : String(error) };
@@ -119,8 +121,8 @@ function setupWhisperHandlers(services: Services) {
   // Cancel job
   ipcMain.handle('whisper:cancel-job', async (event: IpcMainInvokeEvent, jobId: string) => {
     try {
-      await whisper.cancelJob(jobId);
-      return { success: true };
+      const result = await whisper.cancelJob(jobId);
+      return result;
     } catch (error) {
       log.error('IPC: Failed to cancel job:', error);
       return { success: false, error: error instanceof Error ? error.message : String(error) };
@@ -202,7 +204,50 @@ function setupWatchFolderHandlers(services: Services) {
 }
 
 function setupFileSystemHandlers(services: Services) {
-  // Show open dialog
+  const { fileImport } = services;
+  
+  // Import files using FileImportService
+  ipcMain.handle('file-import:open-dialog', async () => {
+    try {
+      const result = await fileImport.showOpenDialog();
+      return result;
+    } catch (error) {
+      log.error('IPC: Failed to import files:', error);
+      return { success: false, files: [], totalSize: 0, errors: [error instanceof Error ? error.message : String(error)] };
+    }
+  });
+  
+  // Import folder
+  ipcMain.handle('file-import:open-folder', async () => {
+    try {
+      const result = await fileImport.showFolderDialog();
+      return result;
+    } catch (error) {
+      log.error('IPC: Failed to import folder:', error);
+      return { success: false, files: [], totalSize: 0, errors: [error instanceof Error ? error.message : String(error)] };
+    }
+  });
+  
+  // Get supported formats
+  ipcMain.handle('file-import:get-formats', () => {
+    return fileImport.getSupportedFormats();
+  });
+  
+  // Validate dropped files
+  ipcMain.handle('file-import:validate-paths', async (event: IpcMainInvokeEvent, filePaths: string[]) => {
+    const validPaths = filePaths.filter(p => fileImport.isFormatSupported(p));
+    return {
+      valid: validPaths,
+      invalid: filePaths.filter(p => !validPaths.includes(p))
+    };
+  });
+  
+  // Process dropped files
+  ipcMain.handle('file-import:process-dropped', async (event: IpcMainInvokeEvent, filePaths: string[]) => {
+    return fileImport.importFiles(filePaths);
+  });
+  
+  // Show open dialog (legacy)
   ipcMain.handle('fs:show-open-dialog', async (event: IpcMainInvokeEvent, options?: any) => {
     try {
       const result = await dialog.showOpenDialog({

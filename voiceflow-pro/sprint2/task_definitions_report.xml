@@ -207,90 +207,131 @@ npm start             # ✅ Success - Electron app launched
                 </node>
             </node>
             
-            <node title="Task 1.2: Integrate Existing Whisper Engine" priority="critical" status="active" assignee="Lead Dev" startDate="05-Nov-2024" endDate="06-Nov-2024" id="task-whisper-integration-001">
-                <comment>Port WhisperWebEngine from web to desktop with IPC bridge. Complexity: LARGE. Status: Core structure implemented, needs ESM module compatibility fix for @xenova/transformers.</comment>
+            <node title="Task 1.2: Desktop WhisperService Integration" priority="critical" status="active" assignee="Lead Dev" startDate="05-Nov-2024" endDate="06-Nov-2024" id="task-whisper-integration-001">
+                <comment>✅ ARCHITECTURAL PIVOT: Integrate existing API WhisperServerService instead of web ESM approach. Complexity: MEDIUM (reduced from LARGE). Status: Python whisper integration confirmed working, wrapper service implementation needed.</comment>
                 
-                <node title="ESM Compatibility Analysis" priority="high" status="completed" id="task-1-2-analysis-001">
-                    <comment>Comprehensive analysis of ESM module compatibility issue and available solutions</comment>
+                <node title="Architectural Decision: API Server Integration" priority="critical" status="completed" id="task-1-2-pivot-001">
+                    <comment>Strategic pivot from ESM web approach to proven API server integration</comment>
                     
                     <code language="text">
-🔍 ROOT CAUSE ANALYSIS:
-- @xenova/transformers v3+ is ESM-only (no CommonJS support)
-- Electron main process uses CommonJS by default
-- TypeScript compiles to CommonJS (target: CommonJS in tsconfig)
-- Dynamic import() fails in Electron main due to context restrictions
+🎯 STRATEGIC ARCHITECTURAL PIVOT
 
-📊 WEB VS DESKTOP IMPLEMENTATION:
-Web Version (apps/web):
-- Uses Next.js which handles ESM/CommonJS transpilation
-- @xenova/transformers works via Next.js module system
-- No emsdk dependency found (contrary to initial assumption)
-- Transformers.js is pure JavaScript implementation
+❌ REJECTED APPROACH: @xenova/transformers ESM Integration
+- Complex ESM compatibility issues in Electron main process
+- JavaScript/WASM performance limitations
+- Large model downloads per client
+- Browser-specific constraints not suitable for desktop
 
-Desktop Version (apps/desktop):
-- Raw Electron main process (Node.js environment)
-- TypeScript → CommonJS compilation
-- No module bundler to handle ESM imports
-- Requires explicit ESM compatibility
+✅ APPROVED APPROACH: Existing API Server Integration
+- Reuse battle-tested apps/api/src/services/whisperServer.ts
+- Native whisper.cpp C++ performance (2-3x faster than WASM)
+- Comprehensive job management, progress tracking, health checks
+- No ESM compatibility issues - pure Node.js child processes
 
-🔧 EMSDK INVESTIGATION RESULTS:
-- /Users/galahassa/Dev/voiceflow/emsdk exists (Emscripten SDK)
-- Used for whisper.cpp WASM compilation (deprecated approach)
-- NOT needed for @xenova/transformers (pure JS solution)
-- Current web implementation already moved away from WASM
+🔧 CURRENT WHISPER SETUP ANALYSIS:
+- Python whisper integration: ✅ CONFIRMED WORKING
+- Binary location: /Users/galahassa/.local/bin/whisper (pip install)
+- whisper.cpp binary setup: ⚠️ REQUIRES FIXES (setup script failing)
+- WhisperServerService: ✅ PRODUCTION-READY CODEBASE
 
-💡 IDENTIFIED SOLUTIONS (Ranked by Feasibility):
-1. ✅ OPTION A: Enable ESM in Electron Main Process
-2. ✅ OPTION B: Use Dynamic Import with Proper Error Handling  
-3. ✅ OPTION C: Module Bundler (esbuild/webpack for main process)
-4. ❌ OPTION D: emsdk Integration (not applicable - deprecated)
+📋 IMPLEMENTATION STRATEGY:
+1. Create DesktopWhisperService wrapper around WhisperServerService
+2. Configure for local desktop use (not HTTP server)
+3. Point to existing Python whisper binary initially  
+4. Add whisper.cpp binary support as separate task (Task 1.5)
+5. Leverage existing job management, progress tracking, IPC integration
+
+🎉 BENEFITS OF PIVOT:
+- ✅ Faster implementation (reuse existing code)
+- ✅ Superior performance (native C++ vs WASM)
+- ✅ Production-ready from day one
+- ✅ No complex ESM debugging required
+- ✅ Complexity reduced: LARGE → MEDIUM
                     </code>
                 </node>
 
-                <node title="Implementation Strategy" priority="high" status="active" id="task-1-2-strategy-001">
-                    <comment>Detailed implementation plan for resolving ESM compatibility</comment>
+                <node title="DesktopWhisperService Implementation" priority="high" status="active" id="task-1-2-implementation-001">
+                    <comment>Implementation plan for wrapping existing API server service</comment>
                     
-                    <code language="text">
-🎯 RECOMMENDED SOLUTION: OPTION B - Dynamic Import with Error Handling
+                    <code language="typescript">
+// NEW: apps/desktop/src/main/services/desktopWhisperService.ts
+import { app } from 'electron';
+import * as path from 'path';
+import * as log from 'electron-log';
+import { WhisperServerService } from '../../../api/src/services/whisperServer';
 
-REASONING:
-- Minimal changes to existing codebase
-- Maintains TypeScript compilation to CommonJS
-- No package.json "type": "module" changes needed
-- Already partially implemented in current WhisperService
-- Preserves Electron main process compatibility
-
-📋 IMPLEMENTATION PLAN:
-
-STEP 1: Enhanced Dynamic Import Pattern
-- Wrap dynamic imports in async initialization
-- Add proper error boundaries for ESM failures
-- Implement retry mechanisms for model loading
-- Create fallback for development vs production
-
-STEP 2: Audio Processing Integration  
-- Import existing AudioProcessor from web version
-- Adapt for Node.js file system operations
-- Replace browser-specific APIs (AudioContext, FileReader)
-- Add support for desktop audio formats
-
-STEP 3: File System Audio Loading
-- Implement proper audio decoding (not simplified buffer conversion)
-- Add support for: MP3, WAV, M4A, OGG, FLAC, MP4, MOV
-- Use Node.js audio libraries (node-ffmpeg, sharp-audio)
-- Stream large files to prevent memory issues
-
-STEP 4: Model Caching and Distribution
-- Set up local model storage in user data directory
-- Implement model download progress tracking
-- Add model version management and updates
-- Cache frequently used models (tiny, base, small)
-
-STEP 5: Performance Optimization
-- Add WebWorker equivalent for main process isolation
-- Implement model preloading on app startup
-- Add memory cleanup after transcription
-- Monitor CPU/memory usage during processing
+export class DesktopWhisperService {
+    private whisperServer: WhisperServerService;
+    private initialized = false;
+    
+    constructor() {
+        // Configure for desktop use
+        const userDataPath = app.getPath('userData');
+        
+        this.whisperServer = new WhisperServerService({
+            // Use existing Python whisper binary initially
+            whisperBinaryPath: '/Users/galahassa/.local/bin/whisper',
+            modelsPath: path.join(userDataPath, 'whisper-models'),
+            tempPath: path.join(userDataPath, 'temp'),
+            defaultModel: 'base',
+            maxConcurrentJobs: 2, // Desktop = fewer concurrent jobs
+            cleanupTempFiles: true,
+            logLevel: 1
+        });
+    }
+    
+    async initialize(): Promise<void> {
+        if (this.initialized) return;
+        
+        try {
+            // Test whisper binary availability
+            const healthStatus = await this.whisperServer.getHealthStatus();
+            
+            if (!healthStatus.whisperBinary) {
+                throw new Error('Whisper binary not found at expected location');
+            }
+            
+            log.info('DesktopWhisperService initialized successfully');
+            log.info(`Available models: ${healthStatus.availableModels.join(', ')}`);
+            
+            this.initialized = true;
+        } catch (error) {
+            log.error('Failed to initialize DesktopWhisperService:', error);
+            throw error;
+        }
+    }
+    
+    // Proxy methods to WhisperServerService
+    async transcribeFile(filePath: string, config: any) {
+        if (!this.initialized) {
+            throw new Error('DesktopWhisperService not initialized');
+        }
+        
+        return this.whisperServer.transcribeFile(filePath, {
+            model: config.model,
+            language: config.language,
+            task: config.task,
+            wordTimestamps: config.wordTimestamps,
+            outputFormat: 'json'
+        });
+    }
+    
+    async getAvailableModels() {
+        return this.whisperServer.getAvailableModels();
+    }
+    
+    async getHealthStatus() {
+        return this.whisperServer.getHealthStatus();
+    }
+    
+    async getProcessingJobs() {
+        return this.whisperServer.getActiveJobs();
+    }
+    
+    async cancelJob(jobId: string) {
+        return this.whisperServer.cancelJob(jobId);
+    }
+}
                     </code>
                 </node>
 
@@ -430,6 +471,70 @@ PHASE 5: Platform Testing
 - Verify cross-platform audio library compatibility
                     </code>
                 </node>
+            
+            <node title="Task 1.5: Whisper.cpp Binary Setup & Integration" priority="medium" status="pending" assignee="DevOps" startDate="08-Nov-2024" endDate="09-Nov-2024" id="task-whisper-cpp-setup-001">
+                <comment>Fix and optimize whisper.cpp binary installation script. Complexity: MEDIUM. Status: setup-whisper-local.sh failing, needs debugging and platform-specific fixes.</comment>
+                
+                <node title="Current Script Analysis" priority="high" status="pending" id="task-1-5-analysis-001">
+                    <comment>Analysis of failing setup-whisper-local.sh script and required fixes</comment>
+                    
+                    <code language="text">
+📋 SCRIPT STATUS ANALYSIS:
+- Location: voiceflow-pro/scripts/setup-whisper-local.sh
+- Purpose: Install whisper.cpp binary and models for local processing
+- Current Status: ⚠️ FAILING (user will provide error details)
+- Alternative: ✅ Python whisper working (/Users/galahassa/.local/bin/whisper)
+
+🔧 SCRIPT FEATURES (COMPREHENSIVE):
+- Multi-platform support (Linux, macOS, Windows)
+- GPU detection and CUDA support
+- Model download with integrity checking
+- Systemd service creation
+- User vs system-wide installation
+- Parallel model downloads
+- Build directory reuse options
+- Comprehensive error handling and rollback
+
+⚙️ CONFIGURATION TARGETS:
+- whisper.cpp C++ binary (faster than Python)
+- Local model storage in user data directory
+- Integration with DesktopWhisperService
+- Performance optimization for desktop use
+
+📝 DEBUGGING PLAN:
+1. Run script with detailed logging
+2. Identify specific failure points
+3. Fix platform-specific issues (likely macOS-related)
+4. Test binary compilation and model downloads
+5. Integrate with DesktopWhisperService configuration
+                    </code>
+                </node>
+                
+                <task_prompt_for_llm>
+Debug and fix the whisper.cpp installation script:
+
+1. Analyze script failure points and error messages
+2. Fix macOS-specific compilation issues
+3. Update dependency installation for latest macOS
+4. Test whisper.cpp binary compilation and execution
+5. Verify model download and storage functionality
+6. Update DesktopWhisperService to detect and prefer whisper.cpp binary
+7. Add fallback mechanism to Python whisper if cpp binary fails
+
+Focus areas:
+- Build system compatibility (make, cmake, gcc/clang)
+- macOS developer tools and dependencies
+- Model download URLs and integrity verification
+- Binary installation paths and permissions
+- Integration testing with desktop application
+
+Deliverables:
+- Working setup-whisper-local.sh script
+- Verified whisper.cpp binary installation
+- Updated DesktopWhisperService with binary detection
+- Performance benchmark comparison
+                </task_prompt_for_llm>
+            </node>
                 
                 <code language="typescript">
 // apps/desktop/src/main/services/whisperService.ts

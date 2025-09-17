@@ -6,7 +6,8 @@ import Store from 'electron-store';
 import contextMenu from 'electron-context-menu';
 
 // Import our services
-import { WhisperService } from './services/whisperService';
+import { DesktopWhisperService } from './services/desktopWhisperService';
+import { FileImportService } from './services/fileImportService';
 import { WatchFolderService } from './services/watchFolderService';
 import { WindowManager } from './services/windowManager';
 import { setupIPC } from './ipc/handlers';
@@ -17,7 +18,8 @@ log.transports.file.level = 'info';
 
 class VoiceFlowProApp {
     private windowManager: WindowManager;
-    private whisperService: WhisperService;
+    private whisperService: DesktopWhisperService;
+    private fileImportService: FileImportService;
     private watchFolderService: WatchFolderService;
     private store: Store<any>;
 
@@ -37,7 +39,8 @@ class VoiceFlowProApp {
         });
 
         this.windowManager = new WindowManager(this.store);
-        this.whisperService = new WhisperService();
+        this.whisperService = new DesktopWhisperService();
+        this.fileImportService = new FileImportService();
         this.watchFolderService = new WatchFolderService();
     }
 
@@ -118,6 +121,7 @@ class VoiceFlowProApp {
         // Set up IPC handlers for communication with renderer
         setupIPC({
             whisper: this.whisperService,
+            fileImport: this.fileImportService,
             watchFolder: this.watchFolderService,
             store: this.store,
             windowManager: this.windowManager
