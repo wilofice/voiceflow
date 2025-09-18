@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'">
+    <title>VoiceFlow Pro - URL Ingest Test</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #3B82F6 0%, #1F2937 100%);
+            color: white;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .url-input-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .input-group {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .url-input {
+            flex: 1;
+            height: 50px;
+            padding: 0 15px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        
+        .url-input:focus {
+            outline: none;
+            border-color: #3B82F6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        .url-input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+        
+        .btn {
+            height: 50px;
+            padding: 0 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background: #3B82F6;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #2563EB;
+            transform: translateY(-1px);
+        }
+        
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+        
+        .provider-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+        
+        .provider-youtube { background: #FF0000; color: white; }
+        .provider-vimeo { background: #1AB7EA; color: white; }
+        .provider-podcast { background: #663399; color: white; }
+        .provider-direct { background: #10B981; color: white; }
+        .provider-unknown { background: #6B7280; color: white; }
+        
+        .progress-container {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: #10B981;
+            border-radius: 4px;
+            transition: width 0.3s;
+            width: 0%;
+        }
+        
+        .progress-text {
+            font-size: 14px;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        
+        .job-list {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .job-item {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .job-info {
+            flex: 1;
+        }
+        
+        .job-url {
+            font-weight: bold;
+            margin-bottom: 5px;
+            word-break: break-all;
+        }
+        
+        .job-status {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+        
+        .job-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid;
+        }
+        
+        .alert-success {
+            background: rgba(16, 185, 129, 0.1);
+            border-color: #10B981;
+            color: #10B981;
+        }
+        
+        .alert-error {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: #EF4444;
+            color: #EF4444;
+        }
+        
+        .alert-warning {
+            background: rgba(245, 158, 11, 0.1);
+            border-color: #F59E0B;
+            color: #F59E0B;
+        }
+        
+        .log-output {
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            margin-top: 20px;
+        }
+        
+        .metadata-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+        
+        .metadata-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .metadata-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎵 VoiceFlow Pro URL Ingest</h1>
+        <p style="text-align: center; margin-bottom: 30px; opacity: 0.9;">
+            Download and transcribe from YouTube, Vimeo, podcasts, and direct media links
+        </p>
+        
+        <div class="url-input-card">
+            <div class="input-group">
+                <input 
+                    type="text" 
+                    id="urlInput" 
+                    class="url-input"
+                    placeholder="Paste YouTube, Vimeo, podcast URL, or direct media link..."
+                    autocomplete="off"
+                >
+                <button id="processBtn" class="btn btn-primary">
+                    🚀 Process URL
+                </button>
+                <button id="validateBtn" class="btn btn-secondary">
+                    ✓ Validate
+                </button>
+            </div>
+            
+            <div id="providerBadge" style="display: none;"></div>
+            
+            <div id="alertContainer"></div>
+            
+            <div id="progressContainer" class="progress-container">
+                <div class="progress-text" id="progressText">Processing...</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 12px;">
+                    <span id="progressStage">idle</span>
+                    <span id="progressPercent">0%</span>
+                </div>
+            </div>
+            
+            <div id="metadataContainer" style="display: none;"></div>
+        </div>
+        
+        <div class="job-list">
+            <h3 style="margin-bottom: 15px;">🎯 Processing Jobs</h3>
+            <div id="jobList">
+                <p style="text-align: center; opacity: 0.6;">No jobs yet. Process a URL to get started!</p>
+            </div>
+        </div>
+        
+        <div class="log-output" id="logOutput">
+            Ready to process URLs...
+        </div>
+    </div>
+    
+    <script>
+        let currentJobId = null;
+        let allJobs = [];
+        
+        // Get DOM elements
+        const urlInput = document.getElementById('urlInput');
+        const processBtn = document.getElementById('processBtn');
+        const validateBtn = document.getElementById('validateBtn');
+        const providerBadge = document.getElementById('providerBadge');
+        const alertContainer = document.getElementById('alertContainer');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressFill = document.getElementById('progressFill');
+        const progressText = document.getElementById('progressText');
+        const progressStage = document.getElementById('progressStage');
+        const progressPercent = document.getElementById('progressPercent');
+        const metadataContainer = document.getElementById('metadataContainer');
+        const jobList = document.getElementById('jobList');
+        const logOutput = document.getElementById('logOutput');
+        
+        // Logging function
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type === 'error' ? 'color: #EF4444' : type === 'success' ? 'color: #10B981' : 'color: #9CA3AF';
+            logOutput.innerHTML += `<span style="${className}">[${timestamp}] ${message}</span>\n`;
+            logOutput.scrollTop = logOutput.scrollHeight;
+            console.log(message);
+        }
+        
+        // Show alert
+        function showAlert(message, type = 'info') {
+            const alertClass = type === 'error' ? 'alert-error' : type === 'success' ? 'alert-success' : 'alert-warning';
+            alertContainer.innerHTML = `<div class="alert ${alertClass}">${message}</div>`;
+            setTimeout(() => {
+                alertContainer.innerHTML = '';
+            }, 5000);
+        }
+        
+        // Update provider badge
+        function updateProviderBadge(provider) {
+            if (provider && provider !== 'unknown') {
+                providerBadge.textContent = provider.toUpperCase();
+                providerBadge.className = `provider-badge provider-${provider}`;
+                providerBadge.style.display = 'inline-block';
+            } else {
+                providerBadge.style.display = 'none';
+            }
+        }
+        
+        // Update progress
+        function updateProgress(progress) {
+            if (progress) {
+                progressContainer.style.display = 'block';
+                progressFill.style.width = `${progress.percent}%`;
+                progressText.textContent = progress.message || 'Processing...';
+                progressStage.textContent = progress.stage || 'processing';
+                progressPercent.textContent = `${Math.round(progress.percent)}%`;
+            }
+        }
+        
+        // Hide progress
+        function hideProgress() {
+            progressContainer.style.display = 'none';
+        }
+        
+        // Update job list
+        function updateJobList() {
+            if (allJobs.length === 0) {
+                jobList.innerHTML = '<p style="text-align: center; opacity: 0.6;">No jobs yet. Process a URL to get started!</p>';
+                return;
+            }
+            
+            jobList.innerHTML = allJobs.map(job => `
+                <div class="job-item">
+                    <div class="job-info">
+                        <div class="job-url">${job.url}</div>
+                        <div class="job-status">
+                            Status: ${job.status || 'unknown'} | 
+                            Provider: ${job.provider || 'unknown'} |
+                            Job ID: ${job.jobId}
+                        </div>
+                    </div>
+                    <div class="job-actions">
+                        ${job.transcriptPath ? `<button class="btn btn-secondary" onclick="openTranscript('${job.transcriptPath}')">📄 View</button>` : ''}
+                        ${job.error ? `<button class="btn btn-secondary" onclick="retryJob('${job.jobId}')">🔄 Retry</button>` : ''}
+                        <button class="btn btn-secondary" onclick="cancelJob('${job.jobId}')">❌ Cancel</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // Auto-detect paste
+        document.addEventListener('paste', (e) => {
+            const text = e.clipboardData?.getData('text');
+            if (text && isURL(text) && document.activeElement !== urlInput) {
+                urlInput.value = text;
+                urlInput.focus();
+                validateURL(text);
+                log(`Auto-detected URL from paste: ${text}`);
+            }
+        });
+        
+        // Simple URL detection
+        function isURL(string) {
+            try {
+                new URL(string);
+                return true;
+            } catch {
+                return false;
+            }
+        }
+        
+        // Validate URL
+        async function validateURL(url = null) {
+            const targetUrl = url || urlInput.value.trim();
+            
+            if (!targetUrl) {
+                showAlert('Please enter a URL', 'warning');
+                return;
+            }
+            
+            log(`Validating URL: ${targetUrl}`);
+            validateBtn.disabled = true;
+            
+            try {
+                const result = await window.electronAPI.urlIngest.validate(targetUrl);
+                
+                if (result.success && result.valid) {
+                    log(`✅ URL is valid - Provider: ${result.provider}`, 'success');
+                    updateProviderBadge(result.provider);
+                    showAlert(`Valid ${result.provider} URL detected!`, 'success');
+                    
+                    if (result.metadata) {
+                        showMetadata(result.metadata);
+                    }
+                } else {
+                    log(`❌ URL validation failed: ${result.error}`, 'error');
+                    updateProviderBadge(null);
+                    showAlert(result.error || 'Invalid URL', 'error');
+                }
+            } catch (error) {
+                log(`❌ Validation error: ${error.message}`, 'error');
+                showAlert(`Validation failed: ${error.message}`, 'error');
+            }
+            
+            validateBtn.disabled = false;
+        }
+        
+        // Process URL
+        async function processURL() {
+            const url = urlInput.value.trim();
+            
+            if (!url) {
+                showAlert('Please enter a URL', 'warning');
+                return;
+            }
+            
+            log(`Starting URL processing: ${url}`);
+            processBtn.disabled = true;
+            updateProgress({ percent: 0, stage: 'starting', message: 'Starting processing...' });
+            
+            try {
+                const options = {
+                    autoTranscribe: true,
+                    transcriptionModel: 'base',
+                    transcriptionLanguage: 'auto',
+                    quality: 'best',
+                    format: 'mp3'
+                };
+                
+                const result = await window.electronAPI.urlIngest.process(url, options);
+                
+                if (result.success) {
+                    log(`✅ Processing started - Job ID: ${result.jobId}`, 'success');
+                    currentJobId = result.jobId;
+                    allJobs.push(result);
+                    updateJobList();
+                } else {
+                    log(`❌ Processing failed: ${result.error}`, 'error');
+                    showAlert(result.error || 'Processing failed', 'error');
+                    hideProgress();
+                }
+            } catch (error) {
+                log(`❌ Processing error: ${error.message}`, 'error');
+                showAlert(`Processing failed: ${error.message}`, 'error');
+                hideProgress();
+            }
+            
+            processBtn.disabled = false;
+        }
+        
+        // Show metadata
+        function showMetadata(metadata) {
+            if (!metadata || Object.keys(metadata).length === 0) {
+                metadataContainer.style.display = 'none';
+                return;
+            }
+            
+            const items = Object.entries(metadata)
+                .filter(([key, value]) => value !== undefined && value !== null)
+                .map(([key, value]) => `
+                    <div class="metadata-item">
+                        <span>${key}:</span>
+                        <span>${value}</span>
+                    </div>
+                `).join('');
+            
+            metadataContainer.innerHTML = `
+                <div class="metadata-card">
+                    <div class="metadata-title">📊 Media Information</div>
+                    ${items}
+                </div>
+            `;
+            metadataContainer.style.display = 'block';
+        }
+        
+        // Event listeners for URL ingest events
+        window.electronAPI.urlIngest.onProgress((progress) => {
+            log(`Progress: ${progress.stage} ${progress.percent}% - ${progress.message}`);
+            updateProgress(progress);
+            
+            // Update job in list
+            const jobIndex = allJobs.findIndex(j => j.jobId === progress.jobId);
+            if (jobIndex !== -1) {
+                allJobs[jobIndex].status = progress.stage;
+                updateJobList();
+            }
+        });
+        
+        window.electronAPI.urlIngest.onComplete((result) => {
+            log(`✅ Processing complete for ${result.url}`, 'success');
+            hideProgress();
+            showAlert(`Successfully processed: ${result.url}`, 'success');
+            
+            // Update job in list
+            const jobIndex = allJobs.findIndex(j => j.jobId === result.jobId);
+            if (jobIndex !== -1) {
+                allJobs[jobIndex] = { ...allJobs[jobIndex], ...result };
+                updateJobList();
+            }
+            
+            if (result.metadata) {
+                showMetadata(result.metadata);
+            }
+        });
+        
+        window.electronAPI.urlIngest.onError((error) => {
+            log(`❌ Processing error: ${error.error}`, 'error');
+            hideProgress();
+            showAlert(`Error: ${error.error}`, 'error');
+            
+            // Update job in list
+            const jobIndex = allJobs.findIndex(j => j.jobId === error.jobId);
+            if (jobIndex !== -1) {
+                allJobs[jobIndex].error = error.error;
+                allJobs[jobIndex].status = 'error';
+                updateJobList();
+            }
+        });
+        
+        // Button event listeners
+        validateBtn.addEventListener('click', () => validateURL());
+        processBtn.addEventListener('click', processURL);
+        
+        // URL input event listeners
+        urlInput.addEventListener('input', () => {
+            updateProviderBadge(null);
+            alertContainer.innerHTML = '';
+            metadataContainer.style.display = 'none';
+        });
+        
+        urlInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                if (e.shiftKey) {
+                    validateURL();
+                } else {
+                    processURL();
+                }
+            }
+        });
+        
+        // Job actions
+        function cancelJob(jobId) {
+            window.electronAPI.urlIngest.cancelJob(jobId);
+            log(`Cancelled job: ${jobId}`);
+        }
+        
+        function retryJob(jobId) {
+            const job = allJobs.find(j => j.jobId === jobId);
+            if (job) {
+                urlInput.value = job.url;
+                processURL();
+            }
+        }
+        
+        function openTranscript(path) {
+            log(`Opening transcript: ${path}`);
+            // Could implement transcript viewer here
+        }
+        
+        // Initialize
+        log('URL Ingest system ready');
+        log('Paste a URL or enter one manually to get started');
+        
+        // Focus URL input
+        urlInput.focus();
+    </script>
+</body>
+</html>

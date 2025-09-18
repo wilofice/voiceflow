@@ -41,6 +41,27 @@ interface ElectronAPI {
     processDropped: (filePaths: string[]) => Promise<any>;
   };
 
+  // URL Ingest APIs
+  urlIngest: {
+    validate: (url: string) => Promise<any>;
+    process: (url: string, options?: any) => Promise<any>;
+    getJob: (jobId: string) => Promise<any>;
+    getAllJobs: () => Promise<any>;
+    cancelJob: (jobId: string) => Promise<any>;
+    clearCompleted: () => Promise<any>;
+    getDownloadDir: () => Promise<any>;
+    setDownloadDir: (dir: string) => Promise<any>;
+    checkTranscription: () => Promise<any>;
+    onProgress: (callback: (progress: any) => void) => void;
+    onComplete: (callback: (result: any) => void) => void;
+    onError: (callback: (error: any) => void) => void;
+    onCancelled: (callback: (data: any) => void) => void;
+    removeProgressListener: (callback: (progress: any) => void) => void;
+    removeCompleteListener: (callback: (result: any) => void) => void;
+    removeErrorListener: (callback: (error: any) => void) => void;
+    removeCancelledListener: (callback: (data: any) => void) => void;
+  };
+
   // File System APIs
   fs: {
     showOpenDialog: (options?: any) => Promise<{ success: boolean; canceled?: boolean; filePaths?: string[]; error?: string }>;
@@ -94,6 +115,17 @@ const ALLOWED_CHANNELS = {
     'file-import:validate-paths',
     'file-import:process-dropped',
     
+    // URL ingest channels
+    'url-ingest:validate',
+    'url-ingest:process',
+    'url-ingest:get-job',
+    'url-ingest:get-all-jobs',
+    'url-ingest:cancel-job',
+    'url-ingest:clear-completed',
+    'url-ingest:get-download-dir',
+    'url-ingest:set-download-dir',
+    'url-ingest:check-transcription',
+    
     // Whisper channels
     'whisper:initialize-model',
     'whisper:transcribe-file',
@@ -133,7 +165,11 @@ const ALLOWED_CHANNELS = {
     'files:selected',
     'watch-folder:selected',
     'menu:preferences',
-    'context-menu:transcribe-audio'
+    'context-menu:transcribe-audio',
+    'url-ingest:progress',
+    'url-ingest:complete',
+    'url-ingest:error',
+    'url-ingest:cancelled'
   ]
 };
 
@@ -192,6 +228,47 @@ const electronAPI: ElectronAPI = {
     getSupportedFormats: () => ipcRenderer.invoke('file-import:get-formats'),
     validatePaths: (filePaths: string[]) => ipcRenderer.invoke('file-import:validate-paths', filePaths),
     processDropped: (filePaths: string[]) => ipcRenderer.invoke('file-import:process-dropped', filePaths)
+  },
+
+  // URL Ingest APIs
+  urlIngest: {
+    validate: (url: string) => ipcRenderer.invoke('url-ingest:validate', url),
+    process: (url: string, options?: any) => ipcRenderer.invoke('url-ingest:process', url, options),
+    getJob: (jobId: string) => ipcRenderer.invoke('url-ingest:get-job', jobId),
+    getAllJobs: () => ipcRenderer.invoke('url-ingest:get-all-jobs'),
+    cancelJob: (jobId: string) => ipcRenderer.invoke('url-ingest:cancel-job', jobId),
+    clearCompleted: () => ipcRenderer.invoke('url-ingest:clear-completed'),
+    getDownloadDir: () => ipcRenderer.invoke('url-ingest:get-download-dir'),
+    setDownloadDir: (dir: string) => ipcRenderer.invoke('url-ingest:set-download-dir', dir),
+    checkTranscription: () => ipcRenderer.invoke('url-ingest:check-transcription'),
+    onProgress: (callback: (progress: any) => void) => {
+      const listener = (event: IpcRendererEvent, progress: any) => callback(progress);
+      ipcRenderer.on('url-ingest:progress', listener);
+    },
+    onComplete: (callback: (result: any) => void) => {
+      const listener = (event: IpcRendererEvent, result: any) => callback(result);
+      ipcRenderer.on('url-ingest:complete', listener);
+    },
+    onError: (callback: (error: any) => void) => {
+      const listener = (event: IpcRendererEvent, error: any) => callback(error);
+      ipcRenderer.on('url-ingest:error', listener);
+    },
+    onCancelled: (callback: (data: any) => void) => {
+      const listener = (event: IpcRendererEvent, data: any) => callback(data);
+      ipcRenderer.on('url-ingest:cancelled', listener);
+    },
+    removeProgressListener: (callback: (progress: any) => void) => {
+      ipcRenderer.removeAllListeners('url-ingest:progress');
+    },
+    removeCompleteListener: (callback: (result: any) => void) => {
+      ipcRenderer.removeAllListeners('url-ingest:complete');
+    },
+    removeErrorListener: (callback: (error: any) => void) => {
+      ipcRenderer.removeAllListeners('url-ingest:error');
+    },
+    removeCancelledListener: (callback: (data: any) => void) => {
+      ipcRenderer.removeAllListeners('url-ingest:cancelled');
+    }
   },
 
   // File System APIs
