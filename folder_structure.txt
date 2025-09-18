@@ -1,0 +1,55 @@
+Directory tree for: /Users/galahassa/Dev/voiceflow/voiceflowpro/manager
+
+manager/
+├── pricing_positioning_module.xml
+├── UI_UX_Design_Implementation_Roadmap.xml
+├── .DS_Store
+├── supabase_integration_module.xml
+├── voiceflow_main_plan.xml
+├── mac_implementation_module.xml
+├── ux_design_strategy_module.xml
+├── desktop_ux_requirements_definition.xml
+├── .git
+├── competitive_analysis_module.xml
+└── voiceflow_project.xml
+├── Next_Steps_Production_Plan/
+│   ├── m2_prompt_recipes_library_spec.xml
+│   ├── m1_export_v1_spec.xml
+│   ├── m2_auto_model_selector_spec.xml
+│   ├── m3_integrations_spec.xml
+│   ├── m1_batch_turbo_spec.xml
+│   ├── README.md
+│   ├── m1_ai_summary_chapters_spec.xml
+│   ├── m2_watch_folders_rules_spec.xml
+│   ├── m3_editor_inline_ai_spec.xml
+│   ├── analysis_summary.xml
+│   ├── m2_diarization_highlights_spec.xml
+│   ├── m3_system_audio_wizard_spec.xml
+│   └── m1_youtube_ingest_spec.xml
+├── sprint2/
+│   ├── task_definitions_report.xml
+│   ├── .DS_Store
+│   ├── Agentic Ui SpecLlm‑ready Format.xml
+│   ├── architecture_decisions_report.xml
+│   ├── ui_mockup_output_formats_recommendation.xml
+│   └── desktop_ux_requirements_definition.xml
+├── MacWhisper_Feature_Analysis/
+│   ├── mac_whisper_screenshot_13_cloud_transcription.xml
+│   ├── mac_whisper_screenshot_10_batch_transcription.xml
+│   ├── mac_whisper_screenshot_14_advanced.xml
+│   ├── mac_whisper_screenshot_17_info_sidebar.xml
+│   ├── mac_whisper_screenshot_11_ai_services.xml
+│   ├── mac_whisper_screenshot_08_default_ignored_segments.xml
+│   ├── .DS_Store
+│   ├── mac_whisper_screenshot_15_pro.xml
+│   ├── mac_whisper_screenshot_09_find_replace.xml
+│   ├── mac_whisper_screenshot_04_transcription_models.xml
+│   ├── mac_whisper_screenshot_06_translation.xml
+│   ├── mac_whisper_screenshot_12_transcription_ai_prompts.xml
+│   ├── mac_whisper_screenshot_20_home_dashboard.xml
+│   ├── mac_whisper_screenshot_02_watched_folders.xml
+│   ├── mac_whisper_screenshot_18_export.xml
+│   ├── mac_whisper_screenshot_07_ignored_segments.xml
+│   ├── mac_whisper_screenshot_19_transcript_view_pro_upsell.xml
+│   ├── mac_whisper_screenshot_03_microphone.xml
+│   └── mac_whisper_screenshot_01_general_preferences.xml

@@ -2,9 +2,27 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "target": "ES2020",
-    "lib": ["ES2020", "DOM"],
-    "outDir": "./dist/renderer"
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "jsx": "react-jsx",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "outDir": "./dist/renderer",
+    "noEmit": false
   },
-  "include": ["src/renderer/**/*", "src/preload/**/*", "src/shared/**/*"],
-  "exclude": ["src/main/**/*"]
+  "include": [
+    "src/renderer/index.tsx",
+    "src/renderer/App.tsx", 
+    "src/renderer/pages/VoiceFlowProMinimal.tsx",
+    "src/renderer/index.css",
+    "src/preload/**/*", 
+    "src/shared/**/*"
+  ],
+  "exclude": [
+    "src/main/**/*",
+    "src/renderer/components/**/*",
+    "src/renderer/pages/VoiceFlowPro.tsx",
+    "src/renderer/pages/VoiceFlowProSimple.tsx",
+    "src/renderer/hooks/**/*",
+    "src/renderer/lib/**/*"
+  ]
 }
