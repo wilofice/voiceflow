@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'">
+    <title>VoiceFlow Pro Desktop - Test</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .titlebar {
+            -webkit-app-region: drag;
+            height: 32px;
+            background: rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
+        }
+        
+        .container {
+            flex: 1;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+        
+        h1 {
+            font-size: 3em;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin: 40px 0;
+            width: 100%;
+            max-width: 600px;
+        }
+        
+        .info-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 10px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .info-card h3 {
+            margin-bottom: 10px;
+            color: #ffd700;
+        }
+        
+        .test-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        button {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid white;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            backdrop-filter: blur(10px);
+        }
+        
+        button:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        #output {
+            margin-top: 30px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            min-height: 100px;
+            width: 100%;
+            max-width: 800px;
+            font-family: 'Courier New', monospace;
+            text-align: left;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .status {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background: #4caf50;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            background: white;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .drop-zone {
+            margin-top: 30px;
+            padding: 40px;
+            border: 3px dashed rgba(255, 255, 255, 0.5);
+            border-radius: 15px;
+            width: 100%;
+            max-width: 600px;
+            transition: all 0.3s;
+        }
+        
+        .drop-zone.drag-over {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="titlebar"></div>
+    
+    <div class="container">
+        <h1>🎙️ VoiceFlow Pro Desktop</h1>
+        <p style="font-size: 1.2em; opacity: 0.9;">Electron Application Test Interface</p>
+        
+        <div class="info-grid">
+            <div class="info-card">
+                <h3>Platform</h3>
+                <p id="platform">Loading...</p>
+            </div>
+            <div class="info-card">
+                <h3>Version</h3>
+                <p id="version">Loading...</p>
+            </div>
+            <div class="info-card">
+                <h3>Electron</h3>
+                <p id="electron-version">Loading...</p>
+            </div>
+            <div class="info-card">
+                <h3>Node.js</h3>
+                <p id="node-version">Loading...</p>
+            </div>
+        </div>
+        
+        <div class="test-buttons">
+            <button onclick="testAppInfo()">📋 Test App Info</button>
+            <button onclick="testFileDialog()">📁 Test File Dialog</button>
+            <button onclick="testFolderDialog()">📂 Test Folder Dialog</button>
+            <button onclick="testSettings()">⚙️ Test Settings</button>
+            <button onclick="testWhisper()">🎤 Test Whisper Init</button>
+            <button onclick="testWatchFolder()">👁️ Test Watch Folder</button>
+            <button onclick="testNotification()">🔔 Show About</button>
+            <button onclick="openDevTools()">🔧 Dev Tools</button>
+        </div>
+        
+        <div class="drop-zone" id="dropZone">
+            <p>🎵 Drag & Drop Audio Files Here</p>
+            <p style="font-size: 0.9em; opacity: 0.7; margin-top: 10px;">Supports: MP3, WAV, M4A, OGG, FLAC</p>
+        </div>
+        
+        <div id="output">Ready for testing...</div>
+    </div>
+    
+    <div class="status">
+        <div class="status-dot"></div>
+        <span>Connected</span>
+    </div>
+    
+    <script>
+        // Check if Electron API is available
+        const hasElectronAPI = window.electronAPI !== undefined;
+        
+        function log(message, type = 'info') {
+            const output = document.getElementById('output');
+            const timestamp = new Date().toLocaleTimeString();
+            const prefix = type === 'error' ? '❌' : type === 'success' ? '✅' : 'ℹ️';
+            output.innerHTML += `${prefix} [${timestamp}] ${message}\n`;
+            output.scrollTop = output.scrollHeight;
+            console.log(message);
+        }
+        
+        // Initialize platform info
+        async function initializePlatformInfo() {
+            if (!hasElectronAPI) {
+                log('❌ Electron API not available! Check preload script.', 'error');
+                return;
+            }
+            
+            try {
+                // Display platform info
+                document.getElementById('platform').textContent = window.electronAPI.platform.os;
+                document.getElementById('electron-version').textContent = process.versions.electron || 'N/A';
+                document.getElementById('node-version').textContent = process.versions.node || 'N/A';
+                
+                // Get app version
+                const version = await window.electronAPI.app.getVersion();
+                document.getElementById('version').textContent = version;
+                
+                log('✅ Platform info loaded successfully', 'success');
+            } catch (error) {
+                log(`Error loading platform info: ${error.message}`, 'error');
+            }
+        }
+        
+        // Test functions
+        async function testAppInfo() {
+            log('Testing App Info...');
+            try {
+                const info = await window.electronAPI.app.getInfo();
+                log(`App Info: ${JSON.stringify(info, null, 2)}`, 'success');
+            } catch (error) {
+                log(`Error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testFileDialog() {
+            log('Opening file dialog...');
+            try {
+                const result = await window.electronAPI.fs.showOpenDialog();
+                if (result.success && !result.canceled) {
+                    log(`Selected files: ${result.filePaths.join(', ')}`, 'success');
+                } else if (result.canceled) {
+                    log('File dialog canceled');
+                } else {
+                    log(`Error: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                log(`Error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testFolderDialog() {
+            log('Opening folder dialog...');
+            try {
+                const result = await window.electronAPI.fs.showFolderDialog();
+                if (result.success && !result.canceled) {
+                    log(`Selected folder: ${result.filePaths[0]}`, 'success');
+                } else if (result.canceled) {
+                    log('Folder dialog canceled');
+                } else {
+                    log(`Error: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                log(`Error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testSettings() {
+            log('Testing settings API...');
+            try {
+                // Set a test value
+                await window.electronAPI.settings.set('test.value', { timestamp: Date.now() });
+                log('Set test value', 'success');
+                
+                // Get the value back
+                const result = await window.electronAPI.settings.get('test.value');
+                log(`Retrieved value: ${JSON.stringify(result.value)}`, 'success');
+                
+                // Get all settings
+                const allSettings = await window.electronAPI.settings.getAll();
+                log(`Total settings keys: ${Object.keys(allSettings.settings).length}`, 'success');
+            } catch (error) {
+                log(`Error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testWhisper() {
+            log('Testing Whisper initialization...');
+            try {
+                const config = {
+                    model: 'tiny',
+                    language: 'en',
+                    task: 'transcribe'
+                };
+                const result = await window.electronAPI.whisper.initializeModel(config);
+                if (result.success) {
+                    log('✅ Whisper model initialized successfully!', 'success');
+                } else {
+                    log(`Failed to initialize: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                log(`Error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testWatchFolder() {
+            log('Testing watch folder...');
+            try {
+                // First, select a folder
+                const folderResult = await window.electronAPI.fs.showFolderDialog();
+                if (folderResult.success && !folderResult.canceled) {
+                    const rule = {
+                        id: `test-${Date.now()}`,
+                        path: folderResult.filePaths[0],
+                        recursive: true,
+                        model: 'tiny',
+                        language: 'auto',
+                        priority: 'speed',
+                        enabled: true,
+                        createdAt: new Date()
+                    };
+                    
+                    const result = await window.electronAPI.watchFolder.add(rule);
+                    if (result.success) {
+                        log(`✅ Watch folder added: ${folderResult.filePaths[0]}`, 'success');
+                    } else {
+                        log(`Failed to add watch folder: ${result.error}`, 'error');
+                    }
+                }
+            } catch (error) {
+                log(`Error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testNotification() {
+            log('Showing about dialog...');
+            try {
+                await window.electronAPI.app.showAbout();
+                log('About dialog shown', 'success');
+            } catch (error) {
+                log(`Error: ${error.message}`, 'error');
+            }
+        }
+        
+        function openDevTools() {
+            log('Opening DevTools... (Check if opened)');
+            // DevTools will be opened from main process
+        }
+        
+        // Drag and drop handling
+        const dropZone = document.getElementById('dropZone');
+        
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('drag-over');
+        });
+        
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('drag-over');
+        });
+        
+        dropZone.addEventListener('drop', async (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('drag-over');
+            
+            const files = Array.from(e.dataTransfer.files);
+            const audioFiles = files.filter(file => {
+                const ext = file.name.split('.').pop().toLowerCase();
+                return ['mp3', 'wav', 'm4a', 'ogg', 'flac'].includes(ext);
+            });
+            
+            if (audioFiles.length > 0) {
+                log(`Dropped ${audioFiles.length} audio file(s):`);
+                audioFiles.forEach(file => {
+                    log(`  - ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`);
+                });
+            } else {
+                log('No valid audio files dropped', 'error');
+            }
+        });
+        
+        // Listen for IPC events
+        if (hasElectronAPI) {
+            window.electronAPI.whisper.onProgress((data) => {
+                log(`Whisper Progress: ${JSON.stringify(data)}`);
+            });
+            
+            window.electronAPI.fs.onFilesSelected((filePaths) => {
+                log(`Files selected from menu: ${filePaths.join(', ')}`);
+            });
+        }
+        
+        // Initialize on load
+        window.addEventListener('DOMContentLoaded', () => {
+            initializePlatformInfo();
+            
+            if (!hasElectronAPI) {
+                document.getElementById('output').innerHTML = 
+                    '❌ ERROR: Electron API not available!\n' +
+                    'This usually means the preload script is not loaded correctly.\n' +
+                    'Check that the preload script is built and the path is correct.';
+            } else {
+                log('✅ VoiceFlow Pro Desktop Test Interface Ready!', 'success');
+                log('Click any button above to test functionality.');
+            }
+        });
+    </script>
+</body>
+</html>
