@@ -10,7 +10,9 @@ import { DesktopWhisperService } from './services/desktopWhisperService';
 import { FileImportService } from './services/fileImportService';
 import { WatchFolderService } from './services/watchFolderService';
 import { WindowManager } from './services/windowManager';
+import { URLIngestService } from './services/urlIngest/urlIngestService';
 import { setupIPC } from './ipc/handlers';
+import { setupURLIngestHandlers } from './ipc/urlIngestHandlers';
 
 // Configure logging
 log.transports.console.level = 'debug';
@@ -21,6 +23,7 @@ class VoiceFlowProApp {
     private whisperService: DesktopWhisperService;
     private fileImportService: FileImportService;
     private watchFolderService: WatchFolderService;
+    private urlIngestService: URLIngestService;
     private store: Store<any>;
 
     constructor() {
@@ -42,6 +45,7 @@ class VoiceFlowProApp {
         this.whisperService = new DesktopWhisperService();
         this.fileImportService = new FileImportService();
         this.watchFolderService = new WatchFolderService();
+        this.urlIngestService = new URLIngestService();
     }
 
     async initialize() {
@@ -109,6 +113,10 @@ class VoiceFlowProApp {
             } catch (error) {
                 log.warn('WatchFolderService initialization failed:', error);
             }
+
+            // Initialize URL ingest service with whisper
+            this.urlIngestService.setWhisperService(this.whisperService);
+            log.info('URLIngestService initialized with WhisperService');
             
             log.info('Services initialization completed');
         } catch (error) {
@@ -126,6 +134,9 @@ class VoiceFlowProApp {
             store: this.store,
             windowManager: this.windowManager
         });
+
+        // Set up URL ingest handlers
+        setupURLIngestHandlers(this.urlIngestService);
     }
 
     private async createMainWindow() {
@@ -331,6 +342,7 @@ class VoiceFlowProApp {
         try {
             await this.watchFolderService.cleanup();
             await this.whisperService.cleanup();
+            await this.urlIngestService.cleanup();
             log.info('Cleanup completed');
         } catch (error) {
             log.error('Error during cleanup:', error);
