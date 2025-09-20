@@ -1,5 +1,6 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 module.exports = {
   target: 'electron-renderer',
@@ -62,6 +63,16 @@ module.exports = {
     new HtmlWebpackPlugin({
       template: './src/renderer/index.html',
       filename: 'index.html',
+    }),
+    new CopyWebpackPlugin({
+      patterns: [
+        { 
+          from: path.resolve(__dirname, 'src/renderer/js'),
+          to: path.resolve(__dirname, 'dist/renderer/js'),
+          noErrorOnMissing: true
+        },
+        // You can add more patterns here for other static assets
+      ],
     }),
   ],
   devtool: 'source-map',
