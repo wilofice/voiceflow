@@ -149,13 +149,16 @@
 
 @layer base {
   * {
-    @apply border-border;
+    border-color: hsl(var(--border));
   }
 
   body {
-    @apply bg-background text-foreground font-sans antialiased;
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
     font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
   
   .font-mono {
@@ -169,27 +172,41 @@
   }
   
   ::-webkit-scrollbar-track {
-    @apply bg-surface;
+    background-color: hsl(var(--surface));
   }
   
   ::-webkit-scrollbar-thumb {
-    @apply bg-border rounded-full;
+    background-color: hsl(var(--border));
+    border-radius: 9999px;
   }
   
   ::-webkit-scrollbar-thumb:hover {
-    @apply bg-border/80;
+    background-color: hsl(var(--border) / 0.8);
   }
   
   /* Focus rings for accessibility */
   .focus-ring {
-    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background;
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+  }
+  
+  .focus-ring:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px hsl(var(--ring)), 0 0 0 4px hsl(var(--background));
   }
 }
 
 @layer components {
   /* Desktop app chrome */
   .app-header {
-    @apply h-12 bg-surface-alt/90 backdrop-blur-sm border-b border-border flex items-center justify-between px-4;
+    height: 3rem;
+    background-color: hsl(var(--surface-alt) / 0.9);
+    backdrop-filter: blur(0.375rem);
+    border-bottom: 1px solid hsl(var(--border));
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1rem;
     -webkit-app-region: drag;
   }
   
@@ -201,50 +218,80 @@
   
   /* Waveform visualization */
   .waveform-bar {
-    @apply bg-waveform-inactive transition-colors duration-75;
+    background-color: hsl(var(--waveform-inactive));
+    transition: color 75ms cubic-bezier(0.4, 0, 0.2, 1);
   }
   
   .waveform-bar.active {
-    @apply bg-waveform-active;
+    background-color: hsl(var(--waveform-active));
   }
   
   /* Timeline markers */
   .timeline-marker {
-    @apply bg-timeline-marker border-2 border-background rounded-full shadow-md;
+    background-color: hsl(var(--timeline-marker));
+    border: 2px solid hsl(var(--background));
+    border-radius: 9999px;
+    box-shadow: 0 4px 6px hsl(220 39% 11% / 0.1), 0 2px 4px hsl(220 39% 11% / 0.06);
   }
   
   /* Glass morphism effects */
   .glass {
-    @apply bg-surface-glass backdrop-blur-md border border-border/50;
+    background-color: hsl(var(--surface-glass));
+    backdrop-filter: blur(0.75rem);
+    border: 1px solid hsl(var(--border) / 0.5);
   }
   
   .glass-elevated {
-    @apply glass shadow-glass;
+    background-color: hsl(var(--surface-glass));
+    backdrop-filter: blur(0.75rem);
+    border: 1px solid hsl(var(--border) / 0.5);
+    box-shadow: 0 8px 32px hsl(220 39% 11% / 0.3);
   }
   
   /* Audio transcription specific styles */
   .transcript-line {
-    @apply py-2 px-4 hover:bg-surface-alt/50 transition-colors cursor-pointer border-l-4 border-transparent;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    border-left: 4px solid transparent;
+    transition: color 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .transcript-line:hover {
+    background-color: hsl(var(--surface-alt) / 0.5);
   }
   
   .transcript-line.active {
-    @apply bg-surface-alt border-l-primary;
+    background-color: hsl(var(--surface-alt));
+    border-left-color: hsl(var(--primary));
   }
   
   .speaker-label {
-    @apply inline-flex items-center px-2 py-1 rounded-full text-xs font-medium;
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.5rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
   }
   
   /* Batch processing states */
-  .status-idle { @apply text-text-secondary; }
-  .status-queued { @apply text-warning; }
-  .status-processing { @apply text-primary; }
-  .status-completed { @apply text-success; }
-  .status-error { @apply text-danger; }
+  .status-idle { color: hsl(var(--text-secondary)); }
+  .status-queued { color: hsl(var(--warning)); }
+  .status-processing { color: hsl(var(--primary)); }
+  .status-completed { color: hsl(var(--success)); }
+  .status-error { color: hsl(var(--danger)); }
   
   /* Keyboard shortcuts display */
   .kbd {
-    @apply inline-flex items-center px-2 py-1 bg-surface-alt border border-border rounded text-xs font-mono text-text-secondary;
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.5rem;
+    background-color: hsl(var(--surface-alt));
+    border: 1px solid hsl(var(--border));
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
+    color: hsl(var(--text-secondary));
   }
 }
 
@@ -294,6 +341,7 @@
 }
 
 /* Apply dark theme by default */
+body.dark,
 body {
-  @apply dark;
+  /* Dark theme is the default, styles are already applied via CSS variables */
 }
