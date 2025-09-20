@@ -1,4 +1,4 @@
-import { BrowserWindow, screen } from 'electron';
+import { BrowserWindow, screen, session } from 'electron';
 import * as path from 'path';
 import * as log from 'electron-log';
 import Store from 'electron-store';
@@ -57,6 +57,24 @@ export class WindowManager {
         preload: path.join(__dirname, '../preload/index.js')
       },
       icon: this.getAppIcon()
+    });
+
+    // Set Content Security Policy to allow Google Fonts
+    mainWindow.webContents.session.webRequest.onHeadersReceived((details, callback) => {
+      callback({
+        responseHeaders: {
+          ...details.responseHeaders,
+          // Updated Content Security Policy
+          'Content-Security-Policy': [
+            "default-src 'self';",
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval';", // 'unsafe-eval' is often needed for dev tools
+            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;", // Allow stylesheets from Google Fonts
+            "font-src 'self' https://fonts.gstatic.com;", // Allow font files from Google's font CDN
+            "img-src 'self' data: https:;",
+            "connect-src 'self';"
+          ].join(' ')
+        }
+      });
     });
 
     // Show window when ready
