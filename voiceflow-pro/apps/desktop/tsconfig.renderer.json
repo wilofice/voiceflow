@@ -10,18 +10,11 @@
     "noEmit": false
   },
   "include": [
-    "src/renderer/index.tsx",
-    "src/renderer/SimpleApp.tsx",
-    "src/renderer/index.css",
+    "src/renderer/**/*",
     "src/preload/**/*", 
     "src/shared/**/*"
   ],
   "exclude": [
-    "src/main/**/*",
-    "src/renderer/components/**/*",
-    "src/renderer/pages/VoiceFlowPro.tsx",
-    "src/renderer/pages/VoiceFlowProSimple.tsx",
-    "src/renderer/hooks/**/*",
-    "src/renderer/lib/**/*"
+    "src/main/**/*"
   ]
 }

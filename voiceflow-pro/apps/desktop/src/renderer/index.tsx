@@ -13,4 +13,5 @@ if (!rootElement) {
 }
 
 const root = createRoot(document.getElementById('root')!);
-root.render(<App />);
+// Use React.createElement instead of JSX to avoid transpilation issues
+root.render(React.createElement(App));
