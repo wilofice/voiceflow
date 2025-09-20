@@ -60,22 +60,22 @@ export class WindowManager {
     });
 
     // Set Content Security Policy to allow Google Fonts
-    mainWindow.webContents.session.webRequest.onHeadersReceived((details, callback) => {
-      callback({
-        responseHeaders: {
-          ...details.responseHeaders,
-          // Updated Content Security Policy
-          'Content-Security-Policy': [
-            "default-src 'self';",
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval';", // 'unsafe-eval' is often needed for dev tools
-            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;", // Allow stylesheets from Google Fonts
-            "font-src 'self' https://fonts.gstatic.com;", // Allow font files from Google's font CDN
-            "img-src 'self' data: https:;",
-            "connect-src 'self';"
-          ].join(' ')
-        }
-      });
-    });
+mainWindow.webContents.session.webRequest.onHeadersReceived((details, callback) => {
+  callback({
+    responseHeaders: {
+      ...details.responseHeaders,
+      'Content-Security-Policy': [
+        "default-src 'self';",
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval';",
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;",
+        "style-src-elem 'self' https://fonts.googleapis.com;",
+        "font-src 'self' https://fonts.gstatic.com;",
+        "img-src 'self' data: https:;",
+        "connect-src 'self';"
+      ].join(' ')
+    }
+  });
+});
 
     // Show window when ready
     mainWindow.once('ready-to-show', () => {
