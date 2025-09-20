@@ -23,7 +23,11 @@ module.exports = {
         use: {
           loader: 'ts-loader',
           options: {
-            configFile: 'tsconfig.renderer.json'
+            configFile: 'tsconfig.renderer.json',
+            transpileOnly: true,
+            compilerOptions: {
+              jsx: 'react-jsx'
+            }
           }
         },
         exclude: /node_modules/,

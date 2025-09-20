@@ -11,8 +11,7 @@
   },
   "include": [
     "src/renderer/index.tsx",
-    "src/renderer/App.tsx", 
-    "src/renderer/pages/VoiceFlowProMinimal.tsx",
+    "src/renderer/SimpleApp.tsx",
     "src/renderer/index.css",
     "src/preload/**/*", 
     "src/shared/**/*"
