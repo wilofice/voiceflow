@@ -48,6 +48,43 @@ module.exports = {
         card: {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
+          elevated: "hsl(var(--card-elevated))",
+        },
+        // VoiceFlowPro specific colors
+        surface: {
+          DEFAULT: "hsl(var(--surface))",
+          alt: "hsl(var(--surface-alt))",
+          elevated: "hsl(var(--surface-elevated))",
+          glass: "hsl(var(--surface-glass))",
+        },
+        text: {
+          primary: "hsl(var(--text-primary))",
+          secondary: "hsl(var(--text-secondary))",
+          muted: "hsl(var(--text-muted))",
+        },
+        success: {
+          DEFAULT: "hsl(var(--success))",
+          foreground: "hsl(var(--success-foreground))",
+        },
+        warning: {
+          DEFAULT: "hsl(var(--warning))",
+          foreground: "hsl(var(--warning-foreground))",
+        },
+        danger: {
+          DEFAULT: "hsl(var(--danger))",
+          foreground: "hsl(var(--danger-foreground))",
+        },
+        waveform: {
+          active: "hsl(var(--waveform-active))",
+          inactive: "hsl(var(--waveform-inactive))",
+        },
+        timeline: {
+          marker: "hsl(var(--timeline-marker))",
+        },
+        speaker: {
+          primary: "hsl(var(--speaker-primary))",
+          secondary: "hsl(var(--speaker-secondary))",
+          tertiary: "hsl(var(--speaker-tertiary))",
         },
       },
       borderRadius: {
