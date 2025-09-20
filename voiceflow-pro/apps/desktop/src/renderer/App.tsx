@@ -1,77 +1,37 @@
 import React from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import VoiceFlowProMinimal from './pages/VoiceFlowProMinimal';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { TooltipProvider } from './components/ui/tooltip';
+import { Toaster } from './components/ui/sonner';
+import { Toaster as RadixToaster } from './components/ui/toaster';
+import VoiceFlowPro from './pages/VoiceFlowPro';
 
 const queryClient = new QueryClient();
 
+function NotFound() {
+  return (
+    <div className="flex items-center justify-center h-screen">
+      <div className="text-center">
+        <h1 className="text-4xl font-bold text-gray-400">404</h1>
+        <p className="text-gray-600">Page not found</p>
+      </div>
+    </div>
+  );
+}
+
 export default function App() {
-  const handleUrlSubmit = async (url: string) => {
-    try {
-      const electronAPI = window.electronAPI;
-      if (!electronAPI) {
-        console.error('Electron API not available');
-        return;
-      }
-
-      console.log('Validating URL:', url);
-      const validation = await electronAPI.urlIngest.validate(url);
-      
-      if (!validation.valid) {
-        console.error('Invalid URL:', validation.error);
-        return;
-      }
-
-      console.log('Processing URL:', url);
-      const result = await electronAPI.urlIngest.process(url);
-      
-      if (result.success) {
-        console.log('URL processed successfully');
-      } else {
-        console.error('Failed to process URL:', result.error);
-      }
-    } catch (error) {
-      console.error('Error processing URL:', error);
-    }
-  };
-
-  const handleQuickAction = async (action: string) => {
-    try {
-      const electronAPI = window.electronAPI;
-      if (!electronAPI) {
-        console.error('Electron API not available');
-        return;
-      }
-
-      switch (action) {
-        case 'upload':
-          console.log('Opening file dialog...');
-          const result = await electronAPI.fileImport.openDialog();
-          if (result.success && result.filePaths) {
-            console.log('Selected files:', result.filePaths);
-          } else if (result.error) {
-            console.error('File dialog error:', result.error);
-          }
-          break;
-        case 'record':
-          console.log('Recording feature not yet implemented');
-          break;
-        case 'import-folder':
-          console.log('Folder import feature not yet implemented');
-          break;
-        default:
-          console.log('Unknown action:', action);
-      }
-    } catch (error) {
-      console.error('Error handling quick action:', error);
-    }
-  };
-
   return (
     <QueryClientProvider client={queryClient}>
-      <VoiceFlowProMinimal 
-        onUrlSubmit={handleUrlSubmit}
-        onQuickAction={handleQuickAction}
-      />
+      <TooltipProvider>
+        <Toaster />
+        <RadixToaster />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<VoiceFlowPro />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
     </QueryClientProvider>
   );
 }
