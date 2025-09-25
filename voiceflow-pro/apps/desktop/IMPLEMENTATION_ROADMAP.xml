@@ -1,0 +1,999 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project_plan>
+    <node title="VoiceFlowPro Desktop Implementation Roadmap" priority="critical" status="pending" id="impl-roadmap-root">
+        <comment>Comprehensive module-by-module implementation plan to replace dummy implementations with production-ready features. Each module is broken down into components, services, and specific implementation tasks with clear dependencies on the API backend.</comment>
+        
+        <node title="1. Core Infrastructure Module" priority="critical" status="pending" id="core-infra">
+            <comment>Foundation services that all other modules depend on. Must be implemented first.</comment>
+            
+            <node title="1.1 API Client Service" priority="critical" status="pending" id="api-client">
+                <comment>Centralized API communication layer for all renderer-to-backend calls.</comment>
+                <code language="typescript">
+// src/renderer/services/apiClient.ts
+import axios, { AxiosInstance } from 'axios';
+
+export class APIClient {
+  private client: AxiosInstance;
+  private authToken: string | null = null;
+
+  constructor() {
+    this.client = axios.create({
+      baseURL: process.env.VITE_API_URL || 'http://localhost:8080',
+      timeout: 30000,
+    });
+
+    this.setupInterceptors();
+  }
+
+  private setupInterceptors() {
+    // Request interceptor for auth
+    this.client.interceptors.request.use((config) => {
+      if (this.authToken) {
+        config.headers.Authorization = `Bearer ${this.authToken}`;
+      }
+      return config;
+    });
+
+    // Response interceptor for error handling
+    this.client.interceptors.response.use(
+      (response) => response,
+      async (error) => {
+        if (error.response?.status === 401) {
+          await this.refreshToken();
+        }
+        return Promise.reject(error);
+      }
+    );
+  }
+
+  // Auth methods
+  async login(email: string, password: string) {}
+  async refreshToken() {}
+  async logout() {}
+
+  // Transcript methods
+  async getTranscripts() {}
+  async getTranscript(id: string) {}
+  async updateTranscript(id: string, data: any) {}
+  async deleteTranscript(id: string) {}
+
+  // Upload methods
+  async uploadFile(file: File, options: any) {}
+  async uploadFromUrl(url: string, options: any) {}
+}
+                </code>
+                <task_prompt_for_llm>
+Implement a complete API client service with:
+1. Axios interceptors for authentication
+2. Token refresh mechanism
+3. Error handling and retry logic
+4. Progress tracking for uploads
+5. WebSocket connection for real-time updates
+6. Rate limiting awareness
+7. Offline queue for failed requests
+Include TypeScript interfaces for all API responses.
+                </task_prompt_for_llm>
+                <cli_command>
+# Install required dependencies
+npm install axios socket.io-client
+npm install --save-dev @types/socket.io-client
+
+# Create service structure
+mkdir -p src/renderer/services
+touch src/renderer/services/apiClient.ts
+touch src/renderer/services/websocketClient.ts
+touch src/renderer/types/api.ts
+                </cli_command>
+            </node>
+
+            <node title="1.2 State Management (Zustand)" priority="critical" status="pending" id="state-management">
+                <comment>Global state management for application data using Zustand.</comment>
+                <code language="typescript">
+// src/renderer/stores/appStore.ts
+import { create } from 'zustand';
+import { devtools, persist } from 'zustand/middleware';
+
+interface AppState {
+  // User state
+  user: User | null;
+  isAuthenticated: boolean;
+  
+  // Transcripts state
+  transcripts: Transcript[];
+  selectedTranscript: Transcript | null;
+  
+  // Upload state
+  uploadQueue: UploadItem[];
+  uploadProgress: Record<string, number>;
+  
+  // Settings
+  settings: AppSettings;
+  
+  // Actions
+  setUser: (user: User | null) => void;
+  addTranscript: (transcript: Transcript) => void;
+  updateTranscript: (id: string, data: Partial<Transcript>) => void;
+  deleteTranscript: (id: string) => void;
+  setUploadProgress: (id: string, progress: number) => void;
+}
+
+export const useAppStore = create<AppState>()(
+  devtools(
+    persist(
+      (set) => ({
+        user: null,
+        isAuthenticated: false,
+        transcripts: [],
+        selectedTranscript: null,
+        uploadQueue: [],
+        uploadProgress: {},
+        settings: defaultSettings,
+        
+        setUser: (user) => set({ user, isAuthenticated: !!user }),
+        addTranscript: (transcript) => 
+          set((state) => ({ transcripts: [...state.transcripts, transcript] })),
+        // ... other actions
+      }),
+      { name: 'voiceflow-storage' }
+    )
+  )
+);
+                </code>
+            </node>
+
+            <node title="1.3 IPC Bridge Enhancement" priority="high" status="pending" id="ipc-bridge">
+                <comment>Enhanced IPC communication between main and renderer processes.</comment>
+                <task_prompt_for_llm>
+Enhance the existing preload script to provide:
+1. Type-safe IPC methods using TypeScript
+2. Progress callbacks for long-running operations
+3. Streaming support for real-time transcription
+4. File system watchers with event emitters
+5. System tray integration
+6. Global shortcuts handling
+Create corresponding main process handlers with proper error handling.
+                </task_prompt_for_llm>
+            </node>
+        </node>
+
+        <node title="2. Authentication Module" priority="critical" status="pending" id="auth-module">
+            <comment>User authentication and session management with API backend.</comment>
+            
+            <node title="2.1 Login Component" priority="high" status="pending" id="login-component">
+                <comment>Replace dummy login with real authentication flow.</comment>
+                <code language="typescript">
+// src/renderer/components/auth/LoginForm.tsx
+import React, { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { useAppStore } from '@/stores/appStore';
+import { apiClient } from '@/services/apiClient';
+
+const loginSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(8),
+  rememberMe: z.boolean().optional(),
+});
+
+export const LoginForm: React.FC = () => {
+  const [isLoading, setIsLoading] = useState(false);
+  const setUser = useAppStore((state) => state.setUser);
+  
+  const form = useForm({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: '',
+      password: '',
+      rememberMe: false,
+    },
+  });
+
+  const onSubmit = async (data: z.infer<typeof loginSchema>) => {
+    setIsLoading(true);
+    try {
+      const response = await apiClient.login(data.email, data.password);
+      setUser(response.user);
+      
+      // Store refresh token securely
+      if (data.rememberMe) {
+        await window.electronAPI.secureStore.set('refreshToken', response.refreshToken);
+      }
+      
+      // Navigate to dashboard
+      router.push('/dashboard');
+    } catch (error) {
+      toast.error('Invalid credentials');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    // Form UI implementation
+  );
+};
+                </code>
+                <cli_command>
+# Install auth dependencies
+npm install react-hook-form @hookform/resolvers zod
+npm install jsonwebtoken bcryptjs
+
+# Create auth components
+mkdir -p src/renderer/components/auth
+touch src/renderer/components/auth/LoginForm.tsx
+touch src/renderer/components/auth/RegisterForm.tsx
+touch src/renderer/components/auth/ForgotPassword.tsx
+touch src/renderer/components/auth/AuthGuard.tsx
+                </cli_command>
+            </node>
+
+            <node title="2.2 Session Management" priority="high" status="pending" id="session-mgmt">
+                <comment>Handle token refresh, logout, and session persistence.</comment>
+                <task_prompt_for_llm>
+Implement session management with:
+1. Automatic token refresh before expiry
+2. Secure token storage using Electron safeStorage API
+3. Session timeout handling
+4. Remember me functionality
+5. Logout with cleanup
+6. Multi-device session management
+7. OAuth integration (Google, GitHub)
+                </task_prompt_for_llm>
+            </node>
+        </node>
+
+        <node title="3. Transcription Module" priority="critical" status="pending" id="transcription-module">
+            <comment>Core transcription functionality replacing dummy implementations.</comment>
+            
+            <node title="3.1 File Upload Service" priority="critical" status="pending" id="file-upload">
+                <comment>Real file upload with progress tracking and validation.</comment>
+                <code language="typescript">
+// src/renderer/services/uploadService.ts
+export class UploadService {
+  private uploadQueue: Map<string, UploadTask> = new Map();
+
+  async uploadFile(file: File, options: UploadOptions): Promise<string> {
+    // Validate file
+    if (!this.validateFile(file)) {
+      throw new Error('Invalid file format');
+    }
+
+    const uploadId = uuidv4();
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('options', JSON.stringify(options));
+
+    const uploadTask: UploadTask = {
+      id: uploadId,
+      file,
+      progress: 0,
+      status: 'pending',
+      startTime: Date.now(),
+    };
+
+    this.uploadQueue.set(uploadId, uploadTask);
+
+    try {
+      const response = await apiClient.uploadFile(formData, {
+        onUploadProgress: (progressEvent) => {
+          const progress = (progressEvent.loaded / progressEvent.total) * 100;
+          this.updateProgress(uploadId, progress);
+        },
+      });
+
+      // Start transcription
+      await this.startTranscription(response.data.fileId, options);
+      
+      return uploadId;
+    } catch (error) {
+      this.handleUploadError(uploadId, error);
+      throw error;
+    }
+  }
+
+  private validateFile(file: File): boolean {
+    const allowedFormats = ['audio/mp3', 'audio/wav', 'audio/m4a', 'video/mp4'];
+    const maxSize = 500 * 1024 * 1024; // 500MB
+    
+    return allowedFormats.includes(file.type) && file.size <= maxSize;
+  }
+
+  private updateProgress(uploadId: string, progress: number) {
+    const task = this.uploadQueue.get(uploadId);
+    if (task) {
+      task.progress = progress;
+      eventBus.emit('upload:progress', { uploadId, progress });
+    }
+  }
+}
+                </code>
+                <task_prompt_for_llm>
+Implement complete file upload service with:
+1. Multi-file upload queue management
+2. Chunked upload for large files
+3. Resume capability for interrupted uploads
+4. File validation (format, size, duration)
+5. Thumbnail generation for video files
+6. Metadata extraction (duration, bitrate, codec)
+7. Progress tracking with ETA calculation
+8. Automatic retry with exponential backoff
+9. Bandwidth throttling options
+10. Cancel upload functionality
+                </task_prompt_for_llm>
+            </node>
+
+            <node title="3.2 URL Import Service" priority="high" status="pending" id="url-import">
+                <comment>YouTube and media URL import with real download tracking.</comment>
+                <code language="typescript">
+// src/main/services/urlImportService.ts
+import { YouTubeDownloader } from './youtubeDownloader';
+import { MediaValidator } from './mediaValidator';
+
+export class URLImportService {
+  private downloader: YouTubeDownloader;
+  private validator: MediaValidator;
+  private downloads: Map<string, DownloadTask> = new Map();
+
+  async importFromURL(url: string, options: ImportOptions): Promise<string> {
+    // Validate URL
+    const mediaInfo = await this.validator.validateURL(url);
+    
+    if (!mediaInfo.isValid) {
+      throw new Error(`Invalid URL: ${mediaInfo.error}`);
+    }
+
+    const downloadId = uuidv4();
+    const task: DownloadTask = {
+      id: downloadId,
+      url,
+      mediaInfo,
+      progress: 0,
+      status: 'downloading',
+    };
+
+    this.downloads.set(downloadId, task);
+
+    // Download with progress
+    const filePath = await this.downloader.download(url, {
+      quality: options.quality || 'best',
+      format: options.format || 'mp3',
+      onProgress: (progress) => {
+        this.updateDownloadProgress(downloadId, progress);
+      },
+    });
+
+    // Process downloaded file
+    await this.processDownloadedFile(filePath, options);
+    
+    return downloadId;
+  }
+
+  private async processDownloadedFile(filePath: string, options: ImportOptions) {
+    // Extract audio if video
+    if (options.extractAudio) {
+      filePath = await this.extractAudio(filePath);
+    }
+
+    // Start transcription
+    await this.startLocalTranscription(filePath, options);
+  }
+}
+                </code>
+            </node>
+
+            <node title="3.3 Real-time Transcription" priority="high" status="pending" id="realtime-transcription">
+                <comment>Live microphone and system audio transcription.</comment>
+                <task_prompt_for_llm>
+Implement real-time transcription service with:
+1. Microphone audio capture with WebAudio API
+2. System audio capture using Electron desktopCapturer
+3. Audio streaming to Whisper engine
+4. Real-time text display with word-level timestamps
+5. Speaker diarization
+6. Punctuation and capitalization
+7. Custom vocabulary support
+8. Language detection and switching
+9. Noise suppression and echo cancellation
+10. Recording pause/resume functionality
+                </task_prompt_for_llm>
+            </node>
+
+            <node title="3.4 Transcript Editor Component" priority="critical" status="pending" id="transcript-editor">
+                <comment>Replace dummy editor with full-featured transcript editing.</comment>
+                <code language="typescript">
+// src/renderer/components/TranscriptEditor/TranscriptEditor.tsx
+export const TranscriptEditor: React.FC = () => {
+  const [transcript, setTranscript] = useState<Transcript | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [playbackTime, setPlaybackTime] = useState(0);
+  const audioRef = useRef<HTMLAudioElement>(null);
+
+  // Sync text with audio playback
+  useEffect(() => {
+    if (!audioRef.current) return;
+    
+    const updateTime = () => {
+      setPlaybackTime(audioRef.current!.currentTime);
+      highlightCurrentSegment(audioRef.current!.currentTime);
+    };
+
+    audioRef.current.addEventListener('timeupdate', updateTime);
+    return () => audioRef.current?.removeEventListener('timeupdate', updateTime);
+  }, []);
+
+  const handleSegmentClick = (segment: TranscriptSegment) => {
+    if (audioRef.current) {
+      audioRef.current.currentTime = segment.startTime;
+      audioRef.current.play();
+    }
+  };
+
+  const handleSegmentEdit = async (segmentId: string, newText: string) => {
+    const updatedTranscript = await apiClient.updateSegment(segmentId, { text: newText });
+    setTranscript(updatedTranscript);
+    
+    // Recalculate timestamps if needed
+    await recalculateTimestamps(updatedTranscript);
+  };
+
+  const exportTranscript = async (format: 'srt' | 'vtt' | 'txt' | 'json') => {
+    const exported = await exportService.export(transcript, format);
+    await saveFile(exported, `transcript.${format}`);
+  };
+
+  return (
+    <div className="transcript-editor">
+      <AudioPlayer ref={audioRef} src={transcript?.audioUrl} />
+      <TranscriptTimeline 
+        segments={transcript?.segments}
+        currentTime={playbackTime}
+        onSeek={handleSeek}
+      />
+      <TranscriptText
+        segments={transcript?.segments}
+        isEditing={isEditing}
+        onSegmentClick={handleSegmentClick}
+        onSegmentEdit={handleSegmentEdit}
+      />
+      <ExportMenu onExport={exportTranscript} />
+    </div>
+  );
+};
+                </code>
+            </node>
+        </node>
+
+        <node title="4. Batch Processing Module" priority="high" status="pending" id="batch-module">
+            <comment>Bulk file processing with queue management.</comment>
+            
+            <node title="4.1 Batch Queue Manager" priority="high" status="pending" id="batch-queue">
+                <comment>Queue management for multiple file processing.</comment>
+                <code language="typescript">
+// src/renderer/services/batchQueueService.ts
+export class BatchQueueService {
+  private queue: BatchItem[] = [];
+  private processing: Map<string, BatchItem> = new Map();
+  private concurrency = 3;
+
+  async addToQueue(files: File[], options: BatchOptions) {
+    const batchId = uuidv4();
+    const items = files.map(file => ({
+      id: uuidv4(),
+      batchId,
+      file,
+      status: 'queued' as const,
+      progress: 0,
+      options,
+    }));
+
+    this.queue.push(...items);
+    this.processQueue();
+    
+    return batchId;
+  }
+
+  private async processQueue() {
+    while (this.processing.size < this.concurrency && this.queue.length > 0) {
+      const item = this.queue.shift()!;
+      this.processItem(item);
+    }
+  }
+
+  private async processItem(item: BatchItem) {
+    this.processing.set(item.id, item);
+    item.status = 'processing';
+    
+    try {
+      // Upload and transcribe
+      await uploadService.uploadFile(item.file, {
+        ...item.options,
+        onProgress: (progress) => {
+          item.progress = progress;
+          this.emitProgress(item);
+        },
+      });
+      
+      item.status = 'completed';
+    } catch (error) {
+      item.status = 'error';
+      item.error = error.message;
+    } finally {
+      this.processing.delete(item.id);
+      this.processQueue();
+    }
+  }
+}
+                </code>
+                <task_prompt_for_llm>
+Implement batch processing with:
+1. Priority queue with drag-and-drop reordering
+2. Parallel processing with configurable concurrency
+3. Automatic retry for failed items
+4. Pause/resume queue processing
+5. Save/load queue state
+6. Estimated completion time
+7. Resource usage monitoring (CPU, memory)
+8. Export batch results as CSV/JSON
+9. Template-based processing options
+10. Scheduled batch processing
+                </task_prompt_for_llm>
+            </node>
+
+            <node title="4.2 Watch Folder Implementation" priority="medium" status="pending" id="watch-folder">
+                <comment>Automatic processing of files added to watched folders.</comment>
+                <cli_command>
+# Install file watching dependencies
+npm install chokidar
+
+# Create watch folder service
+touch src/main/services/watchFolderService.ts
+touch src/renderer/components/WatchFolderConfig.tsx
+                </cli_command>
+            </node>
+        </node>
+
+        <node title="5. AI Features Module" priority="medium" status="pending" id="ai-module">
+            <comment>AI-powered features including recipes and automation.</comment>
+            
+            <node title="5.1 AI Recipe Engine" priority="medium" status="pending" id="ai-recipes">
+                <comment>Template-based AI processing workflows.</comment>
+                <code language="typescript">
+// src/renderer/services/aiRecipeService.ts
+export interface AIRecipe {
+  id: string;
+  name: string;
+  description: string;
+  steps: RecipeStep[];
+  variables: RecipeVariable[];
+}
+
+export class AIRecipeService {
+  private recipes: Map<string, AIRecipe> = new Map();
+
+  async executeRecipe(recipeId: string, transcript: Transcript, variables: Record<string, any>) {
+    const recipe = this.recipes.get(recipeId);
+    if (!recipe) throw new Error('Recipe not found');
+
+    const context = {
+      transcript,
+      variables,
+      results: {},
+    };
+
+    for (const step of recipe.steps) {
+      context.results[step.id] = await this.executeStep(step, context);
+    }
+
+    return context.results;
+  }
+
+  private async executeStep(step: RecipeStep, context: RecipeContext) {
+    switch (step.type) {
+      case 'summarize':
+        return await this.summarizeTranscript(context.transcript, step.options);
+      
+      case 'extract':
+        return await this.extractEntities(context.transcript, step.options);
+      
+      case 'translate':
+        return await this.translateTranscript(context.transcript, step.options);
+      
+      case 'sentiment':
+        return await this.analyzeSentiment(context.transcript, step.options);
+      
+      case 'custom-prompt':
+        return await this.executeCustomPrompt(context.transcript, step.prompt, context.variables);
+    }
+  }
+}
+                </code>
+                <task_prompt_for_llm>
+Create AI recipe system with:
+1. Pre-built recipes (meeting summary, podcast notes, interview analysis)
+2. Custom recipe builder with drag-and-drop steps
+3. Variable substitution system
+4. Conditional logic (if/then/else)
+5. Loop support for batch processing
+6. API integration (OpenAI, Anthropic, local LLMs)
+7. Recipe sharing marketplace
+8. Version control for recipes
+9. Testing/preview mode
+10. Recipe scheduling and automation
+                </task_prompt_for_llm>
+            </node>
+
+            <node title="5.2 Smart Actions" priority="medium" status="pending" id="smart-actions">
+                <comment>Context-aware automatic actions based on transcript content.</comment>
+                <task_prompt_for_llm>
+Implement smart actions:
+1. Auto-detect action items and create tasks
+2. Extract key quotes and highlights
+3. Generate meeting minutes template
+4. Create social media clips from podcasts
+5. Identify speakers automatically
+6. Generate chapters and timestamps
+7. Create searchable knowledge base
+8. Export to note-taking apps (Notion, Obsidian)
+9. Calendar integration for meeting notes
+10. Email summary generation
+                </task_prompt_for_llm>
+            </node>
+        </node>
+
+        <node title="6. Settings & Preferences Module" priority="medium" status="pending" id="settings-module">
+            <comment>User preferences and application settings.</comment>
+            
+            <node title="6.1 Settings UI Components" priority="medium" status="pending" id="settings-ui">
+                <comment>Replace dummy settings with functional preferences.</comment>
+                <code language="typescript">
+// src/renderer/components/Settings/SettingsPanel.tsx
+export const SettingsPanel: React.FC = () => {
+  const settings = useAppStore((state) => state.settings);
+  const updateSettings = useAppStore((state) => state.updateSettings);
+
+  const sections = [
+    {
+      id: 'general',
+      title: 'General',
+      icon: Settings,
+      component: GeneralSettings,
+    },
+    {
+      id: 'transcription',
+      title: 'Transcription',
+      icon: FileAudio,
+      component: TranscriptionSettings,
+    },
+    {
+      id: 'shortcuts',
+      title: 'Keyboard Shortcuts',
+      icon: Keyboard,
+      component: ShortcutSettings,
+    },
+    {
+      id: 'storage',
+      title: 'Storage',
+      icon: HardDrive,
+      component: StorageSettings,
+    },
+    {
+      id: 'api',
+      title: 'API Keys',
+      icon: Key,
+      component: APIKeySettings,
+    },
+  ];
+
+  return (
+    <SettingsLayout sections={sections}>
+      {/* Dynamic section rendering */}
+    </SettingsLayout>
+  );
+};
+
+// Individual settings components
+const TranscriptionSettings: React.FC = () => {
+  return (
+    <div>
+      <Select label="Default Model" options={whisperModels} />
+      <Select label="Default Language" options={languages} />
+      <Switch label="Auto-detect language" />
+      <Slider label="Temperature" min={0} max={1} step={0.1} />
+      <Switch label="Enable timestamps" />
+      <Switch label="Enable speaker diarization" />
+    </div>
+  );
+};
+                </code>
+            </node>
+
+            <node title="6.2 Data Persistence" priority="medium" status="pending" id="data-persistence">
+                <comment>Settings storage and synchronization.</comment>
+                <task_prompt_for_llm>
+Implement settings persistence:
+1. Local storage using Electron store
+2. Cloud sync with user account
+3. Import/export settings as JSON
+4. Reset to defaults functionality
+5. Profile switching
+6. Settings migration on app updates
+7. Validation and sanitization
+8. Encrypted storage for sensitive data
+                </task_prompt_for_llm>
+            </node>
+        </node>
+
+        <node title="7. Export & Integration Module" priority="medium" status="pending" id="export-module">
+            <comment>Export functionality and third-party integrations.</comment>
+            
+            <node title="7.1 Export Service" priority="medium" status="pending" id="export-service">
+                <comment>Multi-format export capabilities.</comment>
+                <code language="typescript">
+// src/renderer/services/exportService.ts
+export class ExportService {
+  async exportTranscript(transcript: Transcript, format: ExportFormat, options: ExportOptions) {
+    switch (format) {
+      case 'srt':
+        return this.exportSRT(transcript, options);
+      case 'vtt':
+        return this.exportWebVTT(transcript, options);
+      case 'txt':
+        return this.exportPlainText(transcript, options);
+      case 'docx':
+        return this.exportWord(transcript, options);
+      case 'pdf':
+        return this.exportPDF(transcript, options);
+      case 'json':
+        return this.exportJSON(transcript, options);
+      case 'csv':
+        return this.exportCSV(transcript, options);
+    }
+  }
+
+  private exportSRT(transcript: Transcript, options: ExportOptions): string {
+    return transcript.segments
+      .map((seg, index) => {
+        const start = this.formatSRTTime(seg.startTime);
+        const end = this.formatSRTTime(seg.endTime);
+        return `${index + 1}\n${start} --> ${end}\n${seg.text}\n`;
+      })
+      .join('\n');
+  }
+
+  private async exportPDF(transcript: Transcript, options: ExportOptions) {
+    const { jsPDF } = await import('jspdf');
+    const doc = new jsPDF();
+    
+    // Add header
+    doc.setFontSize(16);
+    doc.text(transcript.title, 10, 10);
+    
+    // Add metadata
+    doc.setFontSize(10);
+    doc.text(`Date: ${transcript.createdAt}`, 10, 20);
+    doc.text(`Duration: ${transcript.duration}`, 10, 25);
+    
+    // Add transcript text
+    doc.setFontSize(12);
+    let y = 35;
+    for (const segment of transcript.segments) {
+      if (y > 280) {
+        doc.addPage();
+        y = 10;
+      }
+      doc.text(segment.text, 10, y, { maxWidth: 180 });
+      y += 10;
+    }
+    
+    return doc.output('blob');
+  }
+}
+                </code>
+            </node>
+
+            <node title="7.2 Third-party Integrations" priority="low" status="pending" id="integrations">
+                <comment>Connect with external services and platforms.</comment>
+                <task_prompt_for_llm>
+Implement integrations with:
+1. Google Drive - auto-save transcripts
+2. Dropbox - sync files
+3. Notion - create database entries
+4. Slack - share transcripts
+5. Zoom - import recordings
+6. YouTube - auto-transcribe videos
+7. Spotify - podcast transcription
+8. Microsoft Teams - meeting notes
+9. Obsidian - knowledge management
+10. Zapier - workflow automation
+                </task_prompt_for_llm>
+            </node>
+        </node>
+
+        <node title="8. Performance Optimization" priority="high" status="pending" id="performance">
+            <comment>Optimize application performance and resource usage.</comment>
+            
+            <node title="8.1 Memory Management" priority="high" status="pending" id="memory-mgmt">
+                <comment>Optimize memory usage for large transcripts and models.</comment>
+                <task_prompt_for_llm>
+Implement memory optimizations:
+1. Virtual scrolling for long transcripts
+2. Lazy loading of transcript segments
+3. Memory-mapped model files
+4. Cleanup of unused WebGL contexts
+5. Automatic garbage collection triggers
+6. Memory leak detection and prevention
+7. Resource pooling for workers
+8. LRU cache for transcripts
+9. Compress stored data
+10. Monitor memory usage and alert on high usage
+                </task_prompt_for_llm>
+            </node>
+
+            <node title="8.2 Rendering Optimization" priority="medium" status="pending" id="render-optimization">
+                <comment>Optimize React rendering performance.</comment>
+                <code language="typescript">
+// src/renderer/components/VirtualTranscriptList.tsx
+import { FixedSizeList } from 'react-window';
+
+export const VirtualTranscriptList: React.FC<Props> = ({ segments }) => {
+  const Row = React.memo(({ index, style }) => (
+    <div style={style}>
+      <TranscriptSegment segment={segments[index]} />
+    </div>
+  ));
+
+  return (
+    <FixedSizeList
+      height={600}
+      itemCount={segments.length}
+      itemSize={50}
+      width="100%"
+    >
+      {Row}
+    </FixedSizeList>
+  );
+};
+                </code>
+            </node>
+        </node>
+
+        <node title="9. Testing Strategy" priority="high" status="pending" id="testing">
+            <comment>Comprehensive testing approach for all modules.</comment>
+            
+            <node title="9.1 Unit Tests" priority="high" status="pending" id="unit-tests">
+                <comment>Component and service level testing.</comment>
+                <cli_command>
+# Setup testing framework
+npm install --save-dev jest @testing-library/react @testing-library/jest-dom
+npm install --save-dev @types/jest ts-jest
+
+# Create test structure
+mkdir -p src/__tests__/components
+mkdir -p src/__tests__/services
+mkdir -p src/__tests__/stores
+
+# Example test file
+touch src/__tests__/services/apiClient.test.ts
+                </cli_command>
+                <code language="typescript">
+// src/__tests__/services/uploadService.test.ts
+describe('UploadService', () => {
+  let uploadService: UploadService;
+  
+  beforeEach(() => {
+    uploadService = new UploadService();
+  });
+
+  describe('validateFile', () => {
+    it('should accept valid audio formats', () => {
+      const file = new File([''], 'test.mp3', { type: 'audio/mp3' });
+      expect(uploadService.validateFile(file)).toBe(true);
+    });
+
+    it('should reject invalid formats', () => {
+      const file = new File([''], 'test.exe', { type: 'application/exe' });
+      expect(uploadService.validateFile(file)).toBe(false);
+    });
+
+    it('should reject files over size limit', () => {
+      const file = new File([''], 'test.mp3', { type: 'audio/mp3' });
+      Object.defineProperty(file, 'size', { value: 600 * 1024 * 1024 });
+      expect(uploadService.validateFile(file)).toBe(false);
+    });
+  });
+});
+                </code>
+            </node>
+
+            <node title="9.2 Integration Tests" priority="medium" status="pending" id="integration-tests">
+                <comment>End-to-end testing of complete workflows.</comment>
+                <task_prompt_for_llm>
+Create integration tests for:
+1. Complete upload and transcription flow
+2. Authentication flow with token refresh
+3. Batch processing with error handling
+4. Real-time transcription with WebSocket
+5. Export in all supported formats
+6. Settings persistence and migration
+7. Offline mode with queue sync
+8. Memory management under load
+9. IPC communication between processes
+10. Auto-update mechanism
+                </task_prompt_for_llm>
+            </node>
+        </node>
+
+        <node title="10. Implementation Schedule" priority="critical" status="pending" id="schedule">
+            <comment>Phased implementation plan with dependencies and timelines.</comment>
+            
+            <node title="Phase 1: Foundation (Week 1-2)" priority="critical" status="pending" id="phase1">
+                <comment>Core infrastructure and authentication.</comment>
+                <cli_command>
+# Week 1: Core Infrastructure
+- [ ] Day 1-2: API Client Service
+- [ ] Day 3: State Management Setup
+- [ ] Day 4: IPC Bridge Enhancement
+- [ ] Day 5: Authentication Components
+
+# Week 2: Authentication & Basic UI
+- [ ] Day 1-2: Login/Register Flow
+- [ ] Day 3: Session Management
+- [ ] Day 4: Settings Foundation
+- [ ] Day 5: Testing Setup
+                </cli_command>
+            </node>
+
+            <node title="Phase 2: Core Features (Week 3-4)" priority="critical" status="pending" id="phase2">
+                <comment>Main transcription functionality.</comment>
+                <cli_command>
+# Week 3: Upload & Transcription
+- [ ] Day 1-2: File Upload Service
+- [ ] Day 3: URL Import Service
+- [ ] Day 4: Transcription Display
+- [ ] Day 5: Progress Tracking
+
+# Week 4: Editor & Export
+- [ ] Day 1-2: Transcript Editor
+- [ ] Day 3: Audio Sync
+- [ ] Day 4: Export Service
+- [ ] Day 5: Format Support
+                </cli_command>
+            </node>
+
+            <node title="Phase 3: Advanced Features (Week 5-6)" priority="medium" status="pending" id="phase3">
+                <comment>Batch processing and AI features.</comment>
+                <cli_command>
+# Week 5: Batch & Automation
+- [ ] Day 1-2: Batch Queue Manager
+- [ ] Day 3: Watch Folder
+- [ ] Day 4: Real-time Transcription
+- [ ] Day 5: Performance Optimization
+
+# Week 6: AI & Integrations
+- [ ] Day 1-2: AI Recipe Engine
+- [ ] Day 3: Smart Actions
+- [ ] Day 4: Third-party Integrations
+- [ ] Day 5: Final Testing
+                </cli_command>
+            </node>
+
+            <node title="Phase 4: Polish & Release (Week 7)" priority="medium" status="pending" id="phase4">
+                <comment>Final polish, testing, and release preparation.</comment>
+                <task_prompt_for_llm>
+Create final release checklist:
+1. Complete feature testing
+2. Performance profiling and optimization
+3. Memory leak detection
+4. Security audit
+5. Accessibility review
+6. Documentation update
+7. Migration scripts
+8. Release notes
+9. Marketing materials
+10. Launch plan
+                </task_prompt_for_llm>
+            </node>
+        </node>
+    </node>
+</project_plan>
