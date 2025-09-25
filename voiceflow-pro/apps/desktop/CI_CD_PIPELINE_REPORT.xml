@@ -1,0 +1,759 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project_plan>
+    <node title="VoiceFlowPro CI/CD Pipeline & Release Management Report" priority="critical" status="pending" id="cicd-report-root">
+        <comment>Comprehensive production delivery pipeline strategy for VoiceFlowPro Desktop Application. Designed for solo developer implementation with industry-standard security, automated builds, and multi-platform distribution.</comment>
+        
+        <node title="1. Executive Summary" priority="critical" status="pending" id="exec-summary">
+            <comment>VoiceFlowPro requires a robust CI/CD pipeline to deliver professional-grade desktop applications across Windows, macOS, and Linux. This report recommends GitHub Actions as the primary CI/CD platform, leveraging electron-builder for packaging, with automated code signing, checksum generation, and release management.</comment>
+            <task_prompt_for_llm>
+Create an executive presentation summarizing:
+- Why GitHub Actions is optimal for solo developers
+- Total estimated monthly costs ($0 for public repos, ~$8-15 for private)
+- Time to initial implementation: 2-3 days
+- Ongoing maintenance: 2-4 hours/month
+- Security compliance with industry standards
+Include comparison with alternatives (Azure DevOps, AWS CodeBuild, GitLab CI)
+            </task_prompt_for_llm>
+        </node>
+
+        <node title="2. GitHub Actions Pipeline Architecture" priority="critical" status="pending" id="github-actions-arch">
+            <comment>GitHub Actions provides the most developer-friendly CI/CD solution with minimal setup overhead and excellent Electron ecosystem support.</comment>
+            
+            <node title="2.1 Core Workflow Structure" priority="high" status="pending" id="workflow-structure">
+                <comment>Multi-stage pipeline with parallel platform builds, automated testing, and conditional release deployment.</comment>
+                <code language="yaml">
+name: Build and Release VoiceFlowPro
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  release:
+    types: [ created ]
+  workflow_dispatch:
+
+env:
+  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  NODE_VERSION: '20.x'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test -- --coverage
+      - uses: codecov/codecov-action@v4
+
+  build:
+    needs: test
+    strategy:
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run build
+      
+      # Platform-specific build and sign
+      - name: Build Electron App
+        uses: samuelmeuli/action-electron-builder@v1
+        with:
+          github_token: ${{ secrets.github_token }}
+          release: ${{ startsWith(github.ref, 'refs/tags/v') }}
+          mac_certs: ${{ secrets.MAC_CERTS }}
+          mac_certs_password: ${{ secrets.MAC_CERTS_PASSWORD }}
+          windows_certs: ${{ secrets.WINDOWS_CERTS }}
+          windows_certs_password: ${{ secrets.WINDOWS_CERTS_PASSWORD }}
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+                </code>
+            </node>
+
+            <node title="2.2 Security Scanning Integration" priority="high" status="pending" id="security-scanning">
+                <comment>Automated security scanning for vulnerabilities and license compliance.</comment>
+                <code language="yaml">
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      # Dependency vulnerability scanning
+      - name: Run Snyk Security Scan
+        uses: snyk/actions/node@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+          
+      # Code quality and security analysis
+      - name: Run CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        
+      # License compliance check
+      - name: License Scan
+        run: |
+          npx license-checker --production --summary
+          npx license-checker --production --failOn 'GPL-3.0;AGPL-3.0'
+                </code>
+            </node>
+
+            <node title="2.3 Release Artifacts Management" priority="high" status="pending" id="release-artifacts">
+                <comment>Automated generation of checksums and release notes for all platform builds.</comment>
+                <code language="yaml">
+  create-checksums:
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist-artifacts
+          
+      - name: Generate SHA256 Checksums
+        run: |
+          cd dist-artifacts
+          sha256sum *.exe *.dmg *.AppImage *.deb > checksums.txt
+          cat checksums.txt
+          
+      - name: Create Release Notes
+        run: |
+          echo "# VoiceFlowPro ${GITHUB_REF#refs/tags/}" > RELEASE.md
+          echo "" >> RELEASE.md
+          echo "## Downloads" >> RELEASE.md
+          echo "| Platform | File | SHA256 |" >> RELEASE.md
+          echo "|----------|------|--------|" >> RELEASE.md
+          while IFS= read -r line; do
+            checksum=$(echo $line | awk '{print $1}')
+            file=$(echo $line | awk '{print $2}')
+            platform=$(echo $file | sed 's/.*\.\(.*\)/\1/')
+            echo "| $platform | $file | $checksum |" >> RELEASE.md
+          done < checksums.txt
+          
+      - name: Upload Release Assets
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist-artifacts/*
+            checksums.txt
+            RELEASE.md
+                </code>
+            </node>
+        </node>
+
+        <node title="3. Platform-Specific Build Configuration" priority="critical" status="pending" id="platform-builds">
+            <comment>Detailed configuration for each target platform with code signing and notarization.</comment>
+            
+            <node title="3.1 macOS Configuration" priority="high" status="pending" id="macos-config">
+                <comment>Apple Developer Program membership required ($99/year). Includes notarization for Gatekeeper compliance.</comment>
+                <code language="json">
+{
+  "mac": {
+    "category": "public.app-category.productivity",
+    "icon": "build/icon.icns",
+    "hardenedRuntime": true,
+    "gatekeeperAssess": false,
+    "entitlements": "build/entitlements.mac.plist",
+    "entitlementsInherit": "build/entitlements.mac.plist",
+    "notarize": {
+      "teamId": "TEAM_ID_HERE"
+    },
+    "target": [
+      {
+        "target": "dmg",
+        "arch": ["universal"]
+      },
+      {
+        "target": "zip",
+        "arch": ["universal"]
+      }
+    ]
+  }
+}
+                </code>
+                <cli_command>
+# Export certificates from Keychain
+security export -t identities -f pkcs12 -P "password" -o certs.p12
+
+# Base64 encode for GitHub Secrets
+base64 -i certs.p12 -o certs.base64
+
+# Add to GitHub Secrets:
+# MAC_CERTS = contents of certs.base64
+# MAC_CERTS_PASSWORD = password used above
+# APPLE_ID = your@apple.id
+# APPLE_ID_PASSWORD = app-specific password
+# APPLE_TEAM_ID = your team ID
+                </cli_command>
+            </node>
+
+            <node title="3.2 Windows Configuration" priority="high" status="pending" id="windows-config">
+                <comment>Code signing certificate required. OV certificate (~$80/year) recommended for solo developers.</comment>
+                <code language="json">
+{
+  "win": {
+    "icon": "build/icon.ico",
+    "target": [
+      {
+        "target": "nsis",
+        "arch": ["x64", "ia32"]
+      },
+      {
+        "target": "portable",
+        "arch": ["x64"]
+      }
+    ],
+    "certificateFile": "cert.pfx",
+    "certificatePassword": "${WINDOWS_CERT_PASSWORD}",
+    "verifyUpdateCodeSignature": true,
+    "signingHashAlgorithms": ["sha256"],
+    "signDlls": true
+  },
+  "nsis": {
+    "oneClick": false,
+    "perMachine": false,
+    "allowToChangeInstallationDirectory": true,
+    "deleteAppDataOnUninstall": false,
+    "differentialPackage": true
+  }
+}
+                </code>
+                <task_prompt_for_llm>
+Research and provide step-by-step instructions for:
+1. Obtaining an OV code signing certificate from Sectigo or DigiCert
+2. Converting certificate to PFX format for electron-builder
+3. Setting up Windows SmartScreen reputation building
+4. Implementing EV certificate signing if budget allows ($300+/year)
+Include cost comparison and reputation timeline differences.
+                </task_prompt_for_llm>
+            </node>
+
+            <node title="3.3 Linux Configuration" priority="medium" status="pending" id="linux-config">
+                <comment>Multiple distribution formats for maximum compatibility. No code signing required but recommended.</comment>
+                <code language="json">
+{
+  "linux": {
+    "icon": "build/icons",
+    "category": "AudioVideo",
+    "target": [
+      {
+        "target": "AppImage",
+        "arch": ["x64", "arm64"]
+      },
+      {
+        "target": "deb",
+        "arch": ["x64", "arm64"]
+      },
+      {
+        "target": "rpm",
+        "arch": ["x64"]
+      },
+      {
+        "target": "snap",
+        "arch": ["x64"]
+      }
+    ],
+    "synopsis": "Professional AI-powered transcription tool",
+    "description": "VoiceFlowPro - Advanced audio transcription with AI",
+    "desktop": {
+      "StartupNotify": "true",
+      "Encoding": "UTF-8",
+      "Icon": "voiceflowpro"
+    }
+  },
+  "snap": {
+    "confinement": "classic",
+    "grade": "stable"
+  }
+}
+                </code>
+                <cli_command>
+# Setup Snapcraft (optional but recommended)
+sudo snap install snapcraft --classic
+
+# Login to Snapcraft store
+snapcraft login
+
+# Export token for CI
+snapcraft export-login snapcraft-token.txt
+
+# Add SNAPCRAFT_TOKEN to GitHub Secrets
+                </cli_command>
+            </node>
+        </node>
+
+        <node title="4. Auto-Update Implementation" priority="high" status="pending" id="auto-update">
+            <comment>Seamless update experience using electron-updater with GitHub Releases as the backend.</comment>
+            
+            <node title="4.1 Update Service Configuration" priority="high" status="pending" id="update-service">
+                <comment>Main process update service with differential updates support.</comment>
+                <code language="typescript">
+// src/main/services/updateService.ts
+import { autoUpdater } from 'electron-updater';
+import log from 'electron-log';
+import { BrowserWindow, dialog } from 'electron';
+
+export class UpdateService {
+  private window: BrowserWindow | null = null;
+
+  constructor() {
+    // Configure auto-updater
+    autoUpdater.logger = log;
+    autoUpdater.autoDownload = false;
+    autoUpdater.autoInstallOnAppQuit = true;
+    
+    // Use GitHub releases
+    autoUpdater.setFeedURL({
+      provider: 'github',
+      owner: 'your-org',
+      repo: 'voiceflow-pro',
+      private: false // Set to true for private repos
+    });
+    
+    this.setupEventHandlers();
+  }
+
+  private setupEventHandlers() {
+    autoUpdater.on('checking-for-update', () => {
+      log.info('Checking for updates...');
+    });
+
+    autoUpdater.on('update-available', (info) => {
+      dialog.showMessageBox(this.window!, {
+        type: 'info',
+        title: 'Update Available',
+        message: `Version ${info.version} is available. Download now?`,
+        buttons: ['Download', 'Later'],
+        defaultId: 0
+      }).then(result => {
+        if (result.response === 0) {
+          autoUpdater.downloadUpdate();
+        }
+      });
+    });
+
+    autoUpdater.on('download-progress', (progress) => {
+      const message = `Download speed: ${progress.bytesPerSecond} - Downloaded ${progress.percent}%`;
+      this.window?.webContents.send('download-progress', progress);
+      log.info(message);
+    });
+
+    autoUpdater.on('update-downloaded', (info) => {
+      dialog.showMessageBox(this.window!, {
+        type: 'info',
+        title: 'Update Ready',
+        message: 'Update downloaded. Restart now to apply?',
+        buttons: ['Restart', 'Later'],
+        defaultId: 0
+      }).then(result => {
+        if (result.response === 0) {
+          autoUpdater.quitAndInstall();
+        }
+      });
+    });
+
+    autoUpdater.on('error', (err) => {
+      log.error('Update error:', err);
+    });
+  }
+
+  public checkForUpdates(window: BrowserWindow) {
+    this.window = window;
+    autoUpdater.checkForUpdatesAndNotify();
+  }
+}
+                </code>
+            </node>
+
+            <node title="4.2 Update Security Configuration" priority="critical" status="pending" id="update-security">
+                <comment>Ensure updates are cryptographically signed and verified.</comment>
+                <code language="json">
+{
+  "publish": [
+    {
+      "provider": "github",
+      "owner": "your-org",
+      "repo": "voiceflow-pro",
+      "releaseType": "release",
+      "publishAutoUpdate": true
+    }
+  ],
+  "nsis": {
+    "differentialPackage": true
+  },
+  "mac": {
+    "minimumSystemVersion": "10.15.0"
+  }
+}
+                </code>
+            </node>
+        </node>
+
+        <node title="5. Infrastructure & Cost Analysis" priority="high" status="pending" id="infrastructure">
+            <comment>Complete cost breakdown and infrastructure requirements for solo developer deployment.</comment>
+            
+            <node title="5.1 GitHub Actions Pricing" priority="high" status="pending" id="github-pricing">
+                <comment>Free for public repositories, minimal cost for private repos.</comment>
+                <task_prompt_for_llm>
+Calculate exact monthly costs for:
+- Public repo: $0 (unlimited minutes)
+- Private repo: 2,000 free minutes/month, then $0.008/minute
+- Estimated usage: 20 builds/month @ 15 minutes each = 300 minutes
+- macOS builds: 10x minute multiplier (300 macOS minutes = 3,000 billable)
+- Total estimate: ~$8-15/month for private repo
+Compare with:
+- Azure DevOps: 1,800 free minutes
+- GitLab CI: 400 free minutes
+- CircleCI: 6,000 free minutes
+                </task_prompt_for_llm>
+            </node>
+
+            <node title="5.2 Code Signing Costs" priority="high" status="pending" id="signing-costs">
+                <comment>Annual certificate costs for professional distribution.</comment>
+                <cli_command>
+# Annual Costs Summary:
+# macOS Developer Program: $99/year
+# Windows OV Certificate: $80-150/year (Sectigo, DigiCert)
+# Windows EV Certificate: $300-500/year (optional, faster reputation)
+# Linux: Free (optional paid certificates available)
+# 
+# Total Minimum: $179/year
+# Recommended: $279/year (with EV cert)
+                </cli_command>
+            </node>
+
+            <node title="5.3 Release Storage" priority="medium" status="pending" id="release-storage">
+                <comment>GitHub Releases provides free storage for release artifacts.</comment>
+                <task_prompt_for_llm>
+Analyze storage requirements:
+- Windows installer: ~80-100MB
+- macOS DMG: ~100-120MB  
+- Linux AppImage: ~90-110MB
+- Total per release: ~300MB
+- GitHub limit: 2GB per release file, 5GB total
+- Retention: Unlimited for releases
+- Bandwidth: Unlimited downloads
+Alternative if needed: CDN integration with CloudFlare R2 or AWS S3
+                </task_prompt_for_llm>
+            </node>
+        </node>
+
+        <node title="6. Implementation Roadmap" priority="critical" status="pending" id="implementation">
+            <comment>Step-by-step implementation plan for solo developer.</comment>
+            
+            <node title="6.1 Phase 1: Basic Pipeline (Day 1)" priority="critical" status="pending" id="phase1">
+                <comment>Get basic CI/CD running without code signing.</comment>
+                <cli_command>
+# 1. Create .github/workflows directory
+mkdir -p .github/workflows
+
+# 2. Create basic workflow file
+touch .github/workflows/build.yml
+
+# 3. Add workflow from section 2.1
+# 4. Test with push to main branch
+git add .github
+git commit -m "Add CI/CD pipeline"
+git push origin main
+
+# 5. Verify builds succeed on all platforms
+                </cli_command>
+            </node>
+
+            <node title="6.2 Phase 2: Code Signing Setup (Day 2)" priority="high" status="pending" id="phase2">
+                <comment>Configure platform-specific code signing.</comment>
+                <cli_command>
+# macOS Setup:
+# 1. Join Apple Developer Program
+# 2. Create certificates in Apple Developer Portal
+# 3. Export and encode certificates
+# 4. Add to GitHub Secrets
+
+# Windows Setup:
+# 1. Purchase OV certificate
+# 2. Convert to PFX format
+# 3. Test local signing
+# 4. Add to GitHub Secrets
+
+# Linux Setup:
+# 1. Create Snapcraft account (optional)
+# 2. Generate token
+# 3. Add to GitHub Secrets
+                </cli_command>
+            </node>
+
+            <node title="6.3 Phase 3: Auto-Updates (Day 3)" priority="high" status="pending" id="phase3">
+                <comment>Implement and test auto-update functionality.</comment>
+                <cli_command>
+# 1. Install electron-updater
+npm install electron-updater
+
+# 2. Implement UpdateService (see section 4.1)
+
+# 3. Configure publish settings in package.json
+
+# 4. Test update flow:
+#    - Build v1.0.0, install locally
+#    - Build v1.0.1, create GitHub release
+#    - Verify update notification and installation
+
+# 5. Implement differential updates for bandwidth efficiency
+                </cli_command>
+            </node>
+
+            <node title="6.4 Phase 4: Monitoring & Optimization" priority="medium" status="pending" id="phase4">
+                <comment>Add monitoring, analytics, and performance optimization.</comment>
+                <code language="typescript">
+// Crash reporting with Sentry
+import * as Sentry from '@sentry/electron';
+
+Sentry.init({
+  dsn: process.env.SENTRY_DSN,
+  environment: process.env.NODE_ENV,
+  beforeSend(event) {
+    // Filter sensitive data
+    if (event.user) {
+      delete event.user.email;
+    }
+    return event;
+  }
+});
+
+// Analytics with privacy-focused solution
+import { Analytics } from '@june-so/analytics-node';
+
+const analytics = new Analytics('YOUR_WRITE_KEY', {
+  flushAt: 20,
+  flushInterval: 10000
+});
+
+// Track only non-identifiable events
+analytics.track({
+  anonymousId: machineId,
+  event: 'App Started',
+  properties: {
+    version: app.getVersion(),
+    platform: process.platform,
+    arch: process.arch
+  }
+});
+                </code>
+            </node>
+        </node>
+
+        <node title="7. Security & Compliance" priority="critical" status="pending" id="security">
+            <comment>Industry-standard security practices for desktop application distribution.</comment>
+            
+            <node title="7.1 Security Checklist" priority="critical" status="pending" id="security-checklist">
+                <comment>Comprehensive security requirements for production release.</comment>
+                <task_prompt_for_llm>
+Create a security checklist covering:
+1. Code signing on all platforms
+2. CSP (Content Security Policy) for renderer process
+3. Context isolation enabled
+4. Node integration disabled in renderer
+5. Secure IPC communication patterns
+6. Automatic security updates
+7. Certificate pinning for API calls
+8. Encrypted local storage for sensitive data
+9. Audit logging for critical operations
+10. GDPR/Privacy compliance measures
+                </task_prompt_for_llm>
+            </node>
+
+            <node title="7.2 Supply Chain Security" priority="high" status="pending" id="supply-chain">
+                <comment>Protect against supply chain attacks and dependency vulnerabilities.</comment>
+                <cli_command>
+# 1. Lock file verification
+npm ci --only=production
+
+# 2. Dependency scanning
+npm audit
+snyk test
+
+# 3. SBOM generation (Software Bill of Materials)
+npm sbom --output sbom.json
+
+# 4. License compliance check
+license-checker --production --summary
+
+# 5. Reproducible builds
+npm shrinkwrap
+                </cli_command>
+            </node>
+        </node>
+
+        <node title="8. Alternative Solutions Analysis" priority="medium" status="pending" id="alternatives">
+            <comment>Comparison of alternative CI/CD platforms for informed decision making.</comment>
+            
+            <node title="8.1 GitLab CI" priority="medium" status="pending" id="gitlab-ci">
+                <comment>Strong alternative with integrated DevOps features but higher complexity.</comment>
+                <task_prompt_for_llm>
+Compare GitLab CI for Electron builds:
+Pros:
+- Integrated Docker registry
+- Built-in security scanning
+- Self-hosted option available
+- Better for private repos (400 minutes free)
+
+Cons:
+- More complex setup
+- Less Electron-specific documentation
+- Smaller ecosystem of actions
+- macOS runners only in paid tiers
+
+Verdict: Good for enterprises, overkill for solo developers
+                </task_prompt_for_llm>
+            </node>
+
+            <node title="8.2 Azure DevOps" priority="medium" status="pending" id="azure-devops">
+                <comment>Microsoft's solution with excellent Windows integration but learning curve.</comment>
+                <task_prompt_for_llm>
+Analyze Azure DevOps for VoiceFlowPro:
+Pros:
+- 1,800 free minutes/month
+- Excellent Windows builds
+- Integrated with Microsoft ecosystem
+- Good for .NET integration
+
+Cons:
+- Steeper learning curve
+- Less community support for Electron
+- Complex YAML syntax
+- macOS builds more expensive
+
+Verdict: Consider if targeting enterprise Windows users
+                </task_prompt_for_llm>
+            </node>
+
+            <node title="8.3 AWS CodeBuild" priority="low" status="pending" id="aws-codebuild">
+                <comment>Scalable but complex and potentially expensive for desktop apps.</comment>
+                <task_prompt_for_llm>
+Evaluate AWS CodeBuild:
+Pros:
+- Unlimited scalability
+- Custom build environments
+- Integration with AWS services
+- Good for server-side components
+
+Cons:
+- Complex setup for Electron
+- No free tier after 1 year
+- Requires AWS expertise
+- More expensive for frequent builds
+
+Verdict: Overkill unless already using AWS infrastructure
+                </task_prompt_for_llm>
+            </node>
+        </node>
+
+        <node title="9. Production Release Checklist" priority="critical" status="pending" id="release-checklist">
+            <comment>Final checklist before production release to ensure quality and compliance.</comment>
+            <cli_command>
+#!/bin/bash
+# Production Release Checklist Script
+
+echo "📋 VoiceFlowPro Production Release Checklist"
+echo "============================================"
+
+# Version Management
+echo "[ ] Version bumped in package.json"
+echo "[ ] CHANGELOG.md updated"
+echo "[ ] Git tag created (v*.*..*)"
+
+# Build Verification
+echo "[ ] All tests passing"
+echo "[ ] No linting errors"
+echo "[ ] TypeScript compilation successful"
+echo "[ ] Security audit passed"
+
+# Platform Builds
+echo "[ ] Windows build tested on Windows 10/11"
+echo "[ ] macOS build tested on macOS 12+"
+echo "[ ] Linux AppImage tested on Ubuntu 22.04"
+
+# Code Signing
+echo "[ ] Windows binary signed"
+echo "[ ] macOS app notarized"
+echo "[ ] Linux snap published (optional)"
+
+# Release Artifacts
+echo "[ ] SHA256 checksums generated"
+echo "[ ] Release notes written"
+echo "[ ] Update feed tested"
+echo "[ ] Previous version update path tested"
+
+# Documentation
+echo "[ ] README updated"
+echo "[ ] API documentation current"
+echo "[ ] Installation guide updated"
+echo "[ ] Known issues documented"
+
+# Legal & Compliance
+echo "[ ] License file included"
+echo "[ ] Third-party licenses documented"
+echo "[ ] Privacy policy updated"
+echo "[ ] Terms of service current"
+
+echo ""
+echo "Ready for release? (y/n)"
+            </cli_command>
+        </node>
+
+        <node title="10. Recommended Action Plan" priority="critical" status="pending" id="action-plan">
+            <comment>Immediate next steps for implementing the CI/CD pipeline.</comment>
+            <task_prompt_for_llm>
+Create a 7-day implementation sprint:
+
+Day 1:
+- Setup GitHub repository structure
+- Create basic GitHub Actions workflow
+- Test builds on all platforms without signing
+
+Day 2:
+- Purchase/setup Apple Developer account
+- Generate and configure macOS certificates
+- Test macOS signed builds
+
+Day 3:
+- Obtain Windows OV certificate
+- Configure Windows signing
+- Test Windows signed builds
+
+Day 4:
+- Implement electron-updater
+- Configure auto-update feeds
+- Test update mechanism
+
+Day 5:
+- Add security scanning
+- Implement checksum generation
+- Setup release automation
+
+Day 6:
+- Performance optimization
+- Add monitoring/analytics
+- Documentation
+
+Day 7:
+- Full end-to-end testing
+- First production release
+- Monitor and iterate
+
+Provide specific commands and code for each day.
+            </task_prompt_for_llm>
+        </node>
+    </node>
+</project_plan>
