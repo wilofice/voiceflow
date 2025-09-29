@@ -5,6 +5,7 @@ import { DesktopWhisperService } from '../services/desktopWhisperService';
 import { FileImportService } from '../services/fileImportService';
 import { WatchFolderService } from '../services/watchFolderService';
 import { WindowManager } from '../services/windowManager';
+import { SecureStorageService } from '../services/secureStorageService';
 import { WatchRule } from '../types/whisper';
 
 interface Services {
@@ -13,6 +14,7 @@ interface Services {
   watchFolder: WatchFolderService;
   store: Store<any>;
   windowManager: WindowManager;
+  secureStorage: SecureStorageService;
 }
 
 export function setupIPC(services: Services) {
@@ -32,6 +34,9 @@ export function setupIPC(services: Services) {
   
   // Settings handlers
   setupSettingsHandlers(services);
+  
+  // Secure storage handlers
+  setupSecureStorageHandlers(services);
   
   // Window management handlers
   setupWindowHandlers(services);
@@ -425,6 +430,65 @@ function setupWindowHandlers(services: Services) {
     } catch (error) {
       log.error('IPC: Failed to toggle maximize:', error);
       return { success: false, error: error instanceof Error ? error.message : String(error) };
+    }
+  });
+}
+
+function setupSecureStorageHandlers(services: Services) {
+  const { secureStorage } = services;
+
+  // Get secure value
+  ipcMain.handle('secure-store:get', async (event: IpcMainInvokeEvent, key: string) => {
+    try {
+      const value = await secureStorage.get(key);
+      return value;
+    } catch (error) {
+      log.error(`IPC: Failed to get secure value for key ${key}:`, error);
+      return null;
+    }
+  });
+
+  // Set secure value
+  ipcMain.handle('secure-store:set', async (event: IpcMainInvokeEvent, key: string, value: string) => {
+    try {
+      await secureStorage.set(key, value);
+      return;
+    } catch (error) {
+      log.error(`IPC: Failed to set secure value for key ${key}:`, error);
+      throw error;
+    }
+  });
+
+  // Delete secure value
+  ipcMain.handle('secure-store:delete', async (event: IpcMainInvokeEvent, key: string) => {
+    try {
+      await secureStorage.delete(key);
+      return;
+    } catch (error) {
+      log.error(`IPC: Failed to delete secure value for key ${key}:`, error);
+      throw error;
+    }
+  });
+
+  // Check if secure value exists
+  ipcMain.handle('secure-store:has', async (event: IpcMainInvokeEvent, key: string) => {
+    try {
+      const exists = await secureStorage.has(key);
+      return exists;
+    } catch (error) {
+      log.error(`IPC: Failed to check secure value for key ${key}:`, error);
+      return false;
+    }
+  });
+
+  // Clear all secure values
+  ipcMain.handle('secure-store:clear', async (event: IpcMainInvokeEvent) => {
+    try {
+      await secureStorage.clear();
+      return;
+    } catch (error) {
+      log.error('IPC: Failed to clear secure storage:', error);
+      throw error;
     }
   });
 }

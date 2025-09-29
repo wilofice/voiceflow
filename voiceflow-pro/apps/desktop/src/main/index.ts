@@ -11,6 +11,7 @@ import { FileImportService } from './services/fileImportService';
 import { WatchFolderService } from './services/watchFolderService';
 import { WindowManager } from './services/windowManager';
 import { URLIngestService } from './services/urlIngest/urlIngestService';
+import { SecureStorageService } from './services/secureStorageService';
 import { setupIPC } from './ipc/handlers';
 import { setupURLIngestHandlers } from './ipc/urlIngestHandlers';
 
@@ -24,6 +25,7 @@ class VoiceFlowProApp {
     private fileImportService: FileImportService;
     private watchFolderService: WatchFolderService;
     private urlIngestService: URLIngestService;
+    private secureStorageService: SecureStorageService;
     private store: Store<any>;
 
     constructor() {
@@ -46,6 +48,7 @@ class VoiceFlowProApp {
         this.fileImportService = new FileImportService();
         this.watchFolderService = new WatchFolderService();
         this.urlIngestService = new URLIngestService();
+        this.secureStorageService = SecureStorageService.getInstance();
     }
 
     async initialize() {
@@ -132,7 +135,8 @@ class VoiceFlowProApp {
             fileImport: this.fileImportService,
             watchFolder: this.watchFolderService,
             store: this.store,
-            windowManager: this.windowManager
+            windowManager: this.windowManager,
+            secureStorage: this.secureStorageService
         });
 
         // Set up URL ingest handlers
