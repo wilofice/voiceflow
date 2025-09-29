@@ -80,6 +80,15 @@ interface ElectronAPI {
     reset: () => Promise<{ success: boolean; error?: string }>;
   };
 
+  // Secure Storage APIs
+  secureStore: {
+    get: (key: string) => Promise<string | null>;
+    set: (key: string, value: string) => Promise<void>;
+    delete: (key: string) => Promise<void>;
+    has: (key: string) => Promise<boolean>;
+    clear: () => Promise<void>;
+  };
+
   // Window APIs
   window: {
     createTranscript: (transcriptId: string) => Promise<{ success: boolean; error?: string }>;
@@ -151,6 +160,13 @@ const ALLOWED_CHANNELS = {
     'settings:set',
     'settings:get-all',
     'settings:reset',
+    
+    // Secure storage channels
+    'secure-store:get',
+    'secure-store:set',
+    'secure-store:delete',
+    'secure-store:has',
+    'secure-store:clear',
     
     // Window channels
     'window:create-transcript',
@@ -293,6 +309,15 @@ const electronAPI: ElectronAPI = {
     set: (key: string, value: any) => ipcRenderer.invoke('settings:set', key, value),
     getAll: () => ipcRenderer.invoke('settings:get-all'),
     reset: () => ipcRenderer.invoke('settings:reset')
+  },
+
+  // Secure Storage APIs
+  secureStore: {
+    get: (key: string) => ipcRenderer.invoke('secure-store:get', key),
+    set: (key: string, value: string) => ipcRenderer.invoke('secure-store:set', key, value),
+    delete: (key: string) => ipcRenderer.invoke('secure-store:delete', key),
+    has: (key: string) => ipcRenderer.invoke('secure-store:has', key),
+    clear: () => ipcRenderer.invoke('secure-store:clear')
   },
 
   // Window APIs
