@@ -1,7 +1,4 @@
-import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
 import { 
   Menu, 
   X, 
@@ -11,6 +8,11 @@ import {
   Search,
   Bell,
 } from 'lucide-react';
+import React, { useState } from 'react';
+
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+
 
 interface AppShellProps {
   children?: React.ReactNode;

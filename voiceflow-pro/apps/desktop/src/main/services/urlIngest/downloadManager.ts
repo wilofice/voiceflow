@@ -3,13 +3,15 @@
  * Handles downloading media from various sources using yt-dlp and direct download
  */
 
-import { EventEmitter } from 'events';
 import { spawn, ChildProcess } from 'child_process';
+import { EventEmitter } from 'events';
 import * as path from 'path';
-import * as fs from 'fs-extra';
-import * as log from 'electron-log';
+
 import { app } from 'electron';
+import * as log from 'electron-log';
+import * as fs from 'fs-extra';
 import { DownloaderHelper } from 'node-downloader-helper';
+
 import type { Provider } from './urlValidatorService';
 
 export interface DownloadOptions {

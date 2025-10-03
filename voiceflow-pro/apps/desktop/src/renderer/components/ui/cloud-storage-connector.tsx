@@ -1,4 +1,3 @@
-import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   Cloud,
@@ -15,12 +14,14 @@ import {
   FileText,
   MessageSquare
 } from 'lucide-react';
+import React, { useState } from 'react';
+
+import { Badge } from './badge';
 import { Button } from './button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './card';
-import { Badge } from './badge';
-import { Switch } from './switch';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from './dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './dropdown-menu';
+import { Switch } from './switch';
 import { toast } from './use-toast';
 
 export interface IntegrationConnection {

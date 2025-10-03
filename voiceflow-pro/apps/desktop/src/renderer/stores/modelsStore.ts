@@ -1,6 +1,7 @@
 import { create } from 'zustand';
-import { ModelInfo } from '../types/api';
+
 import { apiClient } from '../services/apiClient';
+import { ModelInfo } from '../types/api';
 
 interface ModelsState {
   models: ModelInfo[];

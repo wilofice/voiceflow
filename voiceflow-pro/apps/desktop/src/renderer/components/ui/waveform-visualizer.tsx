@@ -1,5 +1,6 @@
-import React, { useRef, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
+import React, { useRef, useEffect, useState } from 'react';
+
 import { cn } from '@/lib/utils';
 
 interface WaveformData {

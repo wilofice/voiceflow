@@ -1,4 +1,3 @@
-import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   Settings,
@@ -13,13 +12,15 @@ import {
   CheckCircle,
   AlertTriangle
 } from 'lucide-react';
+import React, { useState } from 'react';
+
+import { Badge } from './badge';
 import { Button } from './button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './card';
-import { Badge } from './badge';
+import CloudStorageConnector, { IntegrationConnection } from './cloud-storage-connector';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuCheckboxItem } from './dropdown-menu';
 import { Input } from './input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './tabs';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuCheckboxItem } from './dropdown-menu';
-import CloudStorageConnector, { IntegrationConnection } from './cloud-storage-connector';
 import WatchFolderConfig, { WatchFolder } from './watch-folder-config';
 import WorkflowAutomation, { WorkflowAutomation as Workflow } from './workflow-automation';
 

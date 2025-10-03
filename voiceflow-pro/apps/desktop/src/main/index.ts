@@ -1,19 +1,20 @@
-import { app, BrowserWindow, ipcMain, Menu, dialog } from 'electron';
 import * as path from 'path';
-import * as log from 'electron-log';
-import { autoUpdater } from 'electron-updater';
-import Store from 'electron-store';
+
+import { app, BrowserWindow, ipcMain, Menu, dialog } from 'electron';
 import contextMenu from 'electron-context-menu';
+import * as log from 'electron-log';
+import Store from 'electron-store';
+import { autoUpdater } from 'electron-updater';
 
 // Import our services
-import { DesktopWhisperService } from './services/desktopWhisperService';
-import { FileImportService } from './services/fileImportService';
-import { WatchFolderService } from './services/watchFolderService';
-import { WindowManager } from './services/windowManager';
-import { URLIngestService } from './services/urlIngest/urlIngestService';
-import { SecureStorageService } from './services/secureStorageService';
 import { setupIPC } from './ipc/handlers';
 import { setupURLIngestHandlers } from './ipc/urlIngestHandlers';
+import { DesktopWhisperService } from './services/desktopWhisperService';
+import { FileImportService } from './services/fileImportService';
+import { SecureStorageService } from './services/secureStorageService';
+import { URLIngestService } from './services/urlIngest/urlIngestService';
+import { WatchFolderService } from './services/watchFolderService';
+import { WindowManager } from './services/windowManager';
 
 // Configure logging
 log.transports.console.level = 'debug';

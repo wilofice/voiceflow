@@ -4,13 +4,16 @@
  */
 
 import { EventEmitter } from 'events';
-import * as log from 'electron-log';
 import * as path from 'path';
-import * as fs from 'fs-extra';
+
 import { app } from 'electron';
-import { URLValidatorService, ValidationResult } from './urlValidatorService';
-import { DownloadManager, DownloadOptions, DownloadResult } from './downloadManager';
+import * as log from 'electron-log';
+import * as fs from 'fs-extra';
+
 import { DesktopWhisperService } from '../desktopWhisperService';
+
+import { DownloadManager, DownloadOptions, DownloadResult } from './downloadManager';
+import { URLValidatorService, ValidationResult } from './urlValidatorService';
 import type { Provider } from './urlValidatorService';
 
 export interface IngestOptions extends DownloadOptions {

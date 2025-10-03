@@ -4,11 +4,11 @@
  */
 
 import { spawn, ChildProcess } from 'child_process';
-import { promises as fs } from 'fs';
-import path from 'path';
-import os from 'os';
-// Use crypto.randomUUID instead of uuid to avoid ESM issues
 import { randomUUID } from 'crypto';
+import { promises as fs } from 'fs';
+import os from 'os';
+import path from 'path';
+// Use crypto.randomUUID instead of uuid to avoid ESM issues
 
 export interface WhisperOptions {
   model?: WhisperModel;

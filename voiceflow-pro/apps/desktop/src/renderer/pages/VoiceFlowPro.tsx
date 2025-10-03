@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { AppShell } from '@/components/ui/app-shell';
-import { NavigationSidebar } from '@/components/ui/navigation-sidebar';
-import { Dashboard } from '@/components/ui/dashboard';
-import { TranscriptEditor } from '@/components/ui/transcript-editor';
-import { BatchProcessor } from '@/components/ui/batch-processor';
+
 import { AIRecipePanel } from '@/components/ui/ai-recipe-panel';
+import { AppShell } from '@/components/ui/app-shell';
+import { BatchProcessor } from '@/components/ui/batch-processor';
+import { Dashboard } from '@/components/ui/dashboard';
+import { NavigationSidebar } from '@/components/ui/navigation-sidebar';
+import { TranscriptEditor } from '@/components/ui/transcript-editor';
 import { useToast } from '@/hooks/use-toast';
 
 type View = 'dashboard' | 'transcript-editor' | 'batch-processing' | 'ai-recipes' | 'settings';

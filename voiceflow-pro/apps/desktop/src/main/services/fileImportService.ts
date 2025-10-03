@@ -4,11 +4,12 @@
  * Task 1.3: File Import System Implementation
  */
 
-import { dialog, shell, BrowserWindow, ipcMain } from 'electron';
-import * as fs from 'fs-extra';
-import * as path from 'path';
-import * as log from 'electron-log';
 import { EventEmitter } from 'events';
+import * as path from 'path';
+
+import { dialog, shell, BrowserWindow, ipcMain } from 'electron';
+import * as log from 'electron-log';
+import * as fs from 'fs-extra';
 import * as mime from 'mime-types';
 
 export interface FileInfo {

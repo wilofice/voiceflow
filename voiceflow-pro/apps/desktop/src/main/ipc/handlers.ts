@@ -1,11 +1,12 @@
 import { ipcMain, IpcMainInvokeEvent, dialog, shell } from 'electron';
 import * as log from 'electron-log';
 import Store from 'electron-store';
+
 import { DesktopWhisperService } from '../services/desktopWhisperService';
 import { FileImportService } from '../services/fileImportService';
+import { SecureStorageService } from '../services/secureStorageService';
 import { WatchFolderService } from '../services/watchFolderService';
 import { WindowManager } from '../services/windowManager';
-import { SecureStorageService } from '../services/secureStorageService';
 import { WatchRule } from '../types/whisper';
 
 interface Services {

@@ -1,6 +1,7 @@
 import { create } from 'zustand';
-import { UploadResponse, UploadMetadata } from '../types/api';
+
 import { apiClient } from '../services/apiClient';
+import { UploadResponse, UploadMetadata } from '../types/api';
 
 interface UploadProgress {
   uploadId: string;
