@@ -1,11 +1,4 @@
-import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-// import heroImage from '@/assets/hero-image.jpg';
 import { 
   Upload,
   Mic,
@@ -22,6 +15,15 @@ import {
   Folder,
   Settings2,
 } from 'lucide-react';
+import React, { useState } from 'react';
+
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { cn } from '@/lib/utils';
+
+// import heroImage from '@/assets/hero-image.jpg';
 
 interface QuickAction {
   id: string;

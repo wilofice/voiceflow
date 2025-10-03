@@ -1,9 +1,13 @@
-import * as chokidar from 'chokidar';
-import * as path from 'path';
-import * as fs from 'fs-extra';
-import * as log from 'electron-log';
 import { EventEmitter } from 'events';
+import * as path from 'path';
+
+import * as chokidar from 'chokidar';
+import * as log from 'electron-log';
+import * as fs from 'fs-extra';
+
+
 import { WatchRule, WhisperConfig } from '../types/whisper';
+
 import { WhisperService } from './whisperService';
 
 export class WatchFolderService extends EventEmitter {

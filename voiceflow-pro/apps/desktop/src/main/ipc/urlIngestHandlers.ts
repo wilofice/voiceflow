@@ -5,6 +5,7 @@
 
 import { ipcMain, IpcMainInvokeEvent, BrowserWindow } from 'electron';
 import * as log from 'electron-log';
+
 import { URLIngestService } from '../services/urlIngest/urlIngestService';
 import type { IngestOptions, IngestResult } from '../services/urlIngest/urlIngestService';
 

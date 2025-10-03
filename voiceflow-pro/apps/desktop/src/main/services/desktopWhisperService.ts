@@ -4,10 +4,12 @@
  * Reuses battle-tested server implementation with local configuration
  */
 
-import { app } from 'electron';
 import { execSync } from 'child_process';
 import * as path from 'path';
+
+import { app } from 'electron';
 import * as log from 'electron-log';
+
 import { WhisperServerService } from './whisperServer';
 
 export interface DesktopWhisperConfig {

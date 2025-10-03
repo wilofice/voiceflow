@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
 import { Upload, Mic, MonitorSpeaker, Cloud, FileAudio, Zap } from 'lucide-react';
+import React, { useState } from 'react';
 
 interface VoiceFlowProMinimalProps {
   onUrlSubmit?: (url: string) => void;

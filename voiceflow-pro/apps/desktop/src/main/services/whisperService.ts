@@ -1,7 +1,8 @@
-import { BrowserWindow } from 'electron';
-import * as fs from 'fs-extra';
 import * as path from 'path';
+
+import { BrowserWindow } from 'electron';
 import * as log from 'electron-log';
+import * as fs from 'fs-extra';
 
 // Import the existing WhisperWebEngine from the web app
 // We'll adapt it for Node.js/Electron environment

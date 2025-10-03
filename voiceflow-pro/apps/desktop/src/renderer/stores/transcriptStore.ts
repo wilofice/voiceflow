@@ -1,11 +1,12 @@
 import { create } from 'zustand';
+
+import { apiClient } from '../services/apiClient';
 import { 
   Transcript, 
   CreateTranscriptRequest, 
   UpdateTranscriptRequest, 
   PaginatedResponse 
 } from '../types/api';
-import { apiClient } from '../services/apiClient';
 
 interface TranscriptState {
   transcripts: Transcript[];

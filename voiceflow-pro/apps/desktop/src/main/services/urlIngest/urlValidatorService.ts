@@ -3,10 +3,11 @@
  * Validates URLs and detects content providers (YouTube, Vimeo, podcasts, etc.)
  */
 
-import * as log from 'electron-log';
-import { URL } from 'url';
-import * as https from 'https';
 import * as http from 'http';
+import * as https from 'https';
+import { URL } from 'url';
+
+import * as log from 'electron-log';
 
 export type Provider = 'youtube' | 'vimeo' | 'podcast' | 'direct' | 'soundcloud' | 'twitter' | 'unknown';
 

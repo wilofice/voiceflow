@@ -1,8 +1,9 @@
 import axios, { AxiosInstance, AxiosError, AxiosRequestConfig } from 'axios';
 import { EventEmitter } from 'eventemitter3';
 import pRetry from 'p-retry';
-import { z } from 'zod';
 import { io, Socket } from 'socket.io-client';
+import { z } from 'zod';
+
 import {
   User,
   AuthTokens,

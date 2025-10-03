@@ -1,5 +1,6 @@
-import { BrowserWindow, screen, session } from 'electron';
 import * as path from 'path';
+
+import { BrowserWindow, screen, session } from 'electron';
 import * as log from 'electron-log';
 import Store from 'electron-store';
 

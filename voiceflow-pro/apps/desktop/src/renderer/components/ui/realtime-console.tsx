@@ -1,11 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Slider } from '@/components/ui/slider';
-import { WaveformVisualizer } from '@/components/ui/waveform-visualizer';
 import { 
   Mic, 
   MicOff,
@@ -19,6 +12,15 @@ import {
   Clock,
   User,
 } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Slider } from '@/components/ui/slider';
+import { WaveformVisualizer } from '@/components/ui/waveform-visualizer';
+import { cn } from '@/lib/utils';
+
 
 interface Caption {
   id: string;

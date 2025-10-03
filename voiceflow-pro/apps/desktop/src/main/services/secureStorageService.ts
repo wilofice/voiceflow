@@ -1,5 +1,5 @@
-import * as keytar from 'keytar';
 import * as log from 'electron-log';
+import * as keytar from 'keytar';
 
 const SERVICE_NAME = 'VoiceFlowPro';
 
