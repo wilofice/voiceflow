@@ -55,10 +55,13 @@ export const useTranscriptStore = create<TranscriptState>((set, get) => ({
       });
     } catch (error: any) {
       set({
+        transcripts: [], // Ensure transcripts is always an array
+        pagination: null,
         isLoading: false,
         error: error.message || 'Failed to fetch transcripts',
       });
-      throw error;
+      console.warn('Failed to fetch transcripts:', error.message);
+      // Don't throw error to prevent component crashes
     }
   },
 

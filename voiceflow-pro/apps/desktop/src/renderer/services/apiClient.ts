@@ -124,14 +124,24 @@ export class APIClient extends EventEmitter {
     // Request interceptor for auth
     this.client.interceptors.request.use(
       async (config) => {
-        // Add auth token if available and not expired
-        if (this.accessToken && this.tokenExpiresAt > Date.now() + 60000) { // 1 min buffer
-          config.headers.Authorization = `Bearer ${this.accessToken}`;
-        } else if (this.refreshToken && !this.isRefreshing) {
-          // Token expired, refresh it
-          await this.refreshTokens();
-          if (this.accessToken) {
+        // Add auth token if available
+        if (this.accessToken) {
+          // Check if token is expired (with 1 minute buffer)
+          if (this.tokenExpiresAt > Date.now() + 60000) {
             config.headers.Authorization = `Bearer ${this.accessToken}`;
+          } else if (this.refreshToken && !this.isRefreshing) {
+            // Token expired, try to refresh it
+            try {
+              await this.refreshTokens();
+              if (this.accessToken) {
+                config.headers.Authorization = `Bearer ${this.accessToken}`;
+              }
+            } catch (error) {
+              console.warn('Token refresh failed:', error);
+              // Clear invalid tokens and let the request proceed without auth
+              this.clearTokens();
+              this.emit('auth:expired');
+            }
           }
         }
         return config;
