@@ -1,6 +1,5 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { prisma } from '@voiceflow-pro/database';
-import { verifySupabaseToken } from '../lib/supabase';
 
 export interface AuthenticatedRequest extends FastifyRequest {
   user: {
@@ -27,11 +26,11 @@ export async function authenticate(
       });
     }
 
-    const token = authHeader.substring(7); // Remove 'Bearer ' prefix
-    
-    // Verify with Supabase
-    const supabaseUser = await verifySupabaseToken(token);
-    if (!supabaseUser) {
+    let payload: { sub: string; email?: string; name?: string; type: 'access' | 'refresh' };
+    try {
+      payload = await request.jwtVerify<{ sub: string; email?: string; name?: string; type: 'access' | 'refresh' }>();
+    } catch (error) {
+      request.log.error(error, 'JWT verification failed');
       return reply.status(401).send({
         error: {
           code: 'UNAUTHORIZED',
@@ -39,10 +38,19 @@ export async function authenticate(
         },
       });
     }
-    
+
+    if (payload.type !== 'access') {
+      return reply.status(401).send({
+        error: {
+          code: 'UNAUTHORIZED',
+          message: 'Invalid token type',
+        },
+      });
+    }
+
     // Get user from our database
-    const user = await prisma.user.findUnique({
-      where: { id: supabaseUser.id },
+    let user = await prisma.user.findUnique({
+      where: { id: payload.sub },
       select: {
         id: true,
         email: true,
@@ -52,12 +60,20 @@ export async function authenticate(
     });
 
     if (!user) {
-      // Create user if they don't exist in our DB yet
-      const newUser = await prisma.user.create({
+      if (!payload.email) {
+        return reply.status(401).send({
+          error: {
+            code: 'UNAUTHORIZED',
+            message: 'User record missing and email unavailable in token',
+          },
+        });
+      }
+
+      user = await prisma.user.create({
         data: {
-          id: supabaseUser.id,
-          email: supabaseUser.email || '',
-          name: supabaseUser.user_metadata?.name || 'User',
+          id: payload.sub,
+          email: payload.email,
+          name: payload.name || 'User',
           subscriptionTier: 'FREE',
         },
         select: {
@@ -67,11 +83,9 @@ export async function authenticate(
           subscriptionTier: true,
         },
       });
-      
-      (request as AuthenticatedRequest).user = newUser;
-    } else {
-      (request as AuthenticatedRequest).user = user;
     }
+
+    (request as AuthenticatedRequest).user = user;
   } catch (error) {
     console.error('Authentication error:', error);
     return reply.status(401).send({

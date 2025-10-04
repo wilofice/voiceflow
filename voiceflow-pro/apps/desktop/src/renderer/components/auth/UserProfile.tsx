@@ -44,22 +44,35 @@ export function UserProfile({ compact = false }: UserProfileProps) {
     setShowLogoutDialog(false);
   };
 
-  const getUserInitials = (name: string) => {
+  const getUserInitials = (name: string | undefined) => {
+    if (!name || typeof name !== 'string') return 'U';
+    
     return name
+      .trim()
       .split(' ')
+      .filter(word => word.length > 0)
       .map(word => word.charAt(0))
       .join('')
       .toUpperCase()
-      .slice(0, 2);
+      .slice(0, 2) || 'U';
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
+  const formatDate = (dateString: string | undefined) => {
+    if (!dateString) return 'Unknown';
+    try {
+      return new Date(dateString).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+    } catch (error) {
+      return 'Unknown';
+    }
   };
+
+  // Safe getters for user properties
+  const userName = user.name || 'Unknown User';
+  const userEmail = user.email || 'No email';
 
   if (compact) {
     return (
@@ -69,7 +82,7 @@ export function UserProfile({ compact = false }: UserProfileProps) {
             <Button variant="ghost" className="relative h-8 w-8 rounded-full">
               <Avatar className="h-8 w-8">
                 <AvatarFallback className="text-xs">
-                  {getUserInitials(user.name)}
+                  {getUserInitials(userName)}
                 </AvatarFallback>
               </Avatar>
             </Button>
@@ -77,9 +90,9 @@ export function UserProfile({ compact = false }: UserProfileProps) {
           <DropdownMenuContent className="w-56" align="end" forceMount>
             <div className="flex items-center justify-start gap-2 p-2">
               <div className="flex flex-col space-y-1 leading-none">
-                <p className="font-medium">{user.name}</p>
+                <p className="font-medium">{userName}</p>
                 <p className="w-[200px] truncate text-sm text-muted-foreground">
-                  {user.email}
+                  {userEmail}
                 </p>
               </div>
             </div>
@@ -132,12 +145,12 @@ export function UserProfile({ compact = false }: UserProfileProps) {
         <div className="flex items-center space-x-4">
           <Avatar className="h-16 w-16">
             <AvatarFallback className="text-lg">
-              {getUserInitials(user.name)}
+              {getUserInitials(userName)}
             </AvatarFallback>
           </Avatar>
           <div className="space-y-1">
-            <CardTitle className="text-xl">{user.name}</CardTitle>
-            <CardDescription>{user.email}</CardDescription>
+            <CardTitle className="text-xl">{userName}</CardTitle>
+            <CardDescription>{userEmail}</CardDescription>
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

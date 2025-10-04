@@ -30,14 +30,28 @@ const loginResponseSchema = z.object({
     id: z.string(),
     email: z.string(),
     name: z.string(),
-    createdAt: z.string(),
-    updatedAt: z.string(),
+    subscriptionTier: z.string().optional(),
+    createdAt: z.string().optional(),
+    updatedAt: z.string().optional(),
   }),
   tokens: z.object({
     accessToken: z.string(),
     refreshToken: z.string(),
     expiresAt: z.number(),
-  }),
+  }).optional(),
+}).transform((data) => {
+  // Ensure tokens exist or throw meaningful error
+  if (!data.tokens) {
+    throw new Error('Login response missing authentication tokens');
+  }
+  return {
+    user: {
+      ...data.user,
+      createdAt: data.user.createdAt || new Date().toISOString(),
+      updatedAt: data.user.updatedAt || new Date().toISOString(),
+    },
+    tokens: data.tokens,
+  };
 });
 
 const registerResponseSchema = z.object({
@@ -45,8 +59,9 @@ const registerResponseSchema = z.object({
     id: z.string(),
     email: z.string(),
     name: z.string(),
-    createdAt: z.string(),
-    updatedAt: z.string(),
+    subscriptionTier: z.string().optional(),
+    createdAt: z.string().optional(),
+    updatedAt: z.string().optional(),
   }).optional(),
   tokens: z.object({
     accessToken: z.string(),
@@ -55,6 +70,20 @@ const registerResponseSchema = z.object({
   }).optional(),
   requiresConfirmation: z.boolean().optional(),
   message: z.string().optional(),
+}).transform((data) => {
+  // Add default timestamps if user is provided but missing them
+  if (data.user && (!data.user.createdAt || !data.user.updatedAt)) {
+    const now = new Date().toISOString();
+    return {
+      ...data,
+      user: {
+        ...data.user,
+        createdAt: data.user.createdAt || now,
+        updatedAt: data.user.updatedAt || now,
+      },
+    };
+  }
+  return data;
 });
 
 export class APIClient extends EventEmitter {
@@ -432,43 +461,55 @@ export class APIClient extends EventEmitter {
   // ===== WEBSOCKET METHODS =====
 
   private initializeWebSocket(): void {
-    this.socket = io(this.baseURL, {
-      autoConnect: false,
-      transports: ['websocket', 'polling'],
-    });
+    try {
+      this.socket = io(this.baseURL, {
+        autoConnect: false,
+        transports: ['websocket', 'polling'],
+        timeout: 5000,
+        reconnection: false, // Disable automatic reconnection to prevent spam
+      });
 
-    this.socket.on('connect', () => {
-      console.log('WebSocket connected');
-      this.emit('ws:connected');
-    });
+      this.socket.on('connect', () => {
+        console.log('WebSocket connected');
+        this.emit('ws:connected');
+      });
 
-    this.socket.on('disconnect', () => {
-      console.log('WebSocket disconnected');
-      this.emit('ws:disconnected');
-    });
+      this.socket.on('disconnect', () => {
+        console.log('WebSocket disconnected');
+        this.emit('ws:disconnected');
+      });
 
-    this.socket.on('connect_error', (error) => {
-      console.error('WebSocket connection error:', error);
-      this.emit('ws:error', error);
-    });
+      this.socket.on('connect_error', (error) => {
+        console.warn('WebSocket connection failed (this is optional):', error.message);
+        this.emit('ws:error', error);
+        // Don't throw - WebSocket is optional
+      });
 
-    this.socket.on('transcript_progress', (data: any) => {
-      this.emit('transcript:progress', data);
-    });
+      this.socket.on('transcript_progress', (data: any) => {
+        this.emit('transcript:progress', data);
+      });
 
-    this.socket.on('transcript_completed', (data: any) => {
-      this.emit('transcript:completed', data);
-    });
+      this.socket.on('transcript_completed', (data: any) => {
+        this.emit('transcript:completed', data);
+      });
 
-    this.socket.on('transcript_error', (data: any) => {
-      this.emit('transcript:error', data);
-    });
+      this.socket.on('transcript_error', (data: any) => {
+        this.emit('transcript:error', data);
+      });
+    } catch (error) {
+      console.warn('Failed to initialize WebSocket (continuing without real-time features):', error);
+      this.socket = null;
+    }
   }
 
   private connectWebSocket(): void {
     if (this.socket && !this.socket.connected && this.accessToken) {
-      this.socket.auth = { token: this.accessToken };
-      this.socket.connect();
+      try {
+        this.socket.auth = { token: this.accessToken };
+        this.socket.connect();
+      } catch (error) {
+        console.warn('Failed to connect WebSocket (continuing without real-time features):', error);
+      }
     }
   }
 
