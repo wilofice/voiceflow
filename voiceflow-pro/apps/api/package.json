@@ -16,17 +16,23 @@
     "@fastify/multipart": "^8.1.0",
     "@fastify/rate-limit": "^9.1.0",
     "@supabase/supabase-js": "^2.39.3",
+    "@types/node-fetch": "^2.6.13",
     "@voiceflow-pro/database": "*",
     "@voiceflow-pro/shared": "*",
     "bcryptjs": "^2.4.3",
     "dotenv": "^16.3.1",
+    "express": "^5.1.0",
     "fastify": "^4.25.2",
     "form-data": "^4.0.4",
+    "multer": "^2.0.2",
+    "node-fetch": "^3.3.2",
     "zod": "^3.22.4"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
+    "@types/express": "^5.0.3",
     "@types/form-data": "^2.2.1",
+    "@types/multer": "^2.0.0",
     "@types/node": "^20.11.5",
     "tsx": "^4.7.0",
     "typescript": "^5.3.3"

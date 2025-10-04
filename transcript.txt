@@ -1,0 +1,43 @@
+Speaker 1 0:00:10 - 0:00:18
+
+Hello, so you and I are going to continue to develop an application
+
+
+Speaker 1 0:00:28 - 0:00:40
+
+Mac Whisper. You helped me to extract the different features that Mac Whisper application offers
+
+
+Speaker 1 0:00:47 - 0:00:48
+
+and we go together
+
+
+Speaker 1 0:00:53 - 0:00:56
+
+. Now, set up the specifications
+
+
+Speaker 1 0:01:04 - 0:01:17
+
+for the implementation of user interfaces for all the features. We will define the requirements, the organization of the screens
+
+
+Speaker 1 0:01:24 - 0:01:32
+
+, the sequence of screens, the positioning of the buttons, the menus and the features, the organization of all
+
+
+Speaker 1 0:01:44 - 0:01:50
+
+What I would like is that you produce these specifications
+
+
+Speaker 1 0:01:56 - 0:02:04
+
+the design, based on the format you give. You will use the format
+
+
+Speaker 1 0:02:10 - 0:02:26
+
+that I just indicated to produce the document. We will go step by step, functionality by functionality, screen by screen

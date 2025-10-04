@@ -6,6 +6,7 @@
 import { WhisperWebEngine, WhisperConfig, TranscriptionResult } from './whisperEngine';
 import { WhisperModelManager, WhisperModel } from './modelManager';
 import { WhisperWorkerManager } from './whisperWorker';
+import { getSupabaseToken } from '../api-client';
 
 export type TranscriptionMethod = 'openai' | 'whisper-browser' | 'whisper-server';
 
@@ -175,11 +176,14 @@ export class TranscriptionRouter {
       formData.append('language', request.config.language);
     }
 
-    const response = await fetch('/api/transcriptions/openai', {
+    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002';
+    const token = await getSupabaseToken();
+    
+    const response = await fetch(`${API_BASE_URL}/api/transcriptions/openai`, {
       method: 'POST',
       body: formData,
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+        ...(token && { 'Authorization': `Bearer ${token}` }),
       },
     });
 
@@ -293,11 +297,14 @@ export class TranscriptionRouter {
       formData.append('language', request.config.language);
     }
 
-    const response = await fetch('/api/transcriptions/whisper', {
+    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002';
+    const token = await getSupabaseToken();
+    
+    const response = await fetch(`${API_BASE_URL}/api/transcriptions/whisper`, {
       method: 'POST',
       body: formData,
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+        ...(token && { 'Authorization': `Bearer ${token}` }),
       },
     });
 

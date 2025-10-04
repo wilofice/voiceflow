@@ -1,0 +1,1921 @@
+{
+    "meta": {
+        "spec_version": "1.0.0",
+        "app_name": "Mac Whisper (Electron)",
+        "target_framework": "Electron + React",
+        "platforms": [
+            "macOS (Apple Silicon + Intel)"
+        ],
+        "design_language": {
+            "guidelines": [
+                "macOS HIG-aligned",
+                "Keyboard-first",
+                "Accessible-by-default"
+            ],
+            "ui_kit": [
+                "Tailwind (optional)",
+                "CSS Modules"
+            ],
+            "icon_set": "Lucide"
+        }
+    },
+    "features": [
+        {
+            "id": "feat_import",
+            "name": "Audio Import",
+            "description": "Drag-and-drop or choose files/folders; supports common audio/video containers.",
+            "key_screens": [
+                "screen_dashboard",
+                "screen_import_wizard",
+                "screen_batch_queue"
+            ]
+        },
+        {
+            "id": "feat_record",
+            "name": "In-App Recording",
+            "description": "Record microphone input; pause/resume; monitor levels.",
+            "key_screens": [
+                "screen_record"
+            ]
+        },
+        {
+            "id": "feat_transcribe",
+            "name": "Transcription",
+            "description": "Run Whisper models locally; configurable language, model size, timestamps, diarization.",
+            "key_screens": [
+                "screen_session",
+                "screen_editor"
+            ]
+        },
+        {
+            "id": "feat_translate",
+            "name": "Translate",
+            "description": "Translate source speech to target language using Whisper translate mode.",
+            "key_screens": [
+                "screen_session",
+                "screen_editor"
+            ]
+        },
+        {
+            "id": "feat_batch",
+            "name": "Batch Processing",
+            "description": "Queue multiple files; per-job overrides; persistent history.",
+            "key_screens": [
+                "screen_batch_queue",
+                "screen_batch_history"
+            ]
+        },
+        {
+            "id": "feat_editing",
+            "name": "Transcript Editing",
+            "description": "Rich text editing, segment-level ops, find/replace, speaker labels, comments.",
+            "key_screens": [
+                "screen_editor"
+            ]
+        },
+        {
+            "id": "feat_export",
+            "name": "Export",
+            "description": "TXT, SRT, VTT, CSV, JSON, DOCX; per-export options; naming templates.",
+            "key_screens": [
+                "screen_export_modal"
+            ]
+        },
+        {
+            "id": "feat_models",
+            "name": "Model Management",
+            "description": "Download, verify, cache, delete models; auto-update; GPU/CPU preference.",
+            "key_screens": [
+                "screen_model_manager"
+            ]
+        },
+        {
+            "id": "feat_settings",
+            "name": "Settings",
+            "description": "Global defaults, hotkeys, privacy, updates, storage, themes.",
+            "key_screens": [
+                "screen_settings"
+            ]
+        },
+        {
+            "id": "feat_shortcuts",
+            "name": "Keyboard Shortcuts & Help",
+            "description": "Discoverability overlay and searchable shortcuts list.",
+            "key_screens": [
+                "screen_shortcuts"
+            ]
+        },
+        {
+            "id": "feat_ondboarding",
+            "name": "Onboarding",
+            "description": "First-run flow to pick model, storage, permissions.",
+            "key_screens": [
+                "screen_onboarding"
+            ]
+        }
+    ],
+    "navigation": {
+        "router": "React Router",
+        "routes": [
+            {
+                "path": "/",
+                "component": "Dashboard",
+                "screen_id": "screen_dashboard"
+            },
+            {
+                "path": "/import",
+                "component": "ImportWizard",
+                "screen_id": "screen_import_wizard"
+            },
+            {
+                "path": "/record",
+                "component": "Record",
+                "screen_id": "screen_record"
+            },
+            {
+                "path": "/session/:jobId",
+                "component": "Session",
+                "screen_id": "screen_session"
+            },
+            {
+                "path": "/editor/:jobId",
+                "component": "Editor",
+                "screen_id": "screen_editor"
+            },
+            {
+                "path": "/batch",
+                "component": "BatchQueue",
+                "screen_id": "screen_batch_queue"
+            },
+            {
+                "path": "/batch/history",
+                "component": "BatchHistory",
+                "screen_id": "screen_batch_history"
+            },
+            {
+                "path": "/models",
+                "component": "ModelManager",
+                "screen_id": "screen_model_manager"
+            },
+            {
+                "path": "/settings",
+                "component": "Settings",
+                "screen_id": "screen_settings"
+            },
+            {
+                "path": "/shortcuts",
+                "component": "Shortcuts",
+                "screen_id": "screen_shortcuts"
+            },
+            {
+                "path": "/onboarding",
+                "component": "Onboarding",
+                "screen_id": "screen_onboarding"
+            }
+        ],
+        "windowing": {
+            "main_window": {
+                "id": "win_main",
+                "initial_route": "/",
+                "minSize": [
+                    1024,
+                    700
+                ],
+                "trafficLightPosition": "default",
+                "titleBarStyle": "hiddenInset",
+                "vibrancy": "sidebar"
+            },
+            "modal_window": {
+                "id": "win_modal",
+                "role": "utility",
+                "parent": "win_main"
+            }
+        }
+    },
+    "screen_specs": [
+        {
+            "id": "screen_onboarding",
+            "name": "Onboarding",
+            "purpose": "Guide first-time setup: storage, default model, permissions, analytics consent.",
+            "layout": {
+                "regions": [
+                    "header",
+                    "content",
+                    "footer"
+                ],
+                "header": {
+                    "component": "AppLogo",
+                    "position": "header.center"
+                },
+                "content": {
+                    "component": "Stepper",
+                    "steps": [
+                        "Welcome",
+                        "Storage",
+                        "Model",
+                        "Permissions",
+                        "Finish"
+                    ]
+                },
+                "footer": {
+                    "component": "StepNav",
+                    "primary_actions": [
+                        "Next/Finish"
+                    ],
+                    "secondary_actions": [
+                        "Back",
+                        "Skip"
+                    ]
+                }
+            },
+            "step_details": [
+                {
+                    "step": "Welcome",
+                    "components": [
+                        {
+                            "type": "Heading",
+                            "text": "Welcome to Mac Whisper"
+                        },
+                        {
+                            "type": "Paragraph",
+                            "text": "Local, private speech-to-text."
+                        }
+                    ],
+                    "actions": [
+                        {
+                            "label": "Get Started",
+                            "id": "btn_get_started",
+                            "position": "footer.right",
+                            "variant": "primary"
+                        }
+                    ]
+                },
+                {
+                    "step": "Storage",
+                    "components": [
+                        {
+                            "type": "DirectoryPicker",
+                            "id": "storage_dir",
+                            "label": "Where to store models and jobs"
+                        },
+                        {
+                            "type": "Toggle",
+                            "id": "toggle_keep_cache",
+                            "label": "Keep processed audio cache",
+                            "default": true
+                        }
+                    ],
+                    "actions": [
+                        {
+                            "label": "Back",
+                            "id": "ob_back1",
+                            "position": "footer.left"
+                        },
+                        {
+                            "label": "Next",
+                            "id": "ob_next1",
+                            "position": "footer.right",
+                            "variant": "primary"
+                        }
+                    ]
+                },
+                {
+                    "step": "Model",
+                    "components": [
+                        {
+                            "type": "ModelSelector",
+                            "id": "default_model",
+                            "options_source": "state.models.available"
+                        },
+                        {
+                            "type": "RadioGroup",
+                            "id": "compute_pref",
+                            "label": "Compute",
+                            "options": [
+                                "Auto",
+                                "GPU",
+                                "CPU"
+                            ],
+                            "default": "Auto"
+                        }
+                    ],
+                    "actions": [
+                        {
+                            "label": "Back",
+                            "id": "ob_back2",
+                            "position": "footer.left"
+                        },
+                        {
+                            "label": "Download Model",
+                            "id": "ob_download",
+                            "position": "footer.right",
+                            "variant": "primary",
+                            "disabled_until": "model_selected"
+                        }
+                    ]
+                },
+                {
+                    "step": "Permissions",
+                    "components": [
+                        {
+                            "type": "MicPermissionCard",
+                            "id": "perm_mic"
+                        },
+                        {
+                            "type": "FileAccessCard",
+                            "id": "perm_files"
+                        },
+                        {
+                            "type": "Toggle",
+                            "id": "analytics_optin",
+                            "label": "Share anonymous diagnostics",
+                            "default": false
+                        }
+                    ],
+                    "actions": [
+                        {
+                            "label": "Back",
+                            "id": "ob_back3",
+                            "position": "footer.left"
+                        },
+                        {
+                            "label": "Continue",
+                            "id": "ob_next3",
+                            "position": "footer.right",
+                            "variant": "primary"
+                        }
+                    ]
+                },
+                {
+                    "step": "Finish",
+                    "components": [
+                        {
+                            "type": "Confetti"
+                        },
+                        {
+                            "type": "Paragraph",
+                            "text": "You're all set!"
+                        }
+                    ],
+                    "actions": [
+                        {
+                            "label": "Go to Dashboard",
+                            "id": "ob_finish",
+                            "position": "footer.right",
+                            "variant": "primary",
+                            "route_to": "/"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "screen_dashboard",
+            "name": "Dashboard",
+            "purpose": "Entry screen for quick actions and recent jobs.",
+            "layout": {
+                "regions": [
+                    "sidebar",
+                    "content",
+                    "toolbar"
+                ],
+                "sidebar": {
+                    "position": "left",
+                    "width": 260,
+                    "items": [
+                        {
+                            "label": "New Transcription",
+                            "icon": "mic",
+                            "route": "/record",
+                            "id": "nav_record"
+                        },
+                        {
+                            "label": "Import Files",
+                            "icon": "upload",
+                            "route": "/import",
+                            "id": "nav_import"
+                        },
+                        {
+                            "label": "Batch Queue",
+                            "icon": "layers",
+                            "route": "/batch",
+                            "id": "nav_batch"
+                        },
+                        {
+                            "label": "Models",
+                            "icon": "cpu",
+                            "route": "/models",
+                            "id": "nav_models"
+                        },
+                        {
+                            "label": "Settings",
+                            "icon": "settings",
+                            "route": "/settings",
+                            "id": "nav_settings"
+                        }
+                    ]
+                },
+                "toolbar": {
+                    "position": "top",
+                    "items": [
+                        {
+                            "type": "Search",
+                            "id": "search_jobs",
+                            "placeholder": "Search transcripts…"
+                        },
+                        {
+                            "type": "Segment",
+                            "items": [
+                                {
+                                    "type": "Button",
+                                    "label": "New Session",
+                                    "id": "btn_new_session",
+                                    "variant": "primary"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "content": {
+                    "sections": [
+                        {
+                            "type": "QuickActions",
+                            "cards": [
+                                "Import",
+                                "Record",
+                                "Batch"
+                            ]
+                        },
+                        {
+                            "type": "RecentJobs",
+                            "max": 10,
+                            "columns": [
+                                "Title",
+                                "Duration",
+                                "Language",
+                                "Status",
+                                "Updated"
+                            ]
+                        },
+                        {
+                            "type": "Tips",
+                            "visible_if": "first_week"
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "id": "screen_import_wizard",
+            "name": "Import Wizard",
+            "purpose": "Select files, configure job options, confirm.",
+            "layout": {
+                "regions": [
+                    "header",
+                    "content",
+                    "footer"
+                ]
+            },
+            "content": {
+                "steps": [
+                    {
+                        "name": "Select Files",
+                        "components": [
+                            {
+                                "type": "DropZone",
+                                "id": "dz_files",
+                                "accept": "audio/,video/"
+                            },
+                            {
+                                "type": "FileList",
+                                "id": "list_selected"
+                            }
+                        ],
+                        "actions": [
+                            {
+                                "label": "Next",
+                                "id": "imp_next1",
+                                "position": "footer.right",
+                                "variant": "primary",
+                                "disabled_until": "files_added"
+                            }
+                        ]
+                    },
+                    {
+                        "name": "Configure",
+                        "components": [
+                            {
+                                "type": "ModelSelector",
+                                "id": "model_choice"
+                            },
+                            {
+                                "type": "Select",
+                                "id": "language",
+                                "label": "Language",
+                                "options": [
+                                    "Auto Detect",
+                                    "en",
+                                    "fr",
+                                    "de",
+                                    "es",
+                                    "it",
+                                    "ja",
+                                    "zh"
+                                ]
+                            },
+                            {
+                                "type": "Checkbox",
+                                "id": "enable_timestamps",
+                                "label": "Timestamps",
+                                "default": true
+                            },
+                            {
+                                "type": "Checkbox",
+                                "id": "enable_diarization",
+                                "label": "Speaker Diarization",
+                                "default": false
+                            },
+                            {
+                                "type": "Checkbox",
+                                "id": "translate_to_english",
+                                "label": "Translate to English",
+                                "default": false
+                            }
+                        ],
+                        "actions": [
+                            {
+                                "label": "Back",
+                                "id": "imp_back2",
+                                "position": "footer.left"
+                            },
+                            {
+                                "label": "Start",
+                                "id": "imp_start",
+                                "position": "footer.right",
+                                "variant": "primary"
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "id": "screen_record",
+            "name": "Record",
+            "purpose": "Capture microphone audio and transcribe live or post-record.",
+            "layout": {
+                "regions": [
+                    "header",
+                    "content",
+                    "footer"
+                ],
+                "header": {
+                    "items": [
+                        {
+                            "type": "ModelSelectorCompact",
+                            "id": "model"
+                        },
+                        {
+                            "type": "Select",
+                            "id": "lang",
+                            "label": "Language"
+                        },
+                        {
+                            "type": "Toggle",
+                            "id": "live_transcribe",
+                            "label": "Live"
+                        }
+                    ]
+                },
+                "content": {
+                    "components": [
+                        {
+                            "type": "WaveformLive",
+                            "id": "live_wave"
+                        },
+                        {
+                            "type": "LevelMeter",
+                            "id": "meter"
+                        },
+                        {
+                            "type": "DeviceSelector",
+                            "id": "mic_device"
+                        }
+                    ]
+                },
+                "footer": {
+                    "items": [
+                        {
+                            "type": "Button",
+                            "id": "btn_record",
+                            "label": "Record",
+                            "variant": "primary",
+                            "position": "footer.center"
+                        },
+                        {
+                            "type": "Button",
+                            "id": "btn_pause",
+                            "label": "Pause",
+                            "variant": "secondary",
+                            "position": "footer.left"
+                        },
+                        {
+                            "type": "Button",
+                            "id": "btn_stop",
+                            "label": "Stop",
+                            "variant": "danger",
+                            "position": "footer.right"
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "id": "screen_session",
+            "name": "Transcription Session",
+            "purpose": "Live progress, controls, and logs while a job runs.",
+            "layout": {
+                "regions": [
+                    "toolbar",
+                    "content",
+                    "sidepanel"
+                ],
+                "toolbar": {
+                    "items": [
+                        {
+                            "type": "Button",
+                            "id": "sess_pause",
+                            "label": "Pause"
+                        },
+                        {
+                            "type": "Button",
+                            "id": "sess_resume",
+                            "label": "Resume"
+                        },
+                        {
+                            "type": "Button",
+                            "id": "sess_cancel",
+                            "label": "Cancel",
+                            "variant": "danger"
+                        },
+                        {
+                            "type": "Progress",
+                            "id": "sess_progress"
+                        }
+                    ]
+                },
+                "content": {
+                    "components": [
+                        {
+                            "type": "WaveformStatic",
+                            "id": "sess_waveform"
+                        },
+                        {
+                            "type": "LogPane",
+                            "id": "sess_log"
+                        }
+                    ]
+                },
+                "sidepanel": {
+                    "tabs": [
+                        {
+                            "label": "Job",
+                            "id": "tab_job",
+                            "components": [
+                                {
+                                    "type": "KeyValues",
+                                    "id": "job_meta"
+                                }
+                            ]
+                        },
+                        {
+                            "label": "Model",
+                            "id": "tab_model",
+                            "components": [
+                                {
+                                    "type": "KeyValues",
+                                    "id": "model_meta"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "id": "screen_editor",
+            "name": "Transcript Editor",
+            "purpose": "Edit text, navigate by timestamps, manage speakers, and export.",
+            "layout": {
+                "regions": [
+                    "header",
+                    "content",
+                    "right_sidebar",
+                    "footer"
+                ],
+                "header": {
+                    "items": [
+                        {
+                            "type": "Breadcrumbs",
+                            "items": [
+                                "Dashboard",
+                                "Job Name"
+                            ]
+                        },
+                        {
+                            "type": "Segment",
+                            "items": [
+                                {
+                                    "type": "Button",
+                                    "id": "btn_export",
+                                    "label": "Export",
+                                    "variant": "primary"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "content": {
+                    "split": "vertical",
+                    "left": [
+                        {
+                            "type": "Player",
+                            "id": "player",
+                            "position": "content.top"
+                        },
+                        {
+                            "type": "Timeline",
+                            "id": "timeline",
+                            "position": "content.top"
+                        },
+                        {
+                            "type": "RichEditor",
+                            "id": "rt_editor",
+                            "position": "content.bottom"
+                        }
+                    ],
+                    "right": []
+                },
+                "right_sidebar": {
+                    "width": 320,
+                    "tabs": [
+                        {
+                            "label": "Segments",
+                            "id": "tab_segments",
+                            "components": [
+                                {
+                                    "type": "SegmentList",
+                                    "id": "segment_list",
+                                    "columns": [
+                                        "Start",
+                                        "End",
+                                        "Speaker",
+                                        "Text"
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "label": "Speakers",
+                            "id": "tab_speakers",
+                            "components": [
+                                {
+                                    "type": "SpeakerTable",
+                                    "id": "speaker_table"
+                                },
+                                {
+                                    "type": "Button",
+                                    "id": "btn_auto_label",
+                                    "label": "Auto-Label"
+                                }
+                            ]
+                        },
+                        {
+                            "label": "Search",
+                            "id": "tab_search",
+                            "components": [
+                                {
+                                    "type": "FindReplace",
+                                    "id": "find_replace"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "footer": {
+                    "items": [
+                        {
+                            "type": "Status",
+                            "id": "status_lang",
+                            "label": "Language: en"
+                        },
+                        {
+                            "type": "Status",
+                            "id": "status_model",
+                            "label": "Model: base"
+                        },
+                        {
+                            "type": "Spacer"
+                        },
+                        {
+                            "type": "Button",
+                            "id": "btn_prev_segment",
+                            "label": "← Segment"
+                        },
+                        {
+                            "type": "Button",
+                            "id": "btn_next_segment",
+                            "label": "Segment →"
+                        }
+                    ]
+                }
+            },
+            "context_menus": [
+                {
+                    "target": "rt_editor.selection",
+                    "items": [
+                        {
+                            "label": "Split segment at cursor",
+                            "id": "ctx_split"
+                        },
+                        {
+                            "label": "Merge with next",
+                            "id": "ctx_merge_next"
+                        },
+                        {
+                            "label": "Set speaker…",
+                            "id": "ctx_set_speaker"
+                        },
+                        {
+                            "type": "separator"
+                        },
+                        {
+                            "label": "Copy with timestamps",
+                            "id": "ctx_copy_ts"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "screen_export_modal",
+            "name": "Export Modal",
+            "purpose": "Choose format, options, and destination.",
+            "layout": {
+                "regions": [
+                    "content",
+                    "footer"
+                ],
+                "content": {
+                    "components": [
+                        {
+                            "type": "RadioGroup",
+                            "id": "export_format",
+                            "options": [
+                                "TXT",
+                                "SRT",
+                                "VTT",
+                                "CSV",
+                                "JSON",
+                                "DOCX"
+                            ]
+                        },
+                        {
+                            "type": "Checkbox",
+                            "id": "include_timestamps",
+                            "label": "Include timestamps",
+                            "default": true
+                        },
+                        {
+                            "type": "Checkbox",
+                            "id": "include_speakers",
+                            "label": "Include speaker labels",
+                            "default": true
+                        },
+                        {
+                            "type": "TextInput",
+                            "id": "naming_template",
+                            "label": "File name template",
+                            "placeholder": "{title}-{lang}-{date}"
+                        },
+                        {
+                            "type": "DirectoryPicker",
+                            "id": "export_dir"
+                        }
+                    ]
+                },
+                "footer": {
+                    "items": [
+                        {
+                            "type": "Button",
+                            "id": "btn_export_cancel",
+                            "label": "Cancel"
+                        },
+                        {
+                            "type": "Button",
+                            "id": "btn_export_confirm",
+                            "label": "Export",
+                            "variant": "primary"
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "id": "screen_batch_queue",
+            "name": "Batch Queue",
+            "purpose": "Manage multiple jobs with per-file overrides.",
+            "layout": {
+                "regions": [
+                    "toolbar",
+                    "content"
+                ],
+                "toolbar": {
+                    "items": [
+                        {
+                            "type": "Button",
+                            "id": "batch_add",
+                            "label": "Add Files"
+                        },
+                        {
+                            "type": "Button",
+                            "id": "batch_start",
+                            "label": "Start Queue",
+                            "variant": "primary"
+                        },
+                        {
+                            "type": "Button",
+                            "id": "batch_clear",
+                            "label": "Clear"
+                        }
+                    ]
+                },
+                "content": {
+                    "components": [
+                        {
+                            "type": "Table",
+                            "id": "batch_table",
+                            "columns": [
+                                "File",
+                                "Duration",
+                                "Language",
+                                "Model",
+                                "Mode",
+                                "Status",
+                                "Actions"
+                            ]
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "id": "screen_batch_history",
+            "name": "Batch History",
+            "purpose": "View completed/failed jobs, re-run, open in editor.",
+            "layout": {
+                "regions": [
+                    "content"
+                ],
+                "content": {
+                    "components": [
+                        {
+                            "type": "Table",
+                            "id": "history_table"
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "id": "screen_model_manager",
+            "name": "Model Manager",
+            "purpose": "Browse, download, update, and delete models.",
+            "layout": {
+                "regions": [
+                    "toolbar",
+                    "content"
+                ],
+                "toolbar": {
+                    "items": [
+                        {
+                            "type": "Search",
+                            "id": "search_models",
+                            "placeholder": "Search models…"
+                        },
+                        {
+                            "type": "SegmentedControl",
+                            "id": "filter_device",
+                            "options": [
+                                "All",
+                                "GPU-capable",
+                                "CPU-only"
+                            ],
+                            "default": "All"
+                        }
+                    ]
+                },
+                "content": {
+                    "components": [
+                        {
+                            "type": "CardGrid",
+                            "id": "model_cards",
+                            "item_template": {
+                                "title": "{model.name}",
+                                "subtitle": "{model.size} • {model.params}",
+                                "badges": [
+                                    "{model.langs}",
+                                    "{model.device}"
+                                ],
+                                "actions": [
+                                    {
+                                        "label": "Download",
+                                        "id": "mdl_download"
+                                    },
+                                    {
+                                        "label": "Set Default",
+                                        "id": "mdl_set_default"
+                                    },
+                                    {
+                                        "label": "Delete",
+                                        "id": "mdl_delete",
+                                        "variant": "danger"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "id": "screen_settings",
+            "name": "Settings",
+            "purpose": "Global preferences and app configuration.",
+            "layout": {
+                "regions": [
+                    "sidebar",
+                    "content"
+                ],
+                "sidebar": {
+                    "items": [
+                        "General",
+                        "Transcription",
+                        "Recording",
+                        "Export",
+                        "Shortcuts",
+                        "Storage",
+                        "Updates",
+                        "Privacy"
+                    ]
+                },
+                "content": {
+                    "tabs": [
+                        {
+                            "label": "General",
+                            "components": [
+                                {
+                                    "type": "Toggle",
+                                    "id": "theme_auto",
+                                    "label": "Auto theme",
+                                    "default": true
+                                },
+                                {
+                                    "type": "Select",
+                                    "id": "theme_select",
+                                    "label": "Theme",
+                                    "options": [
+                                        "Light",
+                                        "Dark",
+                                        "System"
+                                    ],
+                                    "disabled_if": "theme_auto"
+                                }
+                            ]
+                        },
+                        {
+                            "label": "Transcription",
+                            "components": [
+                                {
+                                    "type": "ModelSelector",
+                                    "id": "def_model"
+                                },
+                                {
+                                    "type": "Select",
+                                    "id": "def_language",
+                                    "options": [
+                                        "Auto Detect",
+                                        "en",
+                                        "fr",
+                                        "de"
+                                    ]
+                                },
+                                {
+                                    "type": "Checkbox",
+                                    "id": "def_timestamps",
+                                    "label": "Timestamps",
+                                    "default": true
+                                },
+                                {
+                                    "type": "Checkbox",
+                                    "id": "def_diarization",
+                                    "label": "Speaker diarization",
+                                    "default": false
+                                }
+                            ]
+                        },
+                        {
+                            "label": "Recording",
+                            "components": [
+                                {
+                                    "type": "DeviceSelector",
+                                    "id": "rec_device"
+                                },
+                                {
+                                    "type": "Select",
+                                    "id": "rec_format",
+                                    "options": [
+                                        "WAV",
+                                        "AIFF",
+                                        "FLAC"
+                                    ],
+                                    "default": "WAV"
+                                }
+                            ]
+                        },
+                        {
+                            "label": "Export",
+                            "components": [
+                                {
+                                    "type": "TextInput",
+                                    "id": "def_template",
+                                    "label": "Naming template",
+                                    "placeholder": "{title}-{date}-{lang}"
+                                },
+                                {
+                                    "type": "DirectoryPicker",
+                                    "id": "def_export_dir"
+                                }
+                            ]
+                        },
+                        {
+                            "label": "Shortcuts",
+                            "components": [
+                                {
+                                    "type": "ShortcutTable",
+                                    "id": "shortcut_table"
+                                }
+                            ]
+                        },
+                        {
+                            "label": "Storage",
+                            "components": [
+                                {
+                                    "type": "DirectoryPicker",
+                                    "id": "models_dir"
+                                },
+                                {
+                                    "type": "DirectoryPicker",
+                                    "id": "jobs_dir"
+                                },
+                                {
+                                    "type": "Button",
+                                    "id": "btn_clear_cache",
+                                    "label": "Clear Cache"
+                                }
+                            ]
+                        },
+                        {
+                            "label": "Updates",
+                            "components": [
+                                {
+                                    "type": "Toggle",
+                                    "id": "auto_update_models",
+                                    "label": "Auto-update models",
+                                    "default": false
+                                },
+                                {
+                                    "type": "Button",
+                                    "id": "btn_check_updates",
+                                    "label": "Check for App Updates"
+                                }
+                            ]
+                        },
+                        {
+                            "label": "Privacy",
+                            "components": [
+                                {
+                                    "type": "Toggle",
+                                    "id": "analytics_optin_global",
+                                    "label": "Share anonymous diagnostics",
+                                    "default": false
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "id": "screen_shortcuts",
+            "name": "Shortcuts",
+            "purpose": "Reference and edit keybindings.",
+            "layout": {
+                "regions": [
+                    "header",
+                    "content"
+                ],
+                "header": {
+                    "items": [
+                        {
+                            "type": "Search",
+                            "id": "search_shortcuts"
+                        }
+                    ]
+                },
+                "content": {
+                    "components": [
+                        {
+                            "type": "ShortcutTable",
+                            "id": "shortcut_table_full"
+                        }
+                    ]
+                }
+            }
+        }
+    ],
+    "flows": [
+        {
+            "id": "flow_import_to_edit",
+            "name": "Import → Configure → Transcribe → Edit → Export",
+            "steps": [
+                {
+                    "screen": "screen_dashboard",
+                    "action": "nav_import"
+                },
+                {
+                    "screen": "screen_import_wizard",
+                    "action": "imp_next1"
+                },
+                {
+                    "screen": "screen_import_wizard",
+                    "action": "imp_start",
+                    "transition": "route:/session/{jobId}"
+                },
+                {
+                    "screen": "screen_session",
+                    "wait_for": "status=completed",
+                    "transition": "route:/editor/{jobId}"
+                },
+                {
+                    "screen": "screen_editor",
+                    "action": "btn_export",
+                    "transition": "modal:/export"
+                },
+                {
+                    "screen": "screen_export_modal",
+                    "action": "btn_export_confirm",
+                    "transition": "file_dialog:save"
+                }
+            ]
+        },
+        {
+            "id": "flow_record_live",
+            "name": "Record (Live) → Edit → Export",
+            "steps": [
+                {
+                    "screen": "screen_dashboard",
+                    "action": "nav_record"
+                },
+                {
+                    "screen": "screen_record",
+                    "set": {
+                        "live_transcribe": true
+                    },
+                    "action": "btn_record"
+                },
+                {
+                    "screen": "screen_session",
+                    "wait_for": "status=completed",
+                    "transition": "route:/editor/{jobId}"
+                },
+                {
+                    "screen": "screen_editor",
+                    "action": "btn_export"
+                }
+            ]
+        },
+        {
+            "id": "flow_batch",
+            "name": "Batch Queue",
+            "steps": [
+                {
+                    "screen": "screen_dashboard",
+                    "action": "nav_batch"
+                },
+                {
+                    "screen": "screen_batch_queue",
+                    "action": "batch_add"
+                },
+                {
+                    "screen": "screen_batch_queue",
+                    "action": "batch_start"
+                },
+                {
+                    "screen": "screen_batch_history",
+                    "transition": "route:/batch/history"
+                }
+            ]
+        }
+    ],
+    "electron": {
+        "menus": [
+            {
+                "label": "Mac Whisper",
+                "role": "appMenu",
+                "items": [
+                    {
+                        "label": "About Mac Whisper",
+                        "role": "about"
+                    },
+                    {
+                        "type": "separator"
+                    },
+                    {
+                        "label": "Preferences…",
+                        "accelerator": "Cmd+,",
+                        "route": "/settings"
+                    },
+                    {
+                        "type": "separator"
+                    },
+                    {
+                        "label": "Hide Mac Whisper",
+                        "role": "hide"
+                    },
+                    {
+                        "label": "Quit Mac Whisper",
+                        "role": "quit",
+                        "accelerator": "Cmd+Q"
+                    }
+                ]
+            },
+            {
+                "label": "File",
+                "items": [
+                    {
+                        "label": "New Recording",
+                        "accelerator": "Cmd+N",
+                        "route": "/record"
+                    },
+                    {
+                        "label": "Import Files…",
+                        "accelerator": "Cmd+O",
+                        "route": "/import"
+                    },
+                    {
+                        "label": "Export…",
+                        "accelerator": "Cmd+Shift+E",
+                        "action": "open_export_modal"
+                    }
+                ]
+            },
+            {
+                "label": "Edit",
+                "role": "editMenu"
+            },
+            {
+                "label": "View",
+                "items": [
+                    {
+                        "label": "Toggle Sidebar",
+                        "accelerator": "Cmd+Ctrl+S",
+                        "action": "toggle_sidebar"
+                    },
+                    {
+                        "label": "Reload",
+                        "role": "reload"
+                    },
+                    {
+                        "label": "Toggle DevTools",
+                        "role": "toggleDevTools"
+                    },
+                    {
+                        "label": "Actual Size",
+                        "role": "resetZoom"
+                    },
+                    {
+                        "label": "Zoom In",
+                        "role": "zoomIn"
+                    },
+                    {
+                        "label": "Zoom Out",
+                        "role": "zoomOut"
+                    },
+                    {
+                        "label": "Toggle Full Screen",
+                        "role": "togglefullscreen"
+                    }
+                ]
+            },
+            {
+                "label": "Playback",
+                "items": [
+                    {
+                        "label": "Play/Pause",
+                        "accelerator": "Space",
+                        "action": "player_toggle"
+                    },
+                    {
+                        "label": "Jump Back 5s",
+                        "accelerator": "Left",
+                        "action": "player_back_5"
+                    },
+                    {
+                        "label": "Jump Forward 5s",
+                        "accelerator": "Right",
+                        "action": "player_fwd_5"
+                    }
+                ]
+            },
+            {
+                "label": "Transcription",
+                "items": [
+                    {
+                        "label": "Start",
+                        "accelerator": "Cmd+Return",
+                        "action": "session_start"
+                    },
+                    {
+                        "label": "Pause",
+                        "accelerator": "Cmd+.",
+                        "action": "session_pause"
+                    },
+                    {
+                        "label": "Cancel",
+                        "accelerator": "Esc",
+                        "action": "session_cancel"
+                    }
+                ]
+            },
+            {
+                "label": "Window",
+                "role": "windowMenu"
+            },
+            {
+                "label": "Help",
+                "items": [
+                    {
+                        "label": "Keyboard Shortcuts",
+                        "accelerator": "Cmd+/",
+                        "route": "/shortcuts"
+                    },
+                    {
+                        "label": "Open Logs",
+                        "action": "open_logs_dir"
+                    }
+                ]
+            }
+        ],
+        "ipc_channels": [
+            {
+                "channel": "models:list",
+                "direction": "renderer→main",
+                "response": "models:list:result"
+            },
+            {
+                "channel": "models:download",
+                "direction": "renderer→main",
+                "payload": "{modelId}"
+            },
+            {
+                "channel": "jobs:create",
+                "direction": "renderer→main",
+                "payload": "{files[], options}"
+            },
+            {
+                "channel": "jobs:status",
+                "direction": "main→renderer",
+                "payload": "{jobId, progress, state}"
+            },
+            {
+                "channel": "jobs:cancel",
+                "direction": "renderer→main",
+                "payload": "{jobId}"
+            },
+            {
+                "channel": "audio:record:start",
+                "direction": "renderer→main",
+                "payload": "{deviceId, options}"
+            },
+            {
+                "channel": "audio:record:stop",
+                "direction": "renderer→main"
+            },
+            {
+                "channel": "file:saveDialog",
+                "direction": "renderer→main",
+                "response": "file:saveDialog:result"
+            }
+        ],
+        "security": {
+            "contextIsolation": true,
+            "preload": "preload.js",
+            "sandbox": true,
+            "allowlist": [
+                "models:",
+                "jobs:",
+                "audio:",
+                "file:"
+            ]
+        }
+    },
+    "components": [
+        {
+            "name": "AppLogo",
+            "props": {}
+        },
+        {
+            "name": "Stepper",
+            "props": {
+                "current": 0,
+                "steps": []
+            }
+        },
+        {
+            "name": "ModelSelector",
+            "props": {
+                "models": "state.models.available",
+                "value": "state.models.defaultId"
+            }
+        },
+        {
+            "name": "ModelSelectorCompact",
+            "props": {
+                "size": "sm"
+            }
+        },
+        {
+            "name": "DropZone",
+            "props": {
+                "accept": ""
+            }
+        },
+        {
+            "name": "WaveformLive",
+            "props": {
+                "deviceId": "",
+                "levels": true
+            }
+        },
+        {
+            "name": "WaveformStatic",
+            "props": {
+                "src": "",
+                "markers": []
+            }
+        },
+        {
+            "name": "Player",
+            "props": {
+                "src": "",
+                "onTimeUpdate": "dispatch(editor/time)",
+                "playbackRate": 1.0
+            }
+        },
+        {
+            "name": "Timeline",
+            "props": {
+                "segments": "state.editor.segments",
+                "onSeek": "player.seek"
+            }
+        },
+        {
+            "name": "RichEditor",
+            "props": {
+                "value": "state.editor.doc",
+                "onChange": "editor/updateDoc"
+            }
+        },
+        {
+            "name": "SegmentList",
+            "props": {
+                "segments": "state.editor.segments"
+            }
+        },
+        {
+            "name": "FindReplace",
+            "props": {
+                "query": "",
+                "replace": ""
+            }
+        },
+        {
+            "name": "SpeakerTable",
+            "props": {
+                "speakers": "state.editor.speakers"
+            }
+        },
+        {
+            "name": "ShortcutTable",
+            "props": {
+                "bindings": "state.shortcuts"
+            }
+        },
+        {
+            "name": "CardGrid",
+            "props": {
+                "items": "state.models.available"
+            }
+        },
+        {
+            "name": "DirectoryPicker",
+            "props": {
+                "path": ""
+            }
+        }
+    ],
+    "state": {
+        "store": "Zustand (or Redux Toolkit)",
+        "shape": {
+            "ui": {
+                "theme": "system",
+                "sidebarOpen": true,
+                "modals": {}
+            },
+            "models": {
+                "available": [
+                    {
+                        "id": "base",
+                        "name": "Base",
+                        "size": "145MB",
+                        "device": "Auto",
+                        "langs": "Multilingual"
+                    }
+                ],
+                "defaultId": "base",
+                "downloading": {
+                    "modelId": null,
+                    "progress": 0
+                }
+            },
+            "jobs": {
+                "byId": {
+                    "{jobId}": {
+                        "id": "{jobId}",
+                        "title": "Interview with Alice",
+                        "src": "/path/file.wav",
+                        "status": "queued|running|completed|failed|canceled",
+                        "progress": 0,
+                        "options": {
+                            "modelId": "base",
+                            "language": "auto",
+                            "timestamps": true,
+                            "diarization": false,
+                            "translate": false
+                        },
+                        "result": {
+                            "segments": [],
+                            "text": ""
+                        },
+                        "createdAt": 0,
+                        "updatedAt": 0
+                    }
+                },
+                "list": [
+                    "{jobId}"
+                ]
+            },
+            "editor": {
+                "jobId": null,
+                "doc": "<rich-text-json>",
+                "segments": [
+                    {
+                        "id": "s1",
+                        "start": 0.0,
+                        "end": 3.2,
+                        "speaker": "S1",
+                        "text": "Hello"
+                    }
+                ],
+                "speakers": [
+                    {
+                        "id": "S1",
+                        "name": "Speaker 1",
+                        "color": "#a0a0ff"
+                    }
+                ],
+                "selection": {
+                    "segmentId": null,
+                    "cursor": 0
+                }
+            },
+            "batch": {
+                "queue": [],
+                "history": []
+            },
+            "settings": {
+                "defaults": {
+                    "modelId": "base",
+                    "language": "auto",
+                    "timestamps": true,
+                    "diarization": false
+                },
+                "export": {
+                    "template": "{title}-{date}-{lang}",
+                    "dir": ""
+                },
+                "recording": {
+                    "deviceId": null,
+                    "format": "WAV"
+                },
+                "storage": {
+                    "modelsDir": "",
+                    "jobsDir": ""
+                },
+                "privacy": {
+                    "analytics": false
+                }
+            },
+            "shortcuts": {
+                "play_toggle": "Space",
+                "jump_back": "Left",
+                "jump_forward": "Right",
+                "split_segment": "Cmd+K",
+                "find": "Cmd+F"
+            }
+        }
+    },
+    "keyboard_shortcuts": [
+        {
+            "id": "play_toggle",
+            "keys": "Space",
+            "scope": [
+                "editor",
+                "session"
+            ],
+            "action": "player_toggle"
+        },
+        {
+            "id": "jump_back",
+            "keys": "Left",
+            "scope": [
+                "editor"
+            ],
+            "action": "player_back_5"
+        },
+        {
+            "id": "jump_forward",
+            "keys": "Right",
+            "scope": [
+                "editor"
+            ],
+            "action": "player_fwd_5"
+        },
+        {
+            "id": "split_segment",
+            "keys": "Cmd+K",
+            "scope": [
+                "editor"
+            ],
+            "action": "segment_split_at_cursor"
+        },
+        {
+            "id": "find",
+            "keys": "Cmd+F",
+            "scope": [
+                "editor"
+            ],
+            "action": "open_find"
+        },
+        {
+            "id": "export",
+            "keys": "Cmd+Shift+E",
+            "scope": [
+                "editor"
+            ],
+            "action": "open_export_modal"
+        }
+    ],
+    "positioning_rules": [
+        {
+            "id": "global_toolbar",
+            "rules": [
+                {
+                    "target": "primary_action",
+                    "position": "top-right"
+                },
+                {
+                    "target": "secondary_action",
+                    "position": "top-left"
+                }
+            ]
+        },
+        {
+            "id": "editor_layout",
+            "rules": [
+                {
+                    "target": "Player",
+                    "position": "content.top"
+                },
+                {
+                    "target": "Timeline",
+                    "position": "content.top"
+                },
+                {
+                    "target": "RichEditor",
+                    "position": "content.bottom"
+                },
+                {
+                    "target": "SegmentList",
+                    "position": "right_sidebar"
+                }
+            ]
+        }
+    ],
+    "a11y": {
+        "standards": [
+            "WCAG 2.2 AA"
+        ],
+        "practices": [
+            "All interactive elements focusable with visible focus ring",
+            "Player controls have ARIA roles and labels",
+            "Editor supports VoiceOver: segment navigation via rotor",
+            "Color contrast ≥ 4.5:1; do not convey meaning by color alone"
+        ],
+        "shortcuts": [
+            {
+                "label": "Move to next segment",
+                "keys": "Cmd+↓"
+            },
+            {
+                "label": "Move to previous segment",
+                "keys": "Cmd+↑"
+            }
+        ]
+    },
+    "errors_empty_states": [
+        {
+            "id": "no_models",
+            "screen": "screen_dashboard",
+            "ui": {
+                "illustration": "box",
+                "cta": {
+                    "label": "Download a model",
+                    "route": "/models"
+                }
+            }
+        },
+        {
+            "id": "mic_denied",
+            "screen": "screen_record",
+            "ui": {
+                "banner": "Microphone permission denied. Open System Settings → Privacy & Security → Microphone.",
+                "cta": {
+                    "label": "Open Settings",
+                    "action": "open_macos_privacy"
+                }
+            }
+        }
+    ],
+    "telemetry_privacy": {
+        "collect": [
+            "anonymous performance timings",
+            "crash reports (if opt-in)"
+        ],
+        "never_collect": [
+            "audio content",
+            "transcripts",
+            "file paths (unless user opts in)"
+        ],
+        "controls": [
+            "settings.privacy.analytics"
+        ]
+    },
+    "test_scenarios": [
+        {
+            "id": "TS01",
+            "name": "Import single file and transcribe",
+            "flow": "flow_import_to_edit",
+            "expected": "Job completes, editor opens with segments."
+        },
+        {
+            "id": "TS02",
+            "name": "Record live with pause/resume",
+            "flow": "flow_record_live",
+            "expected": "Transcript grows during recording; editor opens on stop."
+        },
+        {
+            "id": "TS03",
+            "name": "Batch five files",
+            "flow": "flow_batch",
+            "expected": "Queue processes sequentially; history populated."
+        },
+        {
+            "id": "TS04",
+            "name": "Export SRT with speakers",
+            "screen": "screen_export_modal",
+            "expected": "SRT saved to chosen directory with labels."
+        }
+    ]
+}

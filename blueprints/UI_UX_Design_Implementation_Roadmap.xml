@@ -1,0 +1,276 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project_plan>
+    <node title="Phase 1.5: UI/UX Design &amp; Desktop Experience" priority="high" status="pending" id="ui-ux-design-phase-001">
+        <comment>This phase addresses the critical UI/UX design foundation for the desktop-first VoiceFlow application. Moving to desktop-first reduces infrastructure costs while allowing us to create a premium, native experience across Windows, Linux, and Mac. This phase must be completed before major development work to ensure consistent, user-centered design throughout the application.</comment>
+        <node title="UX Research &amp; Strategy" priority="high" status="completed" id="ux-research-strategy-002">
+            <comment>COMPLETED. Foundational research complete with comprehensive competitive analysis of MacWhisper documented. Desktop-specific UX requirements fully defined with ROI metrics and success criteria. Strategic gaps identified and exploited in requirements definition.</comment>
+            <node title="Desktop User Journey Mapping" priority="high" status="done" id="desktop-user-journey-003">
+                <comment>DONE. Full competitor flow maps documented in voiceflowpro/MacWhisper_Feature_Analysis. Bottlenecks and upsell moments identified. This is critical for product-market fit.</comment>
+                <node title="New User Onboarding Journey" priority="high" status="in-progress" id="new-user-onboarding-004">
+                    <comment>Define the first-time user experience from download through first successful transcription. Desktop apps have higher friction for initial adoption but users expect more immediate value. Must include app installation, permissions setup, and guided first transcription.</comment>
+                </node>
+                <node title="Daily Power User Workflow" priority="high" status="in-progress" id="power-user-workflow-005">
+                    <comment>Map the experience for users who transcribe multiple files daily. These users drive revenue and retention. Focus on keyboard shortcuts, batch processing, and workflow automation. They need speed and efficiency above all else.</comment>
+                </node>
+                <node title="File Management &amp; Organization Journey" priority="medium" status="in-progress" id="file-management-journey-006">
+                    <comment>Desktop users expect robust file management capabilities. Define how users import, organize, search, and manage their transcription projects. Must integrate naturally with the OS file system and user's existing folder structures.</comment>
+                </node>
+            </node>
+            <node title="Desktop Transcription App Competitive Analysis" priority="high" status="done" id="competitive-ui-analysis-007">
+                <comment>DONE. See detailed findings in voiceflowpro/MacWhisper_Feature_Analysis/*. Key UI patterns and gaps extracted for roadmap. Focus on MacWhisper, Otter.ai desktop, and other native desktop transcription tools.</comment>
+                <node title="MacWhisper UI Pattern Analysis" priority="high" status="done" id="macwhisper-analysis-008">
+                    <comment>DONE. MacWhisper is the leading Mac transcription app. Analysis complete, see voiceflowpro/MacWhisper_Feature_Analysis. Identified native and polished desktop experience patterns.</comment>
+                </node>
+                <node title="Cross-Platform Desktop App UI Patterns" priority="medium" status="in-progress" id="cross-platform-patterns-009">
+                    <comment>Research successful cross-platform desktop apps (Slack, Discord, VS Code) to understand how to maintain platform-specific feel while sharing core UI components. Critical for our Windows/Linux/Mac strategy.</comment>
+                </node>
+                <node title="Desktop vs Web UX Differences Documentation" priority="medium" status="in-progress" id="desktop-web-differences-010">
+                    <comment>Document key differences in user expectations between desktop and web applications. Desktop users expect: offline functionality, faster performance, system integration, keyboard shortcuts, and more sophisticated file handling.</comment>
+                </node>
+            </node>
+            <node title="Desktop-Specific UX Requirements Definition" priority="high" status="completed" id="desktop-ux-requirements-011">
+                <comment>COMPLETED. Comprehensive requirements documented in desktop_ux_requirements_definition.xml. Defines 12 major requirement categories with measurable ROI metrics, success criteria, and implementation priorities. Requirements focus on delivering 10x value over MacWhisper through superior workflow integration, performance, and professional features.</comment>
+                <node title="Offline-First Experience Design" priority="high" status="completed" id="offline-first-design-012">
+                    <comment>COMPLETED. Full offline architecture specified with performance targets: 3-second model loading, 1:1 real-time transcription, 50+ hour batch processing. Includes offline AI processing with local LLMs and 30-day license grace period.</comment>
+                </node>
+                <node title="Native File System Integration" priority="high" status="completed" id="file-system-integration-013">
+                    <comment>COMPLETED. Advanced watch folders with rule-based processing, nested monitoring, and cloud storage integration. System-level integration includes context menus, Quick Look (Mac), shell extensions (Windows), and smart import pipeline handling 50+ formats.</comment>
+                </node>
+                <node title="Keyboard Shortcut Schema" priority="medium" status="completed" id="keyboard-shortcuts-014">
+                    <comment>COMPLETED. Professional modal editing system (command/edit/playback modes) with vim-like efficiency. Customizable hotkey system with preset schemes from pro video editors. Navigation acceleration with jump commands and smart selection.</comment>
+                </node>
+                <node title="Window Management Behavior" priority="medium" status="completed" id="window-management-015">
+                    <comment>COMPLETED. Sophisticated window management with preset workspaces, dockable panels, multi-instance support. Display-aware layouts with automatic adaptation and proper DPI scaling. Professional panel system matching DAW/NLE applications.</comment>
+                </node>
+            </node>
+        </node>
+        <node title="UI Design System &amp; Visual Identity" priority="high" status="pending" id="ui-design-system-016">
+            <comment>Create a cohesive visual design system that works consistently across Windows, Linux, and Mac while feeling native to each platform. This system will guide all UI implementation and ensure consistency throughout development.</comment>
+            <node title="Cross-Platform Design System Architecture" priority="high" status="pending" id="design-system-architecture-017">
+                <comment>Define the component architecture for maintaining consistency across platforms while respecting platform-specific UI conventions. Establish which elements remain consistent (brand colors, typography) and which adapt to platform norms (buttons, menus, dialogs).</comment>
+                <node title="Component Hierarchy Definition" priority="high" status="pending" id="component-hierarchy-018">
+                    <comment>Define the atomic design hierarchy: atoms (buttons, inputs), molecules (file upload areas), organisms (transcription workspace), templates (main app layout), and pages (onboarding screens). This systematic approach ensures reusable, maintainable UI components.</comment>
+                </node>
+                <node title="Platform-Specific Adaptation Rules" priority="high" status="pending" id="platform-adaptation-019">
+                    <comment>Document how UI components adapt to each platform: Windows follows Fluent Design, Mac follows Human Interface Guidelines, Linux follows material design or platform DE guidelines. Critical for native feel on each platform.</comment>
+                </node>
+                <node title="Dark/Light Mode System" priority="medium" status="pending" id="dark-light-mode-020">
+                    <comment>Design comprehensive dark and light themes that integrate with system theme preferences. Desktop users expect theme consistency with their OS. Audio/video editors often prefer dark interfaces for long working sessions.</comment>
+                </node>
+            </node>
+            <node title="Visual Design Elements" priority="high" status="pending" id="visual-design-elements-021">
+                <comment>Create the visual identity elements that will make VoiceFlow distinctive and professional. These elements must work well in a desktop environment and convey trust and efficiency.</comment>
+                <node title="Color Palette &amp; Usage Guidelines" priority="high" status="pending" id="color-palette-022">
+                    <comment>Define primary, secondary, and semantic colors with specific usage guidelines. Consider accessibility requirements (WCAG contrast ratios) and how colors appear on different monitor types. Include colors for different transcription states (processing, completed, error).</comment>
+                </node>
+                <node title="Typography Scale &amp; Hierarchy" priority="high" status="pending" id="typography-scale-023">
+                    <comment>Define font families, sizes, and hierarchy for desktop application. Must be highly readable for long-form transcript text. Consider both system fonts for UI elements and optimized fonts for transcript display. Include line spacing for readability during editing.</comment>
+                </node>
+                <node title="Icon Library &amp; Metaphor System" priority="medium" status="pending" id="icon-library-024">
+                    <comment>Create or curate icon set that clearly communicates functionality. Focus on transcription-specific icons: microphone states, file types, export formats, editing tools. Icons must be crisp at different display densities (regular and high-DPI displays).</comment>
+                </node>
+                <node title="Animation &amp; Transition Principles" priority="medium" status="pending" id="animation-principles-025">
+                    <comment>Define subtle animations that enhance desktop app feel: loading states during transcription, smooth transitions between sections, hover states. Desktop users expect responsive feedback but not web-style animations that feel out of place.</comment>
+                </node>
+            </node>
+        </node>
+        <node title="Core User Flow Design" priority="high" status="pending" id="core-user-flows-026">
+            <comment>Design the detailed user interactions for primary application workflows. These flows directly impact user satisfaction and conversion rates. Each flow must be optimized for desktop interaction patterns and efficiency.</comment>
+            <node title="Application Launch &amp; Onboarding Flow" priority="high" status="pending" id="app-launch-onboarding-027">
+                <comment>Design the critical first experience that determines user activation and long-term engagement. Desktop apps have different onboarding constraints than web - users have already committed to downloading and installing, so they expect immediate value.</comment>
+                <node title="First Launch Setup Wizard" priority="high" status="pending" id="first-launch-wizard-028">
+                    <comment>Design minimal setup process: microphone permissions, audio quality preferences, and default export location. Keep it under 3 screens to avoid abandonment. Include option to skip and configure later for impatient users.</comment>
+                </node>
+                <node title="Welcome Screen &amp; Quick Start Guide" priority="medium" status="pending" id="welcome-quick-start-029">
+                    <comment>Create an engaging welcome screen that immediately shows how to get started. Include drag-and-drop hint, sample file option, or record-now button. Desktop users want to jump straight into functionality testing.</comment>
+                </node>
+                <node title="Progressive Feature Discovery" priority="medium" status="pending" id="progressive-discovery-030">
+                    <comment>Design system for introducing advanced features over time without overwhelming new users. Use contextual tooltips and progressive disclosure rather than traditional tutorials. Show features when they become relevant to user's workflow.</comment>
+                </node>
+            </node>
+            <node title="File Import &amp; Processing Flow" priority="high" status="pending" id="file-import-flow-031">
+                <comment>Design the core workflow where users get their audio files into the application. This flow must feel effortless and support various input methods that desktop users expect.</comment>
+                <node title="Multi-Modal File Import Design" priority="high" status="pending" id="multi-modal-import-032">
+                    <comment>Support multiple import methods: drag-and-drop anywhere in the app, traditional file picker, paste from clipboard, and recent files quick access. Desktop users expect flexibility in how they interact with files.</comment>
+                </node>
+                <node title="Batch Processing Queue Interface" priority="medium" status="pending" id="batch-processing-queue-033">
+                    <comment>Design interface for handling multiple files simultaneously. Show progress for each file, allow reordering, and provide clear status indicators. Power users often need to process multiple recordings from meetings or interviews.</comment>
+                </node>
+                <node title="File Format Support &amp; Error Handling" priority="medium" status="pending" id="file-format-error-handling-034">
+                    <comment>Design clear feedback for supported/unsupported formats with helpful guidance. Include format conversion suggestions and links to help documentation. Prevent user frustration with unclear error states.</comment>
+                </node>
+            </node>
+            <node title="Transcription Workspace Design" priority="high" status="pending" id="transcription-workspace-035">
+                <comment>Design the main working interface where users spend most of their time. This interface must balance information density with clarity, supporting both quick reviews and detailed editing sessions.</comment>
+                <node title="Audio Player &amp; Transcript Synchronization" priority="high" status="pending" id="audio-transcript-sync-036">
+                    <comment>Design the integrated audio player with transcript synchronization. Users should be able to click any word to jump to that audio position. Include playback speed controls, keyboard shortcuts, and visual indicators of current position in both audio and text.</comment>
+                </node>
+                <node title="Transcript Editing Interface" priority="high" status="pending" id="transcript-editing-037">
+                    <comment>Design in-place editing capabilities with confidence indicators for each word/phrase. Include features like: click-to-edit, confidence color coding, spell check, and undo/redo. Must feel as responsive as a native text editor.</comment>
+                </node>
+                <node title="Search &amp; Navigation Within Transcript" priority="medium" status="pending" id="transcript-search-navigation-038">
+                    <comment>Design search functionality that works within long transcripts. Include features like: find and replace, jump to timestamps, bookmark important sections, and navigation history. Essential for working with hour-long recordings.</comment>
+                </node>
+                <node title="Multi-Document Workspace" priority="medium" status="pending" id="multi-document-workspace-039">
+                    <comment>Design interface for working with multiple transcripts simultaneously. Support tabs or panels for comparing transcripts, copying sections between documents, and maintaining context when switching between projects.</comment>
+                </node>
+            </node>
+            <node title="Export &amp; Sharing Flow" priority="high" status="pending" id="export-sharing-flow-040">
+                <comment>Design the workflow for getting transcripts out of the application in various formats. This flow often determines whether users see enough value to continue using the product.</comment>
+                <node title="Export Options Interface" priority="high" status="pending" id="export-options-interface-041">
+                    <comment>Design clear export dialog with format previews, customization options, and quality settings. Include popular formats (SRT, PDF, DOCX, TXT) with format-specific options like timestamp inclusion, speaker labels, and formatting choices.</comment>
+                </node>
+                <node title="Quick Export Shortcuts" priority="medium" status="pending" id="quick-export-shortcuts-042">
+                    <comment>Design one-click export options for common use cases. Include toolbar buttons for "Export as PDF", "Copy to Clipboard", and "Save as SRT". Reduce friction for repeat users who have established workflows.</comment>
+                </node>
+                <node title="Cloud Integration Export Flow" priority="medium" status="pending" id="cloud-integration-export-043">
+                    <comment>Design export flow for sending transcripts directly to cloud services (Google Drive, Dropbox, OneDrive). Include authentication flow, destination folder selection, and confirmation feedback. Enables seamless workflow integration.</comment>
+                </node>
+            </node>
+        </node>
+        <node title="Desktop-Specific UI Implementation" priority="high" status="pending" id="desktop-ui-implementation-044">
+            <comment>Address the unique implementation requirements for creating native-feeling desktop applications. These elements distinguish professional desktop software from web applications and significantly impact user perception of quality.</comment>
+            <node title="Native Desktop Integration Features" priority="high" status="pending" id="native-integration-045">
+                <comment>Implement features that make the application feel integrated with the desktop environment. These features create stickiness and improve daily workflow integration for users.</comment>
+                <node title="System Tray Integration" priority="medium" status="pending" id="system-tray-integration-046">
+                    <comment>Design system tray icon with context menu for quick actions: start recording, open recent file, check transcription progress. Allows users to access functionality without opening main window. Especially valuable for background transcription processing.</comment>
+                </node>
+                <node title="File Association &amp; Context Menus" priority="medium" status="pending" id="file-association-context-047">
+                    <comment>Register application to handle audio file types and add context menu items to OS file managers. Users should be able to right-click an audio file and select "Transcribe with VoiceFlow". Improves workflow integration and discoverability.</comment>
+                </node>
+                <node title="Desktop Notifications" priority="medium" status="pending" id="desktop-notifications-048">
+                    <comment>Design notification system for transcription completion, errors, and progress updates. Notifications should be informative but not intrusive, with options to disable. Include click-to-open-result functionality.</comment>
+                </node>
+                <node title="Auto-Update Mechanism UI" priority="medium" status="pending" id="auto-update-ui-049">
+                    <comment>Design user-friendly update notification and installation process. Include release notes preview, update scheduling options, and clear progress indication. Ensures users always have latest features and security updates.</comment>
+                </node>
+            </node>
+            <node title="Cross-Platform Consistency Management" priority="high" status="pending" id="cross-platform-consistency-050">
+                <comment>Ensure the application provides consistent functionality across Windows, Linux, and Mac while respecting platform-specific conventions. This balance is critical for brand consistency and user comfort.</comment>
+                <node title="Platform-Specific Menu Bar Design" priority="medium" status="pending" id="platform-menu-design-051">
+                    <comment>Design menu structures that follow each platform's conventions: Windows ribbon-style menus, Mac top menu bar, Linux application menus. Same functionality, platform-appropriate presentation. Include standard keyboard shortcuts for each platform.</comment>
+                </node>
+                <node title="Dialog &amp; Modal Design Standards" priority="medium" status="pending" id="dialog-modal-standards-052">
+                    <comment>Create dialog box designs that match platform expectations: button ordering (OK/Cancel vs Cancel/OK), default focus behavior, and keyboard navigation. Users expect dialogs to behave according to their OS conventions.</comment>
+                </node>
+                <node title="Accessibility &amp; Keyboard Navigation" priority="medium" status="pending" id="accessibility-keyboard-nav-053">
+                    <comment>Implement comprehensive keyboard navigation and screen reader support. Essential for accessibility compliance and power user efficiency. Include focus indicators, tab order, and ARIA labels for complex UI elements.</comment>
+                </node>
+            </node>
+        </node>
+        <node title="Prototyping &amp; Design Validation" priority="high" status="pending" id="prototyping-validation-054">
+            <comment>Create and test design concepts before development to reduce costly changes later. Validation with real users ensures the design actually solves their problems effectively.</comment>
+            <node title="Interactive Prototype Development" priority="high" status="pending" id="interactive-prototype-055">
+                <comment>Build clickable prototypes of core user flows to test interaction patterns and information architecture before development. Use tools like Figma, Principle, or Adobe XD to create realistic interactions.</comment>
+                <node title="Core Flow Prototypes" priority="high" status="pending" id="core-flow-prototypes-056">
+                    <comment>Create interactive prototypes for: file import flow, transcription workspace, and export process. These are the most critical user experiences that determine product success. Include realistic content and timing.</comment>
+                </node>
+                <node title="Cross-Platform Prototype Variations" priority="medium" status="pending" id="cross-platform-prototypes-057">
+                    <comment>Create platform-specific prototype variations to test how design adaptations feel on Windows, Mac, and Linux. Ensures design decisions work well across all target platforms before development.</comment>
+                </node>
+                <node title="Responsive Layout Prototypes" priority="medium" status="pending" id="responsive-layout-prototypes-058">
+                    <comment>Test layout behavior at different window sizes and screen resolutions. Desktop users resize windows frequently, and the interface must remain functional and attractive at various dimensions.</comment>
+                </node>
+            </node>
+            <node title="User Testing &amp; Feedback Integration" priority="high" status="pending" id="user-testing-feedback-059">
+                <comment>Test prototypes with target users to validate design decisions before implementation. Early testing prevents expensive redesigns and ensures user-centered design outcomes.</comment>
+                <node title="Moderated Usability Testing Sessions" priority="high" status="pending" id="usability-testing-sessions-060">
+                    <comment>Conduct 8-10 moderated usability tests with target users (content creators, journalists, researchers) using interactive prototypes. Focus on task completion rates, error points, and satisfaction with key workflows. Record sessions for detailed analysis.</comment>
+                </node>
+                <node title="A/B Test Key Design Decisions" priority="medium" status="pending" id="ab-test-design-decisions-061">
+                    <comment>Test alternative approaches for critical design decisions: onboarding flow variations, export dialog layouts, transcription workspace arrangements. Use quantitative metrics to validate design choices.</comment>
+                </node>
+                <node title="Design Iteration Based on Feedback" priority="high" status="pending" id="design-iteration-feedback-062">
+                    <comment>Systematically incorporate testing feedback into design iterations. Prioritize changes based on frequency of user issues and impact on core user goals. Document design decisions and rationale for development team.</comment>
+                </node>
+            </node>
+        </node>
+        <node title="Design-to-Development Handoff" priority="high" status="pending" id="design-dev-handoff-063">
+            <comment>Create comprehensive design documentation and assets that enable efficient development implementation. Poor handoff documentation leads to implementation delays, inconsistencies, and developer frustration.</comment>
+            <node title="Design Documentation &amp; Specifications" priority="high" status="pending" id="design-documentation-064">
+                <comment>Create detailed design specifications that developers can implement without constant clarification. Include measurements, interactions, states, and edge cases to minimize development ambiguity.</comment>
+                <node title="Component Specification Library" priority="high" status="pending" id="component-spec-library-065">
+                    <comment>Document every UI component with specifications: dimensions, spacing, typography, colors, states (default, hover, active, disabled), and interaction behaviors. Include code-friendly naming conventions and CSS custom properties.</comment>
+                </node>
+                <node title="User Flow Implementation Guides" priority="medium" status="pending" id="user-flow-implementation-066">
+                    <comment>Create step-by-step implementation guides for complex user flows. Include state management requirements, validation rules, error handling approaches, and transition specifications. Reduces developer interpretation errors.</comment>
+                </node>
+                <node title="Cross-Platform Implementation Notes" priority="medium" status="pending" id="cross-platform-implementation-067">
+                    <comment>Document platform-specific implementation requirements and constraints. Include native component mappings, platform-specific interaction patterns, and technical considerations for Electron-based development.</comment>
+                </node>
+            </node>
+            <node title="Design Asset Organization &amp; Delivery" priority="medium" status="pending" id="design-asset-delivery-068">
+                <comment>Organize and deliver design assets in formats that streamline development implementation. Well-organized assets reduce development time and improve implementation fidelity.</comment>
+                <node title="Exportable Asset Library" priority="medium" status="pending" id="exportable-asset-library-069">
+                    <comment>Create library of exportable assets: icons in multiple formats (SVG, PNG), images at multiple resolutions, and color palettes in developer-friendly formats (CSS custom properties, JSON). Organize by component and screen.</comment>
+                </node>
+                <node title="Design Token System" priority="medium" status="pending" id="design-token-system-070">
+                    <comment>Implement design token system for consistent spacing, colors, typography, and sizing across the application. Export tokens in formats compatible with CSS-in-JS, SCSS, and other styling approaches the development team will use.</comment>
+                </node>
+            </node>
+        </node>
+        <node title="Competitive Differentiation Roadmap" priority="high" status="pending" id="diff-roadmap-001">
+            <comment>Built from MacWhisper analysis (see voiceflowpro/MacWhisper_Feature_Analysis). Focus on shipping production value that surpasses parity.</comment>
+            <node title="M1 (2 weeks) — Ship Value Now" priority="high" status="pending" id="diff-m1-002">
+                <node title="YouTube/URL Ingest MVP" priority="high" status="pending" id="m1-youtube-001">
+                    <comment>Implement robust URL ingest using yt-dlp with fallback, auto language detection, and progress UI.</comment>
+                    <node title="Acceptance Criteria" priority="high" status="pending" id="m1-youtube-acc-001">
+                        <comment>- Paste YouTube/Vimeo URL and receive a transcript.
+- Handle age-restricted and redirected URLs via fallback.
+- Errors surfaced with actionable remediation.
+- Supports auto language detection and correct model selection.</comment>
+                    </node>
+                </node>
+                <node title="AI Summary + Chapters (One-click Recipe)" priority="high" status="pending" id="m1-ai-recipe-002">
+                    <comment>One-click action: Transcribe → Summarize → Generate Chapters + Action Items with editable prompt templates.</comment>
+                    <node title="Acceptance Criteria" priority="high" status="pending" id="m1-ai-recipe-acc-002">
+                        <comment>- Single button produces TL;DR, chapters (timestamps), action items.
+- User can customize prompts; defaults provided.
+- Outputs included in export formats.</comment>
+                    </node>
+                </node>
+                <node title="Batch Turbo (Parallel + Resume)" priority="high" status="pending" id="m1-batch-003">
+                    <comment>Parallelize batch jobs with per-file status, error isolation, and resumable queues.</comment>
+                    <node title="Acceptance Criteria" priority="high" status="pending" id="m1-batch-acc-003">
+                        <comment>- Run N files concurrently based on CPU/cores.
+- Failed files can be retried without restarting entire batch.
+- ETA and cost/time estimates shown.</comment>
+                    </node>
+                </node>
+                <node title="Export V1 (Markdown, SRT/VTT, JSON)" priority="medium" status="pending" id="m1-export-004">
+                    <comment>Ship essential exports with clean formatting, chapters, and action items when available.</comment>
+                    <node title="Acceptance Criteria" priority="medium" status="pending" id="m1-export-acc-004">
+                        <comment>- Markdown with headings, chapters, action items.
+- SRT/VTT with accurate timestamps.
+- JSON with segments, speakers (if present), chapters.</comment>
+                    </node>
+                </node>
+            </node>
+            <node title="M2 (4–6 weeks) — Differentiators" priority="high" status="pending" id="diff-m2-003">
+                <node title="Smart Auto Model/Provider Selector" priority="high" status="pending" id="m2-automodel-001">
+                    <comment>Automatically choose best local/cloud model given duration, language, hardware, and accuracy target. User can override.</comment>
+                </node>
+                <node title="On-device Speaker Diarization + Highlights" priority="high" status="pending" id="m2-diarization-002">
+                    <comment>Accurate speaker splits with VAD; AI extracts highlights and speaker-specific action items. Privacy-first, offline default.</comment>
+                </node>
+                <node title="Watch Folders 2.0 (Rules)" priority="medium" status="pending" id="m2-watch-003">
+                    <comment>Per-folder rules: model/provider, language, output format, naming, and post-process recipes.</comment>
+                </node>
+                <node title="AI Prompt Recipes Library" priority="medium" status="pending" id="m2-recipes-004">
+                    <comment>Curated, shareable recipes (meeting notes, podcast show notes, research summary) with token budgeting and guardrails.</comment>
+                </node>
+            </node>
+            <node title="M3 (6–10 weeks) — Growth &amp; Integrations" priority="medium" status="pending" id="diff-m3-004">
+                <node title="System Audio Capture Wizard" priority="medium" status="pending" id="m3-audio-wizard-001">
+                    <comment>Guided setup for virtual device, permissions, and per-app capture with QA checks.</comment>
+                </node>
+                <node title="Editor Inline AI Actions" priority="medium" status="pending" id="m3-editor-ai-002">
+                    <comment>Inline rewrite, translate, timestamp align, filler removal with granular undo and cost preview.</comment>
+                </node>
+                <node title="Integrations: Notion, Obsidian, Slack" priority="medium" status="pending" id="m3-integrations-003">
+                    <comment>One-click export/connectors with auth, mapping, and rate-limit aware background jobs.</comment>
+                </node>
+            </node>
+        </node>
+    </node>
+</project_plan>

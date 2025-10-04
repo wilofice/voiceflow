@@ -280,22 +280,10 @@ export class WhisperServerService {
     options: WhisperOptions
   ): Promise<string[]> {
     const model = options.model || this.config.defaultModel;
-    const modelPath = path.join(this.config.modelsPath, `ggml-${model}.bin`);
-
-    // Check if model exists
-    try {
-      await fs.access(modelPath);
-    } catch {
-      throw new Error(`Model not found: ${model}. Path: ${modelPath}`);
-    }
-
     const command = [
       this.config.whisperBinaryPath,
-      '--model', modelPath,
-      '--file', filePath,
-      '--threads', (options.threads || os.cpus().length).toString(),
-      '--output-format', 'json', // Always use JSON for parsing
-      '--print-progress',
+      '--model', model,
+      '--output_format', 'json', // Always use JSON for parsing
     ];
 
     // Add optional parameters
@@ -304,11 +292,11 @@ export class WhisperServerService {
     }
 
     if (options.task === 'translate') {
-      command.push('--translate');
+      command.push('--task', 'translate');
     }
 
     if (options.wordTimestamps) {
-      command.push('--word-timestamps');
+      command.push('--word_timestamps');
     }
 
     if (options.temperature !== undefined) {
@@ -320,12 +308,15 @@ export class WhisperServerService {
     }
 
     if (options.noSpeech !== undefined) {
-      command.push('--no-speech-threshold', options.noSpeech.toString());
+      command.push('--no_speech_threshold', options.noSpeech.toString());
     }
 
     if (options.logLevel !== undefined) {
-      command.push('--log-level', options.logLevel.toString());
+      command.push('--verbose', options.logLevel.toString());
     }
+
+    // Add the audio file as a positional argument at the end
+    command.push(filePath);
 
     return command;
   }
@@ -473,9 +464,7 @@ export class WhisperServerService {
    */
   private findWhisperBinary(): string {
     const possiblePaths = [
-      '/opt/whisper/whisper',
-      '/usr/local/bin/whisper',
-      '/usr/bin/whisper',
+      '/Users/galahassa/.local/bin/whisper',
       path.join(os.homedir(), '.local/share/whisper/whisper'),
       path.join(process.cwd(), 'whisper'),
       'whisper' // In PATH

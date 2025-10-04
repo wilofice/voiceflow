@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Build script for compiling whisper.cpp to WebAssembly
-# This script builds an optimized WASM version with audio processing support
+# This script uses the existing CMake build system for WebAssembly
 
 set -e
 
@@ -9,6 +9,7 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 PROJECT_ROOT="$SCRIPT_DIR/../.."
 WHISPER_DIR="$PROJECT_ROOT/libs/whisper.cpp"
 OUTPUT_DIR="$PROJECT_ROOT/apps/web/public/wasm"
+BUILD_DIR="$PROJECT_ROOT/build-wasm"
 
 echo "🔨 Building Whisper.cpp WebAssembly module..."
 
@@ -21,125 +22,59 @@ if ! command -v emcc &> /dev/null; then
     exit 1
 fi
 
+# Create directories
+mkdir -p "$OUTPUT_DIR"
+mkdir -p "$BUILD_DIR"
+
+# Go to whisper.cpp directory
 cd "$WHISPER_DIR"
 
-# Build flags optimized for web usage
-BUILD_FLAGS=(
-    # Optimization flags
-    -O3                          # Maximum optimization
-    -s WASM=1                    # Build as WASM
-    -s ALLOW_MEMORY_GROWTH=1     # Allow memory to grow as needed
-    -s MAXIMUM_MEMORY=4GB        # Set max memory (for large models)
-    -s INITIAL_MEMORY=256MB      # Initial memory allocation
-    
-    # Audio processing support
-    -s AUDIO_WORKLET=1           # Enable Audio Worklet API
-    -s WASM_WORKERS=1            # Enable Web Workers in WASM
-    
-    # File system support
-    -s FORCE_FILESYSTEM=1        # Include file system support
-    
-    # Export functions
-    -s EXPORTED_FUNCTIONS='[
-        "_whisper_init_from_buffer",
-        "_whisper_init_from_file",
-        "_whisper_free",
-        "_whisper_full",
-        "_whisper_full_parallel",
-        "_whisper_full_n_segments",
-        "_whisper_full_get_segment_t0",
-        "_whisper_full_get_segment_t1",
-        "_whisper_full_get_segment_text",
-        "_whisper_full_get_segment_speaker",
-        "_whisper_full_get_segment_speaker_turn_next",
-        "_whisper_pcm_to_mel",
-        "_whisper_set_mel",
-        "_whisper_encode",
-        "_whisper_decode",
-        "_whisper_tokenize",
-        "_whisper_lang_id",
-        "_whisper_lang_str",
-        "_whisper_lang_auto_detect",
-        "_whisper_n_len",
-        "_whisper_n_vocab",
-        "_whisper_n_text_ctx",
-        "_whisper_n_audio_ctx",
-        "_whisper_is_multilingual",
-        "_whisper_print_timings",
-        "_whisper_reset_timings",
-        "_malloc",
-        "_free"
-    ]'
-    
-    # Runtime methods
-    -s EXPORTED_RUNTIME_METHODS='[
-        "ccall",
-        "cwrap",
-        "FS",
-        "setValue",
-        "getValue",
-        "UTF8ToString",
-        "stringToUTF8",
-        "lengthBytesUTF8"
-    ]'
-    
-    # Threading support (for parallel processing)
-    -pthread
-    -s PTHREAD_POOL_SIZE=4
-    
-    # SIMD support for better performance
-    -msimd128
-    
-    # Debugging (remove in production)
-    # -s ASSERTIONS=1
-    # -s SAFE_HEAP=1
-    # -g
-)
+echo "📦 Building with CMake and Emscripten..."
 
-# Create output directory if it doesn't exist
-mkdir -p "$OUTPUT_DIR"
+# Clean previous build
+rm -rf "$BUILD_DIR"
+mkdir -p "$BUILD_DIR"
+cd "$BUILD_DIR"
 
-echo "📦 Compiling whisper.wasm..."
+# Configure with Emscripten
+emcmake cmake "$WHISPER_DIR" \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DWHISPER_WASM=ON \
+    -DBUILD_SHARED_LIBS=OFF \
+    -DWHISPER_BUILD_TESTS=OFF \
+    -DWHISPER_BUILD_EXAMPLES=ON
 
-# This command uses Emscripten (emcc) to compile C++ code (whisper.cpp) into JavaScript (or WebAssembly)
-# so it can run in a web browser or JavaScript environment.
-#
-# Here's a breakdown:
-#   emcc: The Emscripten C/C++ compiler. It translates C/C++ code into JavaScript or WebAssembly.
-#   "${BUILD_FLAGS[@]}": An array of additional build flags (like optimization, defines, etc.) passed to the compiler.
-#   -I.: Adds the current directory to the list of directories to search for header files.
-#   -I./examples: Adds the ./examples directory to the header search path.
-#   whisper.cpp: The main C++ source file to compile.
-#   -o "$OUTPUT_DIR/whisper.js": Sets the output file to whisper.js in the specified output directory.
-#       This will be the JavaScript "glue" code (and possibly a .wasm file) that allows the compiled C++ code to run in the browser.
-#
-# Gotcha:
-#   - Make sure all dependencies and headers are accessible via the -I flags.
-#   - The output will be JavaScript (and possibly WebAssembly), not a native binary.
-#
-# Summary:
-#   This command compiles whisper.cpp for the web using Emscripten, producing JavaScript/WebAssembly output.
+# Build the project
+emmake make -j4
 
-# Compile the main whisper library
-emcc \
-    "${BUILD_FLAGS[@]}" \
-    -I. \
-    -I./examples \
-    whisper.cpp \
-    -o "$OUTPUT_DIR/whisper.js"
+echo "📦 Copying WASM files to output directory..."
 
-# Build the stream example (for real-time processing)
-# At this point, we are compiling the streaming example (examples/stream/stream.cpp) together with whisper.cpp.
-# This produces a separate JavaScript/WebAssembly module (whisper-stream.js/whisper-stream.wasm) that is optimized
-# for real-time audio processing scenarios, such as live transcription or streaming audio input.
-echo "📦 Compiling whisper-stream.wasm..."
-emcc \
-    "${BUILD_FLAGS[@]}" \
-    -I. \
-    -I./examples \
-    examples/stream/stream.cpp \
-    whisper.cpp \
-    -o "$OUTPUT_DIR/whisper-stream.js"
+# Copy the built files to our output directory
+if [ -f "bin/libmain.js" ]; then
+    cp bin/libmain.js "$OUTPUT_DIR/whisper.js"
+    echo "✅ Copied whisper.js"
+fi
+
+if [ -f "bin/libmain.wasm" ]; then
+    cp bin/libmain.wasm "$OUTPUT_DIR/whisper.wasm"
+    echo "✅ Copied whisper.wasm"
+fi
+
+# If the above files don't exist, try alternative locations
+if [ ! -f "$OUTPUT_DIR/whisper.js" ]; then
+    # Look for other possible output files
+    find "$BUILD_DIR" -name "*.js" -type f | head -1 | while read js_file; do
+        cp "$js_file" "$OUTPUT_DIR/whisper.js"
+        echo "✅ Copied $(basename $js_file) as whisper.js"
+    done
+fi
+
+if [ ! -f "$OUTPUT_DIR/whisper.wasm" ]; then
+    find "$BUILD_DIR" -name "*.wasm" -type f | head -1 | while read wasm_file; do
+        cp "$wasm_file" "$OUTPUT_DIR/whisper.wasm"
+        echo "✅ Copied $(basename $wasm_file) as whisper.wasm"
+    done
+fi
 
 # Create a wrapper module for easier integration
 cat > "$OUTPUT_DIR/whisper-module.js" << 'EOF'
