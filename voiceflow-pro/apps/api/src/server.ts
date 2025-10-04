@@ -3,6 +3,7 @@ import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import multipart from '@fastify/multipart';
 import rateLimit from '@fastify/rate-limit';
+import fastifyJwt from '@fastify/jwt';
 
 // Routes
 import { authRoutes } from './routes/auth';
@@ -29,6 +30,10 @@ const server = Fastify({
 
 async function start() {
   try {
+    if (!process.env.JWT_SECRET) {
+      throw new Error('Missing JWT_SECRET environment variable');
+    }
+
     // Register plugins
     await server.register(cors, {
       origin: process.env.NODE_ENV === 'development' 
@@ -47,6 +52,10 @@ async function start() {
     await server.register(rateLimit, {
       max: parseInt(process.env.RATE_LIMIT_MAX || '100'),
       timeWindow: process.env.RATE_LIMIT_WINDOW || '15 minutes',
+    });
+
+    await server.register(fastifyJwt, {
+      secret: process.env.JWT_SECRET,
     });
 
     // Initialize Supabase storage bucket

@@ -5,6 +5,102 @@ import { prisma } from '@voiceflow-pro/database';
 import { authenticate, AuthenticatedRequest } from '../middleware/auth';
 import { supabaseAdmin } from '../lib/supabase';
 
+const DEFAULT_ACCESS_TOKEN_TTL_SECONDS = 60 * 60; // 1 hour
+const DEFAULT_REFRESH_TOKEN_TTL_SECONDS = 60 * 60 * 24 * 30; // 30 days
+
+export function parseDurationToSeconds(value: string | undefined | null, defaultSeconds: number): number {
+  if (!value) {
+    return defaultSeconds;
+  }
+
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return defaultSeconds;
+  }
+
+  if (/^\d+$/.test(trimmed)) {
+    return Number(trimmed);
+  }
+
+  const match = trimmed.match(/^(\d+)([smhd])$/i);
+  if (!match) {
+    return defaultSeconds;
+  }
+
+  const amount = Number(match[1]);
+  const unit = match[2].toLowerCase();
+
+  switch (unit) {
+    case 's':
+      return amount;
+    case 'm':
+      return amount * 60;
+    case 'h':
+      return amount * 60 * 60;
+    case 'd':
+      return amount * 60 * 60 * 24;
+    default:
+      return defaultSeconds;
+  }
+}
+
+const ACCESS_TOKEN_TTL_SECONDS = parseDurationToSeconds(
+  process.env.JWT_ACCESS_TOKEN_TTL ?? '1h',
+  DEFAULT_ACCESS_TOKEN_TTL_SECONDS
+);
+
+const REFRESH_TOKEN_TTL_SECONDS = parseDurationToSeconds(
+  process.env.JWT_REFRESH_TOKEN_TTL ?? process.env.JWT_EXPIRES_IN ?? '30d',
+  DEFAULT_REFRESH_TOKEN_TTL_SECONDS
+);
+
+export interface AuthenticatedUserRecord {
+  id: string;
+  email: string;
+  name: string;
+  subscriptionTier: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+export function serializeUser(user: AuthenticatedUserRecord) {
+  return {
+    ...user,
+    createdAt: user.createdAt instanceof Date ? user.createdAt.toISOString() : user.createdAt,
+    updatedAt: user.updatedAt instanceof Date ? user.updatedAt.toISOString() : user.updatedAt,
+  };
+}
+
+export function generateAuthTokens(fastify: FastifyInstance, user: AuthenticatedUserRecord) {
+  const accessToken = fastify.jwt.sign(
+    {
+      sub: user.id,
+      email: user.email,
+      name: user.name,
+      type: 'access',
+    },
+    {
+      expiresIn: ACCESS_TOKEN_TTL_SECONDS,
+    }
+  );
+
+  const refreshToken = fastify.jwt.sign(
+    {
+      sub: user.id,
+      type: 'refresh',
+    },
+    {
+      expiresIn: REFRESH_TOKEN_TTL_SECONDS,
+    }
+  );
+
+  return {
+    accessToken,
+    refreshToken,
+    expiresAt: Date.now() + ACCESS_TOKEN_TTL_SECONDS * 1000,
+  };
+}
+
 const registerSchema = z.object({
   email: z.string().email(),
   password: z.string().min(8),
@@ -23,6 +119,10 @@ const resetPasswordSchema = z.object({
 const updatePasswordSchema = z.object({
   token: z.string(),
   password: z.string().min(8),
+});
+
+const refreshTokenSchema = z.object({
+  refreshToken: z.string(),
 });
 
 export async function authRoutes(fastify: FastifyInstance) {
@@ -67,13 +167,7 @@ export async function authRoutes(fastify: FastifyInstance) {
       const userId = supabaseUser.id;
 
       // Create user in our database
-      let user: {
-        id: string;
-        email: string;
-        name: string;
-        subscriptionTier: string;
-        createdAt: Date;
-      };
+      let user: AuthenticatedUserRecord;
       try {
         user = await prisma.user.create({
           data: {
@@ -88,6 +182,7 @@ export async function authRoutes(fastify: FastifyInstance) {
             name: true,
             subscriptionTier: true,
             createdAt: true,
+            updatedAt: true,
           },
         });
       } catch (error) {
@@ -109,20 +204,9 @@ export async function authRoutes(fastify: FastifyInstance) {
         throw error;
       }
 
-      // Get session token
-      const { data: sessionData, error: sessionError } = await supabaseAdmin.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (sessionError || !sessionData.session) {
-        throw sessionError || new Error('Failed to create session');
-      }
-
       return reply.send({
-        user,
-        token: sessionData.session.access_token,
-        refreshToken: sessionData.session.refresh_token,
+        user: serializeUser(user),
+        tokens: generateAuthTokens(fastify, user),
       });
     } catch (error) {
       fastify.log.error(error, 'Registration failed');
@@ -163,8 +247,10 @@ export async function authRoutes(fastify: FastifyInstance) {
           email: true,
           name: true,
           subscriptionTier: true,
+          createdAt: true,
+          updatedAt: true,
         },
-      });
+      }) as AuthenticatedUserRecord | null;
 
       // Create user if they don't exist (e.g., created through Supabase dashboard)
       if (!user) {
@@ -180,14 +266,15 @@ export async function authRoutes(fastify: FastifyInstance) {
             email: true,
             name: true,
             subscriptionTier: true,
+            createdAt: true,
+            updatedAt: true,
           },
         });
       }
 
       return reply.send({
-        user,
-        token: sessionData.session.access_token,
-        refreshToken: sessionData.session.refresh_token,
+        user: serializeUser(user),
+        tokens: generateAuthTokens(fastify, user),
       });
     } catch (error) {
       fastify.log.error(error, 'Login failed');
@@ -195,6 +282,56 @@ export async function authRoutes(fastify: FastifyInstance) {
         error: {
           code: 'LOGIN_FAILED',
           message: 'Failed to login',
+        },
+      });
+    }
+  });
+
+  fastify.post('/refresh', async (request: FastifyRequest, reply: FastifyReply) => {
+    const { refreshToken } = refreshTokenSchema.parse(request.body);
+
+    try {
+      const payload = await fastify.jwt.verify<{ sub: string; type: 'access' | 'refresh' }>(refreshToken);
+
+      if (payload.type !== 'refresh') {
+        return reply.status(401).send({
+          error: {
+            code: 'INVALID_REFRESH_TOKEN',
+            message: 'Invalid refresh token',
+          },
+        });
+      }
+
+      const user = await prisma.user.findUnique({
+        where: { id: payload.sub },
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          subscriptionTier: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      });
+
+      if (!user) {
+        return reply.status(404).send({
+          error: {
+            code: 'USER_NOT_FOUND',
+            message: 'User not found for refresh token',
+          },
+        });
+      }
+
+      return reply.send({
+        tokens: generateAuthTokens(fastify, user),
+      });
+    } catch (error) {
+      fastify.log.warn(error, 'Refresh token validation failed');
+      return reply.status(401).send({
+        error: {
+          code: 'INVALID_REFRESH_TOKEN',
+          message: 'Invalid refresh token',
         },
       });
     }
@@ -249,7 +386,7 @@ export async function authRoutes(fastify: FastifyInstance) {
     const { token, password } = updatePasswordSchema.parse(request.body);
 
     try {
-      const { error } = await supabaseAdmin.auth.updateUser(token, {
+      const { error } = await (supabaseAdmin.auth as any).updateUser(token, {
         password,
       });
 

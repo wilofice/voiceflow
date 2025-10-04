@@ -3,6 +3,7 @@ export interface User {
   id: string;
   email: string;
   name: string;
+  subscriptionTier?: string;
   createdAt: string;
   updatedAt: string;
 }
