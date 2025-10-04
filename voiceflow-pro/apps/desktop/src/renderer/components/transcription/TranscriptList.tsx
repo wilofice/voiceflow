@@ -184,7 +184,7 @@ export function TranscriptList({
   };
 
   // Filter and sort transcripts
-  const filteredTranscripts = transcripts
+  const filteredTranscripts = (transcripts || [])
     .filter(transcript => {
       const matchesSearch = transcript.title.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesStatus = statusFilter === 'all' || transcript.status === statusFilter;
