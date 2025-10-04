@@ -501,12 +501,16 @@ export class WhisperMonitoring {
     // Check for system resource alerts
     const { cpu, memory } = this.systemMetrics;
     
-    if (cpu.usage > 95) {
+    if (cpu.usage > 98) {
       this.createAlert('error', 'system', `Critical CPU usage: ${cpu.usage.toFixed(1)}%`, 'critical');
+    } else if (cpu.usage > 95) {
+      this.createAlert('warning', 'system', `Elevated CPU usage: ${cpu.usage.toFixed(1)}%`, 'high');
     }
-    
-    if (memory.usage > 95) {
+
+    if (memory.usage > 98) {
       this.createAlert('error', 'system', `Critical memory usage: ${memory.usage.toFixed(1)}%`, 'critical');
+    } else if (memory.usage > 94) {
+      this.createAlert('warning', 'system', `Elevated memory usage: ${memory.usage.toFixed(1)}%`, 'high');
     }
   }
 
