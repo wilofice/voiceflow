@@ -103,8 +103,8 @@ export interface MethodPerformance {
 export class HybridTranscriptionService {
   private static instance: HybridTranscriptionService;
   
-  private whisperLocal: WhisperServerService;
-  private whisperDocker: WhisperDockerService;
+  private whisperLocal?: WhisperServerService;
+  private whisperDocker?: WhisperDockerService;
   private performanceMetrics = new Map<TranscriptionMethod, MethodPerformance>();
   private config: HybridConfig;
   
@@ -284,6 +284,14 @@ export class HybridTranscriptionService {
     }
 
     return health;
+  }
+
+  getLocalService(): WhisperServerService | null {
+    return this.whisperLocal ?? null;
+  }
+
+  getDockerService(): WhisperDockerService | null {
+    return this.whisperDocker ?? null;
   }
 
   /**

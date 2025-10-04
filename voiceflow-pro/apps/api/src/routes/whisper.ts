@@ -11,8 +11,6 @@ import os from 'os';
 import { v4 as uuidv4 } from 'uuid';
 import { authenticate, AuthenticatedRequest } from '../middleware/auth';
 import { HybridTranscriptionService } from '../services/hybridTranscription';
-import { WhisperServerService } from '../services/whisperServer';
-import { WhisperDockerService } from '../services/whisperDocker';
 import { whisperMonitoring } from '../middleware/whisperMonitoring';
 
 // Request schemas
@@ -50,27 +48,16 @@ const ALLOWED_MIME_TYPES = [
 
 const ALLOWED_EXTENSIONS = /\.(mp3|wav|m4a|aac|ogg|webm|flac|mp4|mov)$/i;
 
-// Initialize services
-const hybridService = HybridTranscriptionService.getInstance();
-let whisperLocalService: WhisperServerService | null = null;
-let whisperDockerService: WhisperDockerService | null = null;
+const enableWhisperLocal = process.env.ENABLE_WHISPER_LOCAL !== 'false';
+const enableWhisperDocker = process.env.ENABLE_WHISPER_DOCKER !== 'false';
 
-// Initialize services based on environment
-try {
-  if (process.env.ENABLE_WHISPER_LOCAL !== 'false') {
-    whisperLocalService = new WhisperServerService();
-  }
-} catch (error) {
-  console.warn('Local Whisper service not available:', error);
-}
+const hybridService = HybridTranscriptionService.getInstance({
+  enableWhisperLocal,
+  enableWhisperDocker,
+});
 
-try {
-  if (process.env.ENABLE_WHISPER_DOCKER !== 'false') {
-    whisperDockerService = new WhisperDockerService();
-  }
-} catch (error) {
-  console.warn('Docker Whisper service not available:', error);
-}
+const whisperLocalService = hybridService.getLocalService();
+const whisperDockerService = hybridService.getDockerService();
 
 export async function whisperRoutes(fastify: FastifyInstance) {
   // Add monitoring hooks

@@ -37,13 +37,16 @@ export const useAuthStore = create<AuthState>()(
             error: null,
           });
         } catch (error: any) {
+          const errorMessage = error?.response?.data?.message || 
+                               error?.message || 
+                               (error instanceof Error ? error.message : 'Login failed');
           set({
             isLoading: false,
-            error: error.message || 'Login failed',
+            error: errorMessage,
             isAuthenticated: false,
             user: null,
           });
-          throw error;
+          throw new Error(errorMessage);
         }
       },
 
@@ -58,13 +61,16 @@ export const useAuthStore = create<AuthState>()(
             error: null,
           });
         } catch (error: any) {
+          const errorMessage = error?.response?.data?.message || 
+                               error?.message || 
+                               (error instanceof Error ? error.message : 'Registration failed');
           set({
             isLoading: false,
-            error: error.message || 'Registration failed',
+            error: errorMessage,
             isAuthenticated: false,
             user: null,
           });
-          throw error;
+          throw new Error(errorMessage);
         }
       },
 
