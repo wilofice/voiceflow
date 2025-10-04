@@ -29,6 +29,13 @@ export interface LoginResponse {
   tokens: AuthTokens;
 }
 
+export interface RegisterResponse {
+  user?: User;
+  tokens?: AuthTokens;
+  requiresConfirmation?: boolean;
+  message?: string;
+}
+
 export interface Transcript {
   id: string;
   title: string;

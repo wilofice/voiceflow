@@ -2,19 +2,22 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
 import { apiClient } from '../services/apiClient';
-import { User, LoginResponse } from '../types/api';
+import { User, LoginResponse, RegisterResponse } from '../types/api';
 
 interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
+  pendingConfirmation: boolean;
+  confirmationEmail: string | null;
   
   // Actions
   login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string, name: string) => Promise<void>;
+  register: (email: string, password: string, name: string) => Promise<{ requiresConfirmation: boolean }>;
   logout: () => Promise<void>;
   clearError: () => void;
+  clearConfirmation: () => void;
   initializeAuth: () => Promise<void>;
 }
 
@@ -25,6 +28,8 @@ export const useAuthStore = create<AuthState>()(
       isAuthenticated: false,
       isLoading: false,
       error: null,
+      pendingConfirmation: false,
+      confirmationEmail: null,
 
       login: async (email: string, password: string) => {
         set({ isLoading: true, error: null });
@@ -51,15 +56,33 @@ export const useAuthStore = create<AuthState>()(
       },
 
       register: async (email: string, password: string, name: string) => {
-        set({ isLoading: true, error: null });
+        set({ isLoading: true, error: null, pendingConfirmation: false });
         try {
-          const response: LoginResponse = await apiClient.register(email, password, name);
-          set({
-            user: response.user,
-            isAuthenticated: true,
-            isLoading: false,
-            error: null,
-          });
+          const response: RegisterResponse = await apiClient.register(email, password, name);
+          
+          if (response.requiresConfirmation) {
+            set({
+              isLoading: false,
+              error: null,
+              pendingConfirmation: true,
+              confirmationEmail: email,
+              isAuthenticated: false,
+              user: null,
+            });
+            return { requiresConfirmation: true };
+          } else if (response.user && response.tokens) {
+            set({
+              user: response.user,
+              isAuthenticated: true,
+              isLoading: false,
+              error: null,
+              pendingConfirmation: false,
+              confirmationEmail: null,
+            });
+            return { requiresConfirmation: false };
+          } else {
+            throw new Error('Invalid registration response');
+          }
         } catch (error: any) {
           const errorMessage = error?.response?.data?.message || 
                                error?.message || 
@@ -69,6 +92,8 @@ export const useAuthStore = create<AuthState>()(
             error: errorMessage,
             isAuthenticated: false,
             user: null,
+            pendingConfirmation: false,
+            confirmationEmail: null,
           });
           throw new Error(errorMessage);
         }
@@ -98,6 +123,10 @@ export const useAuthStore = create<AuthState>()(
 
       clearError: () => {
         set({ error: null });
+      },
+
+      clearConfirmation: () => {
+        set({ pendingConfirmation: false, confirmationEmail: null });
       },
 
       initializeAuth: async () => {

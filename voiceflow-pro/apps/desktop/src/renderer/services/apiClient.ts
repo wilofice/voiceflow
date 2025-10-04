@@ -10,6 +10,7 @@ import {
   LoginRequest,
   RegisterRequest,
   LoginResponse,
+  RegisterResponse,
   Transcript,
   CreateTranscriptRequest,
   UpdateTranscriptRequest,
@@ -37,6 +38,23 @@ const loginResponseSchema = z.object({
     refreshToken: z.string(),
     expiresAt: z.number(),
   }),
+});
+
+const registerResponseSchema = z.object({
+  user: z.object({
+    id: z.string(),
+    email: z.string(),
+    name: z.string(),
+    createdAt: z.string(),
+    updatedAt: z.string(),
+  }).optional(),
+  tokens: z.object({
+    accessToken: z.string(),
+    refreshToken: z.string(),
+    expiresAt: z.number(),
+  }).optional(),
+  requiresConfirmation: z.boolean().optional(),
+  message: z.string().optional(),
 });
 
 export class APIClient extends EventEmitter {
@@ -248,18 +266,23 @@ export class APIClient extends EventEmitter {
     return validated;
   }
 
-  async register(email: string, password: string, name: string): Promise<LoginResponse> {
+  async register(email: string, password: string, name: string): Promise<RegisterResponse> {
     const response = await this.retryableRequest(async () => {
       return this.client.post('/api/auth/register', { email, password, name });
     });
 
-    const validated = loginResponseSchema.parse(response.data);
+    const validated = registerResponseSchema.parse(response.data);
     
-    this.setTokens(validated.tokens);
-    await this.storeTokens(validated.tokens);
-    this.connectWebSocket();
+    // Only set tokens and connect if the user doesn't require confirmation
+    if (validated.tokens && validated.user && !validated.requiresConfirmation) {
+      this.setTokens(validated.tokens);
+      await this.storeTokens(validated.tokens);
+      this.connectWebSocket();
+      this.emit('auth:register', validated.user);
+    } else if (validated.requiresConfirmation) {
+      this.emit('auth:confirmation_required', { email, message: validated.message });
+    }
     
-    this.emit('auth:register', validated.user);
     return validated;
   }
 
