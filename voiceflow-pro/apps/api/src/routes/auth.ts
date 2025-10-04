@@ -1,5 +1,6 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { z } from 'zod';
+import { Prisma } from '@prisma/client';
 import { prisma } from '@voiceflow-pro/database';
 import { authenticate, AuthenticatedRequest } from '../middleware/auth';
 import { supabaseAdmin } from '../lib/supabase';
@@ -53,22 +54,50 @@ export async function authRoutes(fastify: FastifyInstance) {
         throw authError || new Error('Failed to create user');
       }
 
+      const userId = authData.user.id;
+
       // Create user in our database
-      const user = await prisma.user.create({
-        data: {
-          id: authData.user.id,
-          email,
-          name,
-          subscriptionTier: 'FREE',
-        },
-        select: {
-          id: true,
-          email: true,
-          name: true,
-          subscriptionTier: true,
-          createdAt: true,
-        },
-      });
+      let user: {
+        id: string;
+        email: string;
+        name: string;
+        subscriptionTier: string;
+        createdAt: Date;
+      };
+      try {
+        user = await prisma.user.create({
+          data: {
+            id: userId,
+            email,
+            name,
+            subscriptionTier: 'FREE',
+          },
+          select: {
+            id: true,
+            email: true,
+            name: true,
+            subscriptionTier: true,
+            createdAt: true,
+          },
+        });
+      } catch (error) {
+        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+          try {
+            await supabaseAdmin.auth.admin.deleteUser(userId);
+          } catch (cleanupError) {
+            fastify.log.error(cleanupError, 'Failed to cleanup Supabase user after duplicate email error');
+          }
+
+          return reply.status(409).send({
+            error: {
+              code: 'USER_EXISTS',
+              message: 'User with this email already exists',
+            },
+          });
+        }
+
+        throw error;
+      }
 
       // Get session token
       const { data: sessionData, error: sessionError } = await supabaseAdmin.auth.signInWithPassword({
@@ -164,16 +193,17 @@ export async function authRoutes(fastify: FastifyInstance) {
   // Get current user
   fastify.get('/me', {
     preHandler: authenticate,
-  }, async (request: AuthenticatedRequest, reply: FastifyReply) => {
+  }, async (request: FastifyRequest, reply: FastifyReply) => {
+    const authenticatedRequest = request as AuthenticatedRequest;
     return reply.send({
-      user: request.user,
+      user: authenticatedRequest.user,
     });
   });
 
   // Logout (client-side token removal)
   fastify.post('/logout', {
     preHandler: authenticate,
-  }, async (request: AuthenticatedRequest, reply: FastifyReply) => {
+  }, async (_request: FastifyRequest, reply: FastifyReply) => {
     return reply.send({
       message: 'Logged out successfully',
     });

@@ -5,8 +5,6 @@
 
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { HybridTranscriptionService } from '../services/hybridTranscription';
-import { WhisperServerService } from '../services/whisperServer';
-import { WhisperDockerService } from '../services/whisperDocker';
 import * as os from 'os';
 
 export interface HealthCheckResult {
@@ -57,6 +55,15 @@ export interface Alert {
   timestamp: Date;
   resolved?: Date;
   severity: 'low' | 'medium' | 'high' | 'critical';
+}
+
+const whisperConfig = {
+  enableWhisperLocal: process.env.ENABLE_WHISPER_LOCAL !== 'false',
+  enableWhisperDocker: process.env.ENABLE_WHISPER_DOCKER !== 'false',
+};
+
+function getHybridService() {
+  return HybridTranscriptionService.getInstance(whisperConfig);
 }
 
 export class WhisperMonitoring {
@@ -234,7 +241,7 @@ export class WhisperMonitoring {
     const startTime = Date.now();
     
     try {
-      const hybridService = HybridTranscriptionService.getInstance();
+  const hybridService = getHybridService();
       const health = await hybridService.getServiceHealth();
       
       const responseTime = Date.now() - startTime;
@@ -277,8 +284,20 @@ export class WhisperMonitoring {
     const startTime = Date.now();
     
     try {
-      // This would need to be injected or accessed differently in a real implementation
-      const localService = new WhisperServerService();
+      const hybridService = getHybridService();
+      const localService = hybridService.getLocalService();
+
+      if (!localService) {
+        this.healthChecks.set('whisper-local', {
+          service: 'whisper-local',
+          status: 'unknown',
+          uptime: 0,
+          lastCheck: new Date(),
+          details: { message: 'Local Whisper service disabled' }
+        });
+        return;
+      }
+
       const health = await localService.getHealthStatus();
       
       const responseTime = Date.now() - startTime;
@@ -314,7 +333,20 @@ export class WhisperMonitoring {
     const startTime = Date.now();
     
     try {
-      const dockerService = new WhisperDockerService();
+      const hybridService = getHybridService();
+      const dockerService = hybridService.getDockerService();
+
+      if (!dockerService) {
+        this.healthChecks.set('whisper-docker', {
+          service: 'whisper-docker',
+          status: 'unknown',
+          uptime: 0,
+          lastCheck: new Date(),
+          details: { message: 'Docker Whisper service disabled' }
+        });
+        return;
+      }
+
       const health = await dockerService.getHealthStatus();
       
       const responseTime = Date.now() - startTime;
