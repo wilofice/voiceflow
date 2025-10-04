@@ -50,6 +50,9 @@ interface DashboardProps {
   onUrlSubmit?: (url: string) => void;
   onQuickAction?: (action: QuickAction) => void;
   onTranscriptSelect?: (transcript: TranscriptItem) => void;
+  onFilesDrop?: (files: File[]) => void;
+  onBrowseFiles?: () => void;
+  recentTranscripts?: TranscriptItem[];
 }
 
 const quickActions: QuickAction[] = [
@@ -149,6 +152,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
   onUrlSubmit,
   onQuickAction,
   onTranscriptSelect,
+  onFilesDrop,
+  onBrowseFiles,
+  recentTranscripts = mockTranscripts,
 }) => {
   const [urlInput, setUrlInput] = useState('');
   const [isDragOver, setIsDragOver] = useState(false);
@@ -166,7 +172,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
     setIsDragOver(false);
     // Handle file drop
     const files = Array.from(e.dataTransfer.files);
-    console.log('Dropped files:', files);
+    if (files.length > 0 && onFilesDrop) {
+      onFilesDrop(files);
+    }
   };
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -281,7 +289,11 @@ export const Dashboard: React.FC<DashboardProps> = ({
               <p className="text-text-secondary mb-4 text-center">
                 Supports MP3, WAV, M4A, MP4, MOV, AIFF, CAF, OGG
               </p>
-              <Button variant="outline" className="focus-ring">
+              <Button 
+                variant="outline" 
+                className="focus-ring"
+                onClick={onBrowseFiles}
+              >
                 Browse Files
               </Button>
             </CardContent>
@@ -350,7 +362,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
           </div>
           
           <div className="space-y-3">
-            {mockTranscripts.map((transcript, index) => (
+            {recentTranscripts.map((transcript, index) => (
               <motion.div
                 key={transcript.id}
                 initial={{ opacity: 0, x: -20 }}
