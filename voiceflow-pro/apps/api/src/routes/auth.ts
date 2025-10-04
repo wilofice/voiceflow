@@ -54,7 +54,17 @@ export async function authRoutes(fastify: FastifyInstance) {
         throw authError || new Error('Failed to create user');
       }
 
-      const userId = authData.user.id;
+      const supabaseUser = authData.user;
+
+      if (!supabaseUser.email_confirmed_at) {
+        return reply.status(202).send({
+          requiresConfirmation: true,
+          message: 'Please check your email to complete registration before signing in.',
+          email: supabaseUser.email,
+        });
+      }
+
+      const userId = supabaseUser.id;
 
       // Create user in our database
       let user: {
