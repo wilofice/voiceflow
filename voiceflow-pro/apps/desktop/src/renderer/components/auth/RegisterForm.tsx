@@ -1,4 +1,4 @@
-import { Loader2, Eye, EyeOff, Check, X } from 'lucide-react';
+import { Loader2, Eye, EyeOff, Check, X, Mail, ArrowLeft } from 'lucide-react';
 import React, { useState } from 'react';
 
 import { useAuthStore } from '../../stores/authStore';
@@ -24,7 +24,7 @@ export function RegisterForm({ onToggleMode }: RegisterFormProps) {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const { register, isLoading, error, clearError } = useAuthStore();
+  const { register, isLoading, error, clearError, pendingConfirmation, confirmationEmail, clearConfirmation } = useAuthStore();
 
   const getPasswordRequirements = (password: string): PasswordRequirement[] => {
     return [
@@ -57,7 +57,9 @@ export function RegisterForm({ onToggleMode }: RegisterFormProps) {
     }
 
     try {
-      await register(email, password, name);
+      const result = await register(email, password, name);
+      // If confirmation is required, the UI will automatically show the confirmation message
+      // due to the pendingConfirmation state being set in the store
     } catch (error) {
       // Error is handled by the store
     }
@@ -69,6 +71,68 @@ export function RegisterForm({ onToggleMode }: RegisterFormProps) {
   };
 
   const isFormValid = name && email && isPasswordValid && passwordsMatch;
+
+  // Show email confirmation UI if pending confirmation
+  if (pendingConfirmation && confirmationEmail) {
+    return (
+      <Card className="w-full max-w-md mx-auto">
+        <CardHeader className="space-y-1">
+          <CardTitle className="text-2xl font-bold text-center flex items-center justify-center">
+            <Mail className="mr-2 h-6 w-6 text-blue-600" />
+            Check Your Email
+          </CardTitle>
+          <CardDescription className="text-center">
+            We've sent a confirmation link to your email
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="text-center space-y-4">
+            <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+              <p className="text-sm text-blue-800 mb-2">
+                We've sent a confirmation email to:
+              </p>
+              <p className="font-semibold text-blue-900 break-all">
+                {confirmationEmail}
+              </p>
+            </div>
+            
+            <div className="text-sm text-gray-600 space-y-2">
+              <p>Please check your email and click the confirmation link to complete your registration.</p>
+              <p>Can't find the email? Check your spam folder.</p>
+            </div>
+          </div>
+          
+          <Button
+            variant="outline"
+            className="w-full"
+            onClick={() => {
+              clearConfirmation();
+              setName('');
+              setEmail('');
+              setPassword('');
+              setConfirmPassword('');
+            }}
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Try Again
+          </Button>
+          
+          <div className="text-center">
+            <p className="text-sm text-gray-600">
+              Already confirmed?{' '}
+              <Button
+                variant="link"
+                className="p-0 h-auto text-sm"
+                onClick={onToggleMode}
+              >
+                Sign in
+              </Button>
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="w-full max-w-md mx-auto">
