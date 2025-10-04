@@ -249,7 +249,8 @@ export class HybridTranscriptionService {
         health.openai.available = true;
         health.openai.responseTime = await this.pingOpenAI();
       } catch (error) {
-        console.warn('OpenAI API not available:', error);
+        const message = error instanceof Error ? error.message : String(error);
+        console.warn(`OpenAI API unreachable (${message}). Continuing with local/Docker whisper only.`);
       }
     }
 
