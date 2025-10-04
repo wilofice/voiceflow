@@ -72,7 +72,7 @@ mainWindow.webContents.session.webRequest.onHeadersReceived((details, callback) 
       "style-src-elem 'self' 'unsafe-inline' https://fonts.googleapis.com;",
       "font-src 'self' https://fonts.gstatic.com;",
       "img-src 'self' data: https:;",
-      "connect-src 'self';"
+      "connect-src 'self' http://localhost:3002 https://localhost:3002 ws://localhost:3002 wss://localhost:3002;"
     ].join(' ')
     }
   });
