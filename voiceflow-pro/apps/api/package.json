@@ -16,6 +16,8 @@
     "@fastify/jwt": "^8.0.0",
     "@fastify/multipart": "^8.1.0",
     "@fastify/rate-limit": "^9.1.0",
+  "@fastify/swagger": "^8.12.1",
+  "@fastify/swagger-ui": "^1.10.2",
     "@supabase/supabase-js": "^2.39.3",
     "@types/node-fetch": "^2.6.13",
     "@voiceflow-pro/database": "*",

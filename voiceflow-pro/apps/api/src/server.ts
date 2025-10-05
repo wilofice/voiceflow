@@ -18,7 +18,8 @@ import { errorHandler } from './middleware/errorHandler';
 
 // Supabase setup
 import { createStorageBucket } from './lib/supabase';
-
+import swagger from '@fastify/swagger';
+import swaggerUi from '@fastify/swagger-ui';
 const server = Fastify({
   logger: {
     level: process.env.LOG_LEVEL || 'info',
@@ -33,6 +34,28 @@ async function start() {
     if (!process.env.JWT_SECRET) {
       throw new Error('Missing JWT_SECRET environment variable');
     }
+
+    await server.register(swagger, {
+      openapi: {
+        info: {
+          title: 'VoiceFlow Pro API',
+          version: '1.0.0',
+          description: 'REST endpoints for VoiceFlow Pro',
+        },
+        servers: [{ url: 'http://localhost:3002' }],
+        components: {},
+      },
+    });
+
+    await server.register(swaggerUi, {
+      routePrefix: '/docs',
+      uiConfig: {
+        docExpansion: 'list',
+        deepLinking: false,
+      },
+      staticCSP: true,
+      transformStaticCSP: (header) => header,
+    });
 
     // Register plugins
     await server.register(cors, {
