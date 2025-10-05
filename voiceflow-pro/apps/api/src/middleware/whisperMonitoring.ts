@@ -28,6 +28,8 @@ export interface SystemMetrics {
     used: number;
     free: number;
     usage: number;
+    processRss: number;
+    processUsage: number;
   };
   disk: {
     usage?: number;
@@ -435,6 +437,9 @@ export class WhisperMonitoring {
     const freeMemory = os.freemem();
     const usedMemory = totalMemory - freeMemory;
 
+    const processMemory = process.memoryUsage().rss;
+    const processUsage = totalMemory > 0 ? (processMemory / totalMemory) * 100 : 0;
+
     this.systemMetrics = {
       cpu: {
         usage: this.getCpuUsage(),
@@ -445,7 +450,9 @@ export class WhisperMonitoring {
         total: totalMemory,
         used: usedMemory,
         free: freeMemory,
-        usage: (usedMemory / totalMemory) * 100
+        usage: (usedMemory / totalMemory) * 100,
+        processRss: processMemory,
+        processUsage
       },
       disk: {
         // Disk metrics would require additional system calls
@@ -470,7 +477,9 @@ export class WhisperMonitoring {
         total: os.totalmem(),
         used: 0,
         free: os.freemem(),
-        usage: 0
+        usage: 0,
+        processRss: process.memoryUsage().rss,
+        processUsage: 0
       },
       disk: {},
       processes: {}
@@ -501,16 +510,25 @@ export class WhisperMonitoring {
     // Check for system resource alerts
     const { cpu, memory } = this.systemMetrics;
     
+  const cpuUsage = Math.round(cpu.usage);
+  const memoryUsage = Math.round(memory.usage);
+  const processMemoryUsage = Math.round(memory.processUsage);
+
     if (cpu.usage > 98) {
-      this.createAlert('error', 'system', `Critical CPU usage: ${cpu.usage.toFixed(1)}%`, 'critical');
+      this.createAlert('error', 'system', `Critical CPU usage: ${cpuUsage}%`, 'critical');
     } else if (cpu.usage > 95) {
-      this.createAlert('warning', 'system', `Elevated CPU usage: ${cpu.usage.toFixed(1)}%`, 'high');
+      this.createAlert('warning', 'system', `Elevated CPU usage: ${cpuUsage}%`, 'high');
     }
 
-    if (memory.usage > 98) {
-      this.createAlert('error', 'system', `Critical memory usage: ${memory.usage.toFixed(1)}%`, 'critical');
-    } else if (memory.usage > 94) {
-      this.createAlert('warning', 'system', `Elevated memory usage: ${memory.usage.toFixed(1)}%`, 'high');
+    const processHeavy = processMemoryUsage >= 50;
+    const processModerate = processMemoryUsage >= 30;
+
+    if (memory.usage > 98 && processHeavy) {
+      this.createAlert('error', 'system', `Critical memory usage: ${memoryUsage}% (process using ${processMemoryUsage}% of RAM)`, 'critical');
+    } else if (memory.usage > 94 && (processHeavy || processModerate)) {
+      this.createAlert('warning', 'system', `Elevated memory usage: ${memoryUsage}% (process using ${processMemoryUsage}% of RAM)`, 'high');
+    } else if (memory.usage > 97 && !processModerate) {
+      this.createAlert('warning', 'system', `High system memory usage detected (${memoryUsage}%), API process at ${processMemoryUsage}%`, 'medium');
     }
   }
 
