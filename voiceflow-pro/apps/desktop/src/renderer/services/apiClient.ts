@@ -449,6 +449,60 @@ export class APIClient extends EventEmitter {
     return response.data;
   }
 
+  // ===== WHISPER TRANSCRIPTION METHODS =====
+
+  async transcribeWithWhisper(
+    filePath: string, 
+    options: {
+      model?: string;
+      language?: string;
+      task?: 'transcribe' | 'translate';
+    } = {}
+  ): Promise<any> {
+    const response = await this.retryableRequest(async () => {
+      return this.client.post('/api/whisper/transcribe/local', {
+        filePath,
+        model: options.model || 'base',
+        language: options.language || 'auto',
+        task: options.task || 'transcribe',
+      });
+    });
+
+    return response.data;
+  }
+
+  async getWhisperJobs(): Promise<any[]> {
+    const response = await this.retryableRequest(async () => {
+      return this.client.get('/api/whisper/jobs');
+    });
+
+    return response.data;
+  }
+
+  async getWhisperJob(jobId: string): Promise<any> {
+    const response = await this.retryableRequest(async () => {
+      return this.client.get(`/api/whisper/jobs/${jobId}`);
+    });
+
+    return response.data;
+  }
+
+  async getWhisperHealth(): Promise<any> {
+    const response = await this.retryableRequest(async () => {
+      return this.client.get('/api/whisper/health');
+    });
+
+    return response.data;
+  }
+
+  async getWhisperModels(): Promise<any[]> {
+    const response = await this.retryableRequest(async () => {
+      return this.client.get('/api/whisper/models');
+    });
+
+    return response.data;
+  }
+
   // ===== UTILITY METHODS =====
 
   isAuthenticated(): boolean {

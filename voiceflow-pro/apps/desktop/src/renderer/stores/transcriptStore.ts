@@ -68,7 +68,9 @@ export const useTranscriptStore = create<TranscriptState>((set, get) => ({
   createTranscript: async (data: CreateTranscriptRequest) => {
     set({ isCreating: true, error: null });
     try {
+      console.log('Creating transcript with data:', data);
       const transcript = await apiClient.createTranscript(data);
+      console.log('Transcript created successfully:', transcript);
       const { transcripts } = get();
       set({
         transcripts: [transcript, ...transcripts],
@@ -76,11 +78,23 @@ export const useTranscriptStore = create<TranscriptState>((set, get) => ({
       });
       return transcript;
     } catch (error: any) {
+      console.error('Failed to create transcript:', error);
+      console.error('Error details:', {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status,
+        config: error.config
+      });
+      
+      const errorMessage = error?.response?.data?.message || 
+                           error?.message || 
+                           'Failed to create transcript';
+      
       set({
         isCreating: false,
-        error: error.message || 'Failed to create transcript',
+        error: errorMessage,
       });
-      throw error;
+      throw new Error(errorMessage);
     }
   },
 

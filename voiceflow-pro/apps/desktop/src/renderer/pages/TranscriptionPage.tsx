@@ -8,6 +8,7 @@ import { Dashboard } from '../components/ui/dashboard';
 import { Button } from '../components/ui/button';
 import { useUploadStore } from '../stores/uploadStore';
 import { useTranscriptStore } from '../stores/transcriptStore';
+import { apiClient } from '../services/apiClient';
 import { 
   ArrowLeft,
   FileText
@@ -55,9 +56,18 @@ export function TranscriptionPage() {
     return `${diffDays} days ago`;
   };
 
-  // Fetch transcripts on component mount
+  // Fetch transcripts and check Whisper health on component mount
   useEffect(() => {
     fetchTranscripts();
+    
+    // Check if Whisper service is available
+    apiClient.getWhisperHealth()
+      .then(health => {
+        console.log('Whisper service health:', health);
+      })
+      .catch(error => {
+        console.warn('Whisper service not available:', error);
+      });
   }, [fetchTranscripts]);
 
   const handleTranscriptSelect = (transcript: Transcript) => {
@@ -123,15 +133,44 @@ export function TranscriptionPage() {
   const handleFilesDrop = async (files: File[]) => {
     try {
       for (const file of files) {
-        // Upload file
+        console.log('Starting upload and transcription for:', file.name);
+        
+        // Step 1: Upload file to backend
         const uploadResponse = await uploadFile(file, { title: file.name });
-        // Create transcript
-        await createTranscript({ uploadId: uploadResponse.id });
+        console.log('Upload completed:', uploadResponse);
+        
+        // Step 2: Try to create transcript using the standard flow first
+        // If this fails, we'll know the backend expects direct Whisper API calls
+        try {
+          const transcript = await createTranscript({ 
+            uploadId: uploadResponse.id,
+            title: file.name,
+            language: 'auto'
+          });
+          console.log('Transcript created successfully:', transcript);
+        } catch (transcriptError) {
+          console.log('Standard transcript creation failed, trying direct Whisper API:', transcriptError);
+          
+          // Fallback: Use direct Whisper API
+          const transcriptionResult = await apiClient.transcribeWithWhisper(
+            uploadResponse.url || uploadResponse.filePath || uploadResponse.id, 
+            {
+              model: 'base',
+              language: 'auto',
+              task: 'transcribe'
+            }
+          );
+          console.log('Direct Whisper transcription completed:', transcriptionResult);
+        }
       }
-      // Switch to list view to see uploads
+      
+      // Refresh transcript list
+      await fetchTranscripts();
+      
+      // Switch to list view to see results
       setViewMode('list');
     } catch (error) {
-      console.error('Failed to upload files:', error);
+      console.error('Failed to upload and transcribe files:', error);
     }
   };
 
