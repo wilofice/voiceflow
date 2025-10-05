@@ -151,9 +151,9 @@ export function TranscriptionPage() {
         } catch (transcriptError) {
           console.log('Standard transcript creation failed, trying direct Whisper API:', transcriptError);
           
-          // Fallback: Use direct Whisper API
+          // Fallback: Use direct Whisper API with the original file
           const transcriptionResult = await apiClient.transcribeWithWhisper(
-            uploadResponse.url || uploadResponse.filePath || uploadResponse.id, 
+            file, // Pass the original File object for multipart upload
             {
               model: 'base',
               language: 'auto',

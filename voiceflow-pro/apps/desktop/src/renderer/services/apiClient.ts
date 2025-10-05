@@ -452,7 +452,7 @@ export class APIClient extends EventEmitter {
   // ===== WHISPER TRANSCRIPTION METHODS =====
 
   async transcribeWithWhisper(
-    filePath: string, 
+    filePathOrFile: string | File, 
     options: {
       model?: string;
       language?: string;
@@ -460,12 +460,28 @@ export class APIClient extends EventEmitter {
     } = {}
   ): Promise<any> {
     const response = await this.retryableRequest(async () => {
-      return this.client.post('/api/whisper/transcribe/local', {
-        filePath,
-        model: options.model || 'base',
-        language: options.language || 'auto',
-        task: options.task || 'transcribe',
-      });
+      // If we receive a File object, upload it as multipart form data
+      if (filePathOrFile instanceof File) {
+        const formData = new FormData();
+        formData.append('file', filePathOrFile);
+        formData.append('model', options.model || 'base');
+        formData.append('language', options.language || 'auto');
+        formData.append('task', options.task || 'transcribe');
+
+        return this.client.post('/api/whisper/transcribe/local', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
+      } else {
+        // For file paths, send as JSON (for already uploaded files)
+        return this.client.post('/api/whisper/transcribe/local', {
+          filePath: filePathOrFile,
+          model: options.model || 'base',
+          language: options.language || 'auto',
+          task: options.task || 'transcribe',
+        });
+      }
     });
 
     return response.data;
