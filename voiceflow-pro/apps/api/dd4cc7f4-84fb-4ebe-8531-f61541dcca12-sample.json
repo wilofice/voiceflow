@@ -1,0 +1,1 @@
+{"text": " Hello, I'm running a test.", "segments": [{"id": 0, "seek": 0, "start": 0.0, "end": 7.0, "text": " Hello, I'm running a test.", "tokens": [50364, 2425, 11, 286, 478, 2614, 257, 1500, 13, 50714], "temperature": 0.0, "avg_logprob": -0.7398381666703657, "compression_ratio": 0.7647058823529411, "no_speech_prob": 0.11456353217363358}], "language": "en"}

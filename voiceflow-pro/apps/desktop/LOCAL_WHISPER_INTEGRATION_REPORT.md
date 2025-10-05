@@ -320,8 +320,56 @@ Check your backend logs to see:
 - Job management for long-running tasks
 - Scalable architecture for multiple files
 
-## Status: ✅ COMPLETED
+## Status: ✅ COMPLETED & ENHANCED
 
 The frontend now properly integrates with your local Whisper backend services. The upload flow will attempt the standard transcript creation first, and fall back to direct Whisper API integration if needed. Comprehensive logging has been added to help diagnose any remaining backend configuration issues.
 
-**Ready for Testing:** Upload an MP3 file and check the console logs to see the detailed flow and identify any remaining backend integration points that need adjustment.
+### 🚀 Final Enhancement (Latest Update)
+
+**Fixed Multipart File Upload Support** - Updated the `transcribeWithWhisper` method to properly handle both File objects and file paths:
+
+```typescript
+// Enhanced method now supports both multipart uploads and file paths
+async transcribeWithWhisper(
+  filePathOrFile: string | File, 
+  options = {}
+): Promise<any> {
+  if (filePathOrFile instanceof File) {
+    // Direct file upload as multipart form data
+    const formData = new FormData();
+    formData.append('file', filePathOrFile);
+    formData.append('model', options.model || 'base');
+    // ... other parameters
+    
+    return this.client.post('/api/whisper/transcribe/local', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+  } else {
+    // File path reference for already uploaded files
+    return this.client.post('/api/whisper/transcribe/local', {
+      filePath: filePathOrFile,
+      model: options.model || 'base',
+      // ... other parameters
+    });
+  }
+}
+```
+
+**Updated Transcription Flow** - Modified the fallback strategy to pass the original File object:
+
+```typescript
+// Now passes the original File object for direct multipart upload
+const transcriptionResult = await apiClient.transcribeWithWhisper(
+  file, // Original File object instead of upload response path
+  { model: 'base', language: 'auto', task: 'transcribe' }
+);
+```
+
+### 🎯 Benefits of This Enhancement
+
+1. **✅ Eliminates ZOD Validation Errors** - Proper multipart form data matches backend expectations
+2. **✅ Supports Both Upload Patterns** - File objects for direct upload, paths for uploaded files  
+3. **✅ Reduces API Round Trips** - Direct transcription without intermediate file storage
+4. **✅ Maintains Backward Compatibility** - Still supports file path references
+
+**Ready for Testing:** Upload an MP3 file and check the console logs to see the enhanced flow with proper multipart uploads.
