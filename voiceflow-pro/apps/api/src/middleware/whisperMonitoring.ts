@@ -76,9 +76,23 @@ export class WhisperMonitoring {
   private isMonitoring = false;
   private monitoringInterval: NodeJS.Timeout | null = null;
   private startTime = Date.now();
+  private alertsEnabled: boolean;
 
   private constructor() {
     this.systemMetrics = this.getInitialSystemMetrics();
+    const alertsEnv = process.env.ENABLE_MONITORING_ALERTS?.toLowerCase();
+    if (alertsEnv === 'true') {
+      this.alertsEnabled = true;
+    } else if (alertsEnv === 'false') {
+      this.alertsEnabled = false;
+    } else {
+      this.alertsEnabled = process.env.NODE_ENV === 'production';
+    }
+
+    if (!this.alertsEnabled) {
+      console.log('🔕 Monitoring alerts disabled (development mode).');
+    }
+
     this.startMonitoring();
   }
 
@@ -501,6 +515,10 @@ export class WhisperMonitoring {
    * Check for alert conditions
    */
   private checkAlerts(): void {
+    if (!this.alertsEnabled) {
+      return;
+    }
+
     // Remove old resolved alerts (older than 24 hours)
     const oneDayAgo = Date.now() - 24 * 60 * 60 * 1000;
     this.alerts = this.alerts.filter(alert => 
@@ -541,6 +559,10 @@ export class WhisperMonitoring {
     message: string,
     severity: 'low' | 'medium' | 'high' | 'critical'
   ): void {
+    if (!this.alertsEnabled) {
+      return;
+    }
+
     // Check if similar alert already exists and is unresolved
     const existingAlert = this.alerts.find(alert => 
       alert.service === service &&
