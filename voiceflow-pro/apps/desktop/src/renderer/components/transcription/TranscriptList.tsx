@@ -393,7 +393,7 @@ export function TranscriptList({
 
           {/* Results Summary */}
           <div className="text-sm text-gray-600">
-            {filteredTranscripts.length} of {transcripts.length} transcripts
+            {filteredTranscripts.length} of {transcripts?.length || 0} transcripts
           </div>
         </CardContent>
       </Card>
