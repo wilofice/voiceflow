@@ -107,6 +107,7 @@ export class HybridTranscriptionService {
   private whisperDocker?: WhisperDockerService;
   private performanceMetrics = new Map<TranscriptionMethod, MethodPerformance>();
   private config: HybridConfig;
+  private lastOpenAiWarning = 0;
   
   private constructor(config?: Partial<HybridConfig>) {
     this.config = {
@@ -250,7 +251,11 @@ export class HybridTranscriptionService {
         health.openai.responseTime = await this.pingOpenAI();
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
-        console.warn(`OpenAI API unreachable (${message}). Continuing with local/Docker whisper only.`);
+        const now = Date.now();
+        if (now - this.lastOpenAiWarning > 60_000) {
+          console.warn(`OpenAI API unreachable (${message}). Continuing with local/Docker whisper only.`);
+          this.lastOpenAiWarning = now;
+        }
       }
     }
 
