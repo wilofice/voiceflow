@@ -1,0 +1,40 @@
+LINT ISSUES AT : /Users/galahassa/Dev/voiceflow/voiceflow-pro/apps/desktop/lint_issues.txt 
+
+
+## what the lint run revealed
+- **Tooling mismatch:** `@typescript-eslint/typescript-estree` only supports TypeScript <5.4, but the workspace is on 5.8.3. That’s causing the big warning block right out of the gate.
+- **Import resolution:** Hundreds of `import/no-unresolved` errors are all tied to the `@/...` alias that works in webpack/tsconfig but isn’t wired into ESLint yet. Until the resolver knows about `tsconfig.renderer.json`, every aliased component and hook looks “missing.”
+- **Style/autofix issues:** Most of the `import/order` complaints and quite a few unused variables (imported but never referenced) can be fixed automatically once we’re targeting smaller batches; ESLint even tells us 36 errors are ready for `--fix`.
+- **Legit code cleanup:** There’s a long tail of real follow-up—`no-unused-vars` in services and IPC handlers, `no-var-requires`, tons of `any` types, leftover console logging, etc. These need manual attention or deliberate suppression.
+- **Our new tweak:** I dropped the unused `session` import in windowManager.ts so we’re not contributing an extra lint failure ourselves.
+
+## suggested cleanup path
+1. **Pick a TypeScript baseline.** Either downgrade to ≤5.3 (matching the parser) or upgrade the lint stack. Updating to the latest `@typescript-eslint` (v8+) lets you stay on TS 5.8; otherwise pin `typescript` in the desktop package to something supported.
+2. **Teach ESLint about aliases.** Add `eslint-import-resolver-typescript` (or configure `eslint-import-resolver-webpack`) and point it at `tsconfig.renderer.json`. Example:
+   ```jsonc
+   // .eslintrc.js
+   settings: {
+     'import/resolver': {
+       typescript: {
+         project: ['./tsconfig.main.json', './tsconfig.renderer.json', './tsconfig.preload.json']
+       }
+     }
+   }
+   ```
+   Then install the resolver so ESLint respects `@/...` and other path mappings.
+3. **Run autofix in chunks.** After #1 and #2, run `npm run lint -- --fix` on narrower scopes (e.g., renderer first). That should take care of import ordering and many unused variable issues.
+4. **Tackle real warnings intentionally.** For the remaining buckets:
+   - Replace `require` calls in IPC/whisper services with top-level imports (or disable the rule locally if they’re guarded for platform reasons).
+   - Convert prominent `any` types into named interfaces/types, or explicitly annotate them as `unknown` + refine.
+   - Remove / prefix `_` on unused parameters where they’re required by an interface.
+   - Trim debug `console.log` statements in production-facing code.
+5. **Stage fixes per domain.** Consider focusing on one folder at a time (e.g., `src/main/services`, then `src/renderer/components`). That keeps reviews manageable.
+
+## next steps for you
+- Decide whether to stick with TS 5.8 and upgrade the `@typescript-eslint` toolchain, or to pin TS to 5.3 for now.
+- Update ESLint settings so your alias imports stop erroring.
+- Start running `eslint --fix` on individual directories to chip away at the mechanical issues before diving into type cleanups.
+
+Once those foundations are in place, the lint noise will drop dramatically and we can zero in on the meaningful warnings. Let me know which path you pick for TypeScript and I’ll line up the concrete edits.
+
+Made changes.

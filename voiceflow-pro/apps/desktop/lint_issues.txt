@@ -1,0 +1,645 @@
+galahassa@mac desktop % npm run lint
+
+> @voiceflow-pro/desktop@1.0.0 lint
+> eslint src --ext .ts,.tsx
+
+=============
+
+WARNING: You are currently running a version of TypeScript which is not officially supported by @typescript-eslint/typescript-estree.
+
+You may find that it works just fine, or you may not.
+
+SUPPORTED TYPESCRIPT VERSIONS: >=4.3.5 <5.4.0
+
+YOUR TYPESCRIPT VERSION: 5.8.3
+
+Please only submit bug reports when using the officially supported version.
+
+=============
+
+/Users/galahassa/Dev/voiceflow/voiceflow-pro/apps/desktop/src/main/index.ts
+    3:30  error    'ipcMain' is defined but never used                                                @typescript-eslint/no-unused-vars
+    8:1   error    `electron-devtools-installer` import should occur before import of `electron-log`  import/order
+   37:26  warning  Unexpected any. Specify a different type                                           @typescript-eslint/no-explicit-any
+  358:46  error    'info' is defined but never used. Allowed unused args must match /^_/u             @typescript-eslint/no-unused-vars
+
+/Users/galahassa/Dev/voiceflow/voiceflow-pro/apps/desktop/src/main/ipc/handlers.ts
+   16:16   warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+   48:27   error    'services' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+   51:12   error    Require statement not part of import statement                              @typescript-eslint/no-var-requires
+   57:16   error    Require statement not part of import statement                              @typescript-eslint/no-var-requires
+   66:25   error    Require statement not part of import statement                              @typescript-eslint/no-var-requires
+   93:88   warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  105:105  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  257:85   warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  277:85   warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  325:90   warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  336:82   warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  406:44   error    'event' is defined but never used. Allowed unused args must match /^_/u     @typescript-eslint/no-unused-vars
+  420:51   error    'event' is defined but never used. Allowed unused args must match /^_/u     @typescript-eslint/no-unused-vars
+  486:47   error    'event' is defined but never used. Allowed unused args must match /^_/u     @typescript-eslint/no-unused-vars
+
+/Users/galahassa/Dev/voiceflow/voiceflow-pro/apps/desktop/src/main/ipc/urlIngestHandlers.ts
+  180:38  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  182:38  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  183:29  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  184:41  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  185:33  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  186:33  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  187:44  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  188:37  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  191:37  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  192:35  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  193:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  194:34  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  197:49  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  198:47  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  199:43  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  200:46  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/galahassa/Dev/voiceflow/voiceflow-pro/apps/desktop/src/main/services/desktopWhisperService.ts
+  151:58  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  154:67  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  154:93  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  176:45  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  187:40  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  220:67  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  246:70  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  259:67  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/galahassa/Dev/voiceflow/voiceflow-pro/apps/desktop/src/main/services/fileImportService.ts
+   10:25  error  'BrowserWindow' is defined but never used                                            @typescript-eslint/no-unused-vars
+   10:40  error  'ipcMain' is defined but never used                                                  @typescript-eslint/no-unused-vars
+  257:50  error  'preserveStructure' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/galahassa/Dev/voiceflow/voiceflow-pro/apps/desktop/src/main/services/urlIngest/downloadManager.ts
+   91:11  error    'arch' is assigned a value but never used                                       @typescript-eslint/no-unused-vars
+  219:21  warning  Unexpected any. Specify a different type                                        @typescript-eslint/no-explicit-any
+  340:29  error    'downloadInfo' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/galahassa/Dev/voiceflow/voiceflow-pro/apps/desktop/src/main/services/urlIngest/urlIngestService.ts
+   15:44  error    'DownloadResult' is defined but never used  @typescript-eslint/no-unused-vars
+   34:14  warning  Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+   44:13  warning  Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  189:14  warning  Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  325:15  warning  Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+
+/Users/galahassa/Dev/voiceflow/voiceflow-pro/apps/desktop/src/main/services/urlIngest/urlValidatorService.ts
+  183:36  error  'url' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  220:17  error  'contentLength' is assigned a value but never used                     @typescript-eslint/no-unused-vars
+
+/Users/galahassa/Dev/voiceflow/voiceflow-pro/apps/desktop/src/main/services/watchFolderService.ts
+  227:65  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  273:55  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  292:63  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  332:33  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  341:36  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/galahassa/Dev/voiceflow/voiceflow-pro/apps/desktop/src/main/services/whisperServer.ts
+  113:5   warning  Unexpected console statement                    no-console
+  122:7   warning  Unexpected console statement                    no-console
+  123:7   warning  Unexpected console statement                    no-console
+  124:7   warning  Unexpected console statement                    no-console
+  125:7   warning  Unexpected console statement                    no-console
+  162:7   warning  Unexpected console statement                    no-console
+  187:21  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  476:9   error    Require statement not part of import statement  @typescript-eslint/no-var-requires
+  499:9   error    Require statement not part of import statement  @typescript-eslint/no-var-requires
+
+/Users/galahassa/Dev/voiceflow/voiceflow-pro/apps/desktop/src/main/services/whisperService.ts
+    1:13  error    'path' is defined but never used               @typescript-eslint/no-unused-vars
+   16:21  warning  Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
+   19:41  warning  Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
+   35:21  error    'pipeline' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  139:38  warning  Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
+  217:46  warning  Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
+  235:54  warning  Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
+  267:53  warning  Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
+  275:40  warning  Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
+
+/Users/galahassa/Dev/voiceflow/voiceflow-pro/apps/desktop/src/main/services/windowManager.ts
+   3:38  error    'session' is defined but never used       @typescript-eslint/no-unused-vars
+  16:24  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  20:28  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/galahassa/Dev/voiceflow/voiceflow-pro/apps/desktop/src/preload/index.ts
+    8:28  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+    9:30  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+   15:31  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+   16:48  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+   16:93  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+   17:65  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+   19:35  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+   20:47  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+   25:17  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+   27:36  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+   28:55  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+   31:47  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+   32:59  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+   37:31  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+   38:31  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+   40:53  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+   41:54  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+   46:40  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+   47:38  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+   47:54  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+   48:40  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+   49:31  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+   50:43  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+   51:35  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+   52:35  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+   53:46  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+   54:39  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+   55:39  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+   56:37  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+   57:33  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+   58:36  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+   59:51  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+   60:49  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+   61:45  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+   62:48  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+   67:32  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+   68:32  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+   77:39  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+   77:83  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+   78:31  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+   79:58  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  209:31  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  210:48  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  213:35  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  214:56  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  217:47  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  224:17  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  226:36  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  230:47  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  231:74  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  234:27  error    'callback' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  234:59  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  252:38  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  260:39  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  261:60  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  264:37  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  265:58  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  268:33  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  269:57  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  272:36  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  273:56  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  276:30  error    'callback' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  276:51  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  279:30  error    'callback' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  279:49  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  282:27  error    'callback' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  282:45  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  285:31  error    'callback' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  285:48  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  292:32  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  293:32  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  300:35  error    'callback' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  308:39  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  309:31  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  334:32  error    'callback' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  354:40  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  361:68  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  368:55  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  377:1   warning  Unexpected console statement                                                no-console
+  385:44  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  385:62  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  386:72  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  387:59  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+
+/Users/galahassa/Dev/voiceflow/voiceflow-pro/apps/desktop/src/renderer/App.tsx
+  10:1  error  `./pages/NotFound` import should occur before import of `./pages/VoiceFlowPro`  import/order
+
+/Users/galahassa/Dev/voiceflow/voiceflow-pro/apps/desktop/src/renderer/components/auth/RegisterForm.tsx
+  60:13  error  'result' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/galahassa/Dev/voiceflow/voiceflow-pro/apps/desktop/src/renderer/components/transcription/FileUpload.tsx
+    2:1  error  There should be at least one empty line between import groups                                   import/order
+    4:1  error  `../../stores/transcriptStore` import should occur before import of `../../stores/uploadStore`  import/order
+    8:1  error  `../ui/alert` import should occur before import of `../ui/button`                               import/order
+    9:1  error  There should be at least one empty line between import groups                                   import/order
+    9:1  error  `../ui/badge` import should occur before import of `../ui/button`                               import/order
+   10:1  error  `lucide-react` import should occur before import of `react`                                     import/order
+  113:9  error  'formatDuration' is assigned a value but never used                                             @typescript-eslint/no-unused-vars
+
+/Users/galahassa/Dev/voiceflow/voiceflow-pro/apps/desktop/src/renderer/components/transcription/TranscriptDisplay.tsx
+    1:1   error  There should be at least one empty line between import groups            import/order
+    5:1   error  `../ui/button` import should occur before import of `../ui/card`         import/order
+    6:1   error  `../ui/badge` import should occur before import of `../ui/card`          import/order
+    8:1   error  `../ui/alert` import should occur before import of `../ui/card`          import/order
+    9:1   error  There should be at least one empty line between import groups            import/order
+   10:1   error  `lucide-react` import should occur before import of `react`              import/order
+   20:3   error  'RefreshCw' is defined but never used                                    @typescript-eslint/no-unused-vars
+  335:57  error  'index' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/galahassa/Dev/voiceflow/voiceflow-pro/apps/desktop/src/renderer/components/transcription/TranscriptList.tsx
+    1:1   error    There should be at least one empty line between import groups             import/order
+    5:1   error    `../ui/button` import should occur before import of `../ui/card`          import/order
+    7:1   error    `../ui/badge` import should occur before import of `../ui/card`           import/order
+    8:1   error    `../ui/dropdown-menu` import should occur before import of `../ui/input`  import/order
+   15:1   error    There should be at least one empty line between import groups             import/order
+   15:1   error    `../ui/alert-dialog` import should occur before import of `../ui/card`    import/order
+   25:1   error    `lucide-react` import should occur before import of `react`               import/order
+   28:3   error    'Play' is defined but never used                                          @typescript-eslint/no-unused-vars
+   60:5   error    'pagination' is assigned a value but never used                           @typescript-eslint/no-unused-vars
+   65:5   error    'error' is assigned a value but never used                                @typescript-eslint/no-unused-vars
+  194:19  warning  Unexpected any. Specify a different type                                  @typescript-eslint/no-explicit-any
+  194:32  warning  Unexpected any. Specify a different type                                  @typescript-eslint/no-explicit-any
+
+/Users/galahassa/Dev/voiceflow/voiceflow-pro/apps/desktop/src/renderer/components/ui/accordion.tsx
+  5:20  error  Unable to resolve path to module '@/lib/utils'  import/no-unresolved
+
+/Users/galahassa/Dev/voiceflow/voiceflow-pro/apps/desktop/src/renderer/components/ui/ai-recipe-panel.tsx
+    1:18  error    'AnimatePresence' is defined but never used                               @typescript-eslint/no-unused-vars
+    6:3   error    'MessageSquare' is defined but never used                                 @typescript-eslint/no-unused-vars
+   12:3   error    'Settings2' is defined but never used                                     @typescript-eslint/no-unused-vars
+   20:23  error    Unable to resolve path to module '@/components/ui/badge'                  import/no-unresolved
+   21:24  error    Unable to resolve path to module '@/components/ui/button'                 import/no-unresolved
+   22:75  error    Unable to resolve path to module '@/components/ui/card'                   import/no-unresolved
+   23:23  error    Unable to resolve path to module '@/components/ui/input'                  import/no-unresolved
+   24:28  error    Unable to resolve path to module '@/components/ui/scroll-area'            import/no-unresolved
+   25:10  error    'Separator' is defined but never used                                     @typescript-eslint/no-unused-vars
+   25:27  error    Unable to resolve path to module '@/components/ui/separator'              import/no-unresolved
+   26:26  error    Unable to resolve path to module '@/components/ui/textarea'               import/no-unresolved
+   27:20  error    Unable to resolve path to module '@/lib/utils'                            import/no-unresolved
+   59:64  warning  Unexpected any. Specify a different type                                  @typescript-eslint/no-explicit-any
+  139:3   error    'onSave' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  142:61  warning  Unexpected any. Specify a different type                                  @typescript-eslint/no-explicit-any
+  162:53  warning  Unexpected any. Specify a different type                                  @typescript-eslint/no-explicit-any
+
+/Users/galahassa/Dev/voiceflow/voiceflow-pro/apps/desktop/src/renderer/components/ui/alert-dialog.tsx
+  4:32  error  Unable to resolve path to module '@/components/ui/button'  import/no-unresolved
+  5:20  error  Unable to resolve path to module '@/lib/utils'             import/no-unresolved
+
+/Users/galahassa/Dev/voiceflow/voiceflow-pro/apps/desktop/src/renderer/components/ui/alert.tsx
+  4:20  error  Unable to resolve path to module '@/lib/utils'  import/no-unresolved
+
+/Users/galahassa/Dev/voiceflow/voiceflow-pro/apps/desktop/src/renderer/components/ui/app-shell.tsx
+  13:24  error  Unable to resolve path to module '@/components/ui/button'  import/no-unresolved
+  14:20  error  Unable to resolve path to module '@/lib/utils'             import/no-unresolved
+  38:9   error  'isWindows' is assigned a value but never used             @typescript-eslint/no-unused-vars
+
+/Users/galahassa/Dev/voiceflow/voiceflow-pro/apps/desktop/src/renderer/components/ui/avatar.tsx
+  4:20  error  Unable to resolve path to module '@/lib/utils'  import/no-unresolved
+
+/Users/galahassa/Dev/voiceflow/voiceflow-pro/apps/desktop/src/renderer/components/ui/badge.tsx
+  4:20  error  Unable to resolve path to module '@/lib/utils'  import/no-unresolved
+
+/Users/galahassa/Dev/voiceflow/voiceflow-pro/apps/desktop/src/renderer/components/ui/batch-processor.tsx
+    1:18  error  'AnimatePresence' is defined but never used                                 @typescript-eslint/no-unused-vars
+   20:23  error  Unable to resolve path to module '@/components/ui/badge'                    import/no-unresolved
+   21:24  error  Unable to resolve path to module '@/components/ui/button'                   import/no-unresolved
+   22:29  error  'CardHeader' is defined but never used                                      @typescript-eslint/no-unused-vars
+   22:41  error  'CardTitle' is defined but never used                                       @typescript-eslint/no-unused-vars
+   22:58  error  Unable to resolve path to module '@/components/ui/card'                     import/no-unresolved
+   23:26  error  Unable to resolve path to module '@/components/ui/progress'                 import/no-unresolved
+   24:28  error  Unable to resolve path to module '@/components/ui/scroll-area'              import/no-unresolved
+   25:27  error  Unable to resolve path to module '@/components/ui/separator'                import/no-unresolved
+   26:20  error  Unable to resolve path to module '@/lib/utils'                              import/no-unresolved
+  133:3   error  'onRemove' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/galahassa/Dev/voiceflow/voiceflow-pro/apps/desktop/src/renderer/components/ui/breadcrumb.tsx
+  5:20  error  Unable to resolve path to module '@/lib/utils'  import/no-unresolved
+
+/Users/galahassa/Dev/voiceflow/voiceflow-pro/apps/desktop/src/renderer/components/ui/button.tsx
+  5:20  error  Unable to resolve path to module '@/lib/utils'  import/no-unresolved
+
+/Users/galahassa/Dev/voiceflow/voiceflow-pro/apps/desktop/src/renderer/components/ui/calendar.tsx
+  3:27  error  Unable to resolve path to module 'react-day-picker'        import/no-unresolved
+  5:32  error  Unable to resolve path to module '@/components/ui/button'  import/no-unresolved
+  6:20  error  Unable to resolve path to module '@/lib/utils'             import/no-unresolved
+
+/Users/galahassa/Dev/voiceflow/voiceflow-pro/apps/desktop/src/renderer/components/ui/card.tsx
+  3:20  error  Unable to resolve path to module '@/lib/utils'  import/no-unresolved
+
+/Users/galahassa/Dev/voiceflow/voiceflow-pro/apps/desktop/src/renderer/components/ui/carousel.tsx
+  1:61  error  Unable to resolve path to module 'embla-carousel-react'    import/no-unresolved
+  5:24  error  Unable to resolve path to module '@/components/ui/button'  import/no-unresolved
+  6:20  error  Unable to resolve path to module '@/lib/utils'             import/no-unresolved
+
+/Users/galahassa/Dev/voiceflow/voiceflow-pro/apps/desktop/src/renderer/components/ui/chart.tsx
+  2:36  error  Unable to resolve path to module 'recharts'     import/no-unresolved
+  4:20  error  Unable to resolve path to module '@/lib/utils'  import/no-unresolved
+
+/Users/galahassa/Dev/voiceflow/voiceflow-pro/apps/desktop/src/renderer/components/ui/checkbox.tsx
+  5:20  error  Unable to resolve path to module '@/lib/utils'  import/no-unresolved
+
+/Users/galahassa/Dev/voiceflow/voiceflow-pro/apps/desktop/src/renderer/components/ui/cloud-storage-connector.tsx
+    1:10  error    'motion' is defined but never used        @typescript-eslint/no-unused-vars
+    4:3   error    'HardDrive' is defined but never used     @typescript-eslint/no-unused-vars
+   10:3   error    'Folder' is defined but never used        @typescript-eslint/no-unused-vars
+   24:10  error    'Switch' is defined but never used        @typescript-eslint/no-unused-vars
+  319:53  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/galahassa/Dev/voiceflow/voiceflow-pro/apps/desktop/src/renderer/components/ui/command.tsx
+  2:45  error  Unable to resolve path to module 'cmdk'                    import/no-unresolved
+  6:39  error  Unable to resolve path to module '@/components/ui/dialog'  import/no-unresolved
+  7:20  error  Unable to resolve path to module '@/lib/utils'             import/no-unresolved
+
+/Users/galahassa/Dev/voiceflow/voiceflow-pro/apps/desktop/src/renderer/components/ui/context-menu.tsx
+  5:20  error  Unable to resolve path to module '@/lib/utils'  import/no-unresolved
+
+/Users/galahassa/Dev/voiceflow/voiceflow-pro/apps/desktop/src/renderer/components/ui/dashboard.tsx
+   13:3   error  'Download' is defined but never used                       @typescript-eslint/no-unused-vars
+   20:23  error  Unable to resolve path to module '@/components/ui/badge'   import/no-unresolved
+   21:24  error  Unable to resolve path to module '@/components/ui/button'  import/no-unresolved
+   22:75  error  Unable to resolve path to module '@/components/ui/card'    import/no-unresolved
+   23:23  error  Unable to resolve path to module '@/components/ui/input'   import/no-unresolved
+   24:20  error  Unable to resolve path to module '@/lib/utils'             import/no-unresolved
+  190:9   error  'getStatusColor' is assigned a value but never used        @typescript-eslint/no-unused-vars
+
+/Users/galahassa/Dev/voiceflow/voiceflow-pro/apps/desktop/src/renderer/components/ui/dialog.tsx
+  5:20  error  Unable to resolve path to module '@/lib/utils'  import/no-unresolved
+
+/Users/galahassa/Dev/voiceflow/voiceflow-pro/apps/desktop/src/renderer/components/ui/drawer.tsx
+  2:43  error  Unable to resolve path to module 'vaul'         import/no-unresolved
+  4:20  error  Unable to resolve path to module '@/lib/utils'  import/no-unresolved
+
+/Users/galahassa/Dev/voiceflow/voiceflow-pro/apps/desktop/src/renderer/components/ui/dropdown-menu.tsx
+  5:20  error  Unable to resolve path to module '@/lib/utils'  import/no-unresolved
+
+/Users/galahassa/Dev/voiceflow/voiceflow-pro/apps/desktop/src/renderer/components/ui/form.tsx
+  4:99  error  Unable to resolve path to module 'react-hook-form'        import/no-unresolved
+  6:23  error  Unable to resolve path to module '@/components/ui/label'  import/no-unresolved
+  7:20  error  Unable to resolve path to module '@/lib/utils'            import/no-unresolved
+
+/Users/galahassa/Dev/voiceflow/voiceflow-pro/apps/desktop/src/renderer/components/ui/hover-card.tsx
+  4:20  error  Unable to resolve path to module '@/lib/utils'  import/no-unresolved
+
+/Users/galahassa/Dev/voiceflow/voiceflow-pro/apps/desktop/src/renderer/components/ui/input-otp.tsx
+  1:43  error  Unable to resolve path to module 'input-otp'    import/no-unresolved
+  5:20  error  Unable to resolve path to module '@/lib/utils'  import/no-unresolved
+
+/Users/galahassa/Dev/voiceflow/voiceflow-pro/apps/desktop/src/renderer/components/ui/input.tsx
+  3:20  error  Unable to resolve path to module '@/lib/utils'  import/no-unresolved
+
+/Users/galahassa/Dev/voiceflow/voiceflow-pro/apps/desktop/src/renderer/components/ui/integration-hub.tsx
+   1:10  error    'motion' is defined but never used                                            @typescript-eslint/no-unused-vars
+   3:3   error    'Settings' is defined but never used                                          @typescript-eslint/no-unused-vars
+  20:8   warning  Using exported name 'CloudStorageConnector' as identifier for default import  import/no-named-as-default
+  21:45  error    'DropdownMenuItem' is defined but never used                                  @typescript-eslint/no-unused-vars
+  24:8   warning  Using exported name 'WatchFolderConfig' as identifier for default import      import/no-named-as-default
+  25:8   warning  Using exported name 'WorkflowAutomation' as identifier for default import     import/no-named-as-default
+
+/Users/galahassa/Dev/voiceflow/voiceflow-pro/apps/desktop/src/renderer/components/ui/label.tsx
+  5:20  error  Unable to resolve path to module '@/lib/utils'  import/no-unresolved
+
+/Users/galahassa/Dev/voiceflow/voiceflow-pro/apps/desktop/src/renderer/components/ui/menubar.tsx
+  5:20  error  Unable to resolve path to module '@/lib/utils'  import/no-unresolved
+
+/Users/galahassa/Dev/voiceflow/voiceflow-pro/apps/desktop/src/renderer/components/ui/navigation-menu.tsx
+  6:20  error  Unable to resolve path to module '@/lib/utils'  import/no-unresolved
+
+/Users/galahassa/Dev/voiceflow/voiceflow-pro/apps/desktop/src/renderer/components/ui/navigation-sidebar.tsx
+    5:3   error  'FileAudio' is defined but never used                           @typescript-eslint/no-unused-vars
+    7:3   error  'History' is defined but never used                             @typescript-eslint/no-unused-vars
+   10:3   error  'Upload' is defined but never used                              @typescript-eslint/no-unused-vars
+   12:3   error  'Pause' is defined but never used                               @typescript-eslint/no-unused-vars
+   24:23  error  Unable to resolve path to module '@/components/ui/badge'        import/no-unresolved
+   25:24  error  Unable to resolve path to module '@/components/ui/button'       import/no-unresolved
+   26:28  error  Unable to resolve path to module '@/components/ui/scroll-area'  import/no-unresolved
+   27:27  error  Unable to resolve path to module '@/components/ui/separator'    import/no-unresolved
+   28:20  error  Unable to resolve path to module '@/lib/utils'                  import/no-unresolved
+  101:9   error  'getStatusColor' is assigned a value but never used             @typescript-eslint/no-unused-vars
+
+/Users/galahassa/Dev/voiceflow/voiceflow-pro/apps/desktop/src/renderer/components/ui/pagination.tsx
+  4:45  error  Unable to resolve path to module '@/components/ui/button'  import/no-unresolved
+  5:20  error  Unable to resolve path to module '@/lib/utils'             import/no-unresolved
+
+/Users/galahassa/Dev/voiceflow/voiceflow-pro/apps/desktop/src/renderer/components/ui/popover.tsx
+  4:20  error  Unable to resolve path to module '@/lib/utils'  import/no-unresolved
+
+/Users/galahassa/Dev/voiceflow/voiceflow-pro/apps/desktop/src/renderer/components/ui/progress.tsx
+  4:20  error  Unable to resolve path to module '@/lib/utils'  import/no-unresolved
+
+/Users/galahassa/Dev/voiceflow/voiceflow-pro/apps/desktop/src/renderer/components/ui/radio-group.tsx
+  5:20  error  Unable to resolve path to module '@/lib/utils'  import/no-unresolved
+
+/Users/galahassa/Dev/voiceflow/voiceflow-pro/apps/desktop/src/renderer/components/ui/realtime-console.tsx
+    4:3   error  'MicOff' is defined but never used                                       @typescript-eslint/no-unused-vars
+   17:23  error  Unable to resolve path to module '@/components/ui/badge'                 import/no-unresolved
+   18:24  error  Unable to resolve path to module '@/components/ui/button'                import/no-unresolved
+   19:35  error  Unable to resolve path to module '@/components/ui/card'                  import/no-unresolved
+   20:24  error  Unable to resolve path to module '@/components/ui/slider'                import/no-unresolved
+   21:36  error  Unable to resolve path to module '@/components/ui/waveform-visualizer'   import/no-unresolved
+   22:20  error  Unable to resolve path to module '@/lib/utils'                           import/no-unresolved
+  290:43  error  'index' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/galahassa/Dev/voiceflow/voiceflow-pro/apps/desktop/src/renderer/components/ui/resizable.tsx
+  2:37  error  Unable to resolve path to module 'react-resizable-panels'  import/no-unresolved
+  4:20  error  Unable to resolve path to module '@/lib/utils'             import/no-unresolved
+
+/Users/galahassa/Dev/voiceflow/voiceflow-pro/apps/desktop/src/renderer/components/ui/scroll-area.tsx
+  4:20  error  Unable to resolve path to module '@/lib/utils'  import/no-unresolved
+
+/Users/galahassa/Dev/voiceflow/voiceflow-pro/apps/desktop/src/renderer/components/ui/select.tsx
+  5:20  error  Unable to resolve path to module '@/lib/utils'  import/no-unresolved
+
+/Users/galahassa/Dev/voiceflow/voiceflow-pro/apps/desktop/src/renderer/components/ui/separator.tsx
+  4:20  error  Unable to resolve path to module '@/lib/utils'  import/no-unresolved
+
+/Users/galahassa/Dev/voiceflow/voiceflow-pro/apps/desktop/src/renderer/components/ui/sheet.tsx
+  6:20  error  Unable to resolve path to module '@/lib/utils'  import/no-unresolved
+
+/Users/galahassa/Dev/voiceflow/voiceflow-pro/apps/desktop/src/renderer/components/ui/sidebar.tsx
+   6:24  error  Unable to resolve path to module '@/components/ui/button'     import/no-unresolved
+   7:23  error  Unable to resolve path to module '@/components/ui/input'      import/no-unresolved
+   8:27  error  Unable to resolve path to module '@/components/ui/separator'  import/no-unresolved
+   9:37  error  Unable to resolve path to module '@/components/ui/sheet'      import/no-unresolved
+  10:26  error  Unable to resolve path to module '@/components/ui/skeleton'   import/no-unresolved
+  11:74  error  Unable to resolve path to module '@/components/ui/tooltip'    import/no-unresolved
+  12:29  error  Unable to resolve path to module '@/hooks/use-mobile'         import/no-unresolved
+  13:20  error  Unable to resolve path to module '@/lib/utils'                import/no-unresolved
+
+/Users/galahassa/Dev/voiceflow/voiceflow-pro/apps/desktop/src/renderer/components/ui/skeleton.tsx
+  1:20  error  Unable to resolve path to module '@/lib/utils'  import/no-unresolved
+
+/Users/galahassa/Dev/voiceflow/voiceflow-pro/apps/desktop/src/renderer/components/ui/slider.tsx
+  4:20  error  Unable to resolve path to module '@/lib/utils'  import/no-unresolved
+
+/Users/galahassa/Dev/voiceflow/voiceflow-pro/apps/desktop/src/renderer/components/ui/switch.tsx
+  4:20  error  Unable to resolve path to module '@/lib/utils'  import/no-unresolved
+
+/Users/galahassa/Dev/voiceflow/voiceflow-pro/apps/desktop/src/renderer/components/ui/table.tsx
+  3:20  error  Unable to resolve path to module '@/lib/utils'  import/no-unresolved
+
+/Users/galahassa/Dev/voiceflow/voiceflow-pro/apps/desktop/src/renderer/components/ui/tabs.tsx
+  4:20  error  Unable to resolve path to module '@/lib/utils'  import/no-unresolved
+
+/Users/galahassa/Dev/voiceflow/voiceflow-pro/apps/desktop/src/renderer/components/ui/textarea.tsx
+  3:20  error  Unable to resolve path to module '@/lib/utils'  import/no-unresolved
+
+/Users/galahassa/Dev/voiceflow/voiceflow-pro/apps/desktop/src/renderer/components/ui/toast.tsx
+  6:20  error  Unable to resolve path to module '@/lib/utils'  import/no-unresolved
+
+/Users/galahassa/Dev/voiceflow/voiceflow-pro/apps/desktop/src/renderer/components/ui/toaster.tsx
+  1:95  error  Unable to resolve path to module '@/components/ui/toast'  import/no-unresolved
+  2:26  error  Unable to resolve path to module '@/hooks/use-toast'      import/no-unresolved
+
+/Users/galahassa/Dev/voiceflow/voiceflow-pro/apps/desktop/src/renderer/components/ui/toggle-group.tsx
+  5:32  error  Unable to resolve path to module '@/components/ui/toggle'  import/no-unresolved
+  6:20  error  Unable to resolve path to module '@/lib/utils'             import/no-unresolved
+
+/Users/galahassa/Dev/voiceflow/voiceflow-pro/apps/desktop/src/renderer/components/ui/toggle.tsx
+  5:20  error  Unable to resolve path to module '@/lib/utils'  import/no-unresolved
+
+/Users/galahassa/Dev/voiceflow/voiceflow-pro/apps/desktop/src/renderer/components/ui/tooltip.tsx
+  4:20  error  Unable to resolve path to module '@/lib/utils'  import/no-unresolved
+
+/Users/galahassa/Dev/voiceflow/voiceflow-pro/apps/desktop/src/renderer/components/ui/transcript-editor.tsx
+    1:18  error  'AnimatePresence' is defined but never used                                        @typescript-eslint/no-unused-vars
+   24:23  error  Unable to resolve path to module '@/components/ui/badge'                           import/no-unresolved
+   25:24  error  Unable to resolve path to module '@/components/ui/button'                          import/no-unresolved
+   26:28  error  Unable to resolve path to module '@/components/ui/scroll-area'                     import/no-unresolved
+   27:27  error  Unable to resolve path to module '@/components/ui/separator'                       import/no-unresolved
+   28:24  error  Unable to resolve path to module '@/components/ui/slider'                          import/no-unresolved
+   29:20  error  Unable to resolve path to module '@/lib/utils'                                     import/no-unresolved
+  116:3   error  'onSpeakerAssign' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  120:10  error  'searchQuery' is assigned a value but never used                                   @typescript-eslint/no-unused-vars
+  120:23  error  'setSearchQuery' is assigned a value but never used                                @typescript-eslint/no-unused-vars
+
+/Users/galahassa/Dev/voiceflow/voiceflow-pro/apps/desktop/src/renderer/components/ui/use-toast.ts
+  1:33  error  Unable to resolve path to module '@/hooks/use-toast'  import/no-unresolved
+
+/Users/galahassa/Dev/voiceflow/voiceflow-pro/apps/desktop/src/renderer/components/ui/watch-folder-config.tsx
+    1:29  error    Unable to resolve path to module '@hookform/resolvers/zod'                  import/no-unresolved
+    2:10  error    'motion' is defined but never used                                          @typescript-eslint/no-unused-vars
+    4:3   error    'Folder' is defined but never used                                          @typescript-eslint/no-unused-vars
+   10:3   error    'Play' is defined but never used                                            @typescript-eslint/no-unused-vars
+   22:25  error    Unable to resolve path to module 'react-hook-form'                          import/no-unresolved
+   32:10  error    'Label' is defined but never used                                           @typescript-eslint/no-unused-vars
+  130:17  error    'onUpdate' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  335:64  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+
+/Users/galahassa/Dev/voiceflow/voiceflow-pro/apps/desktop/src/renderer/components/ui/waveform-visualizer.tsx
+  4:20  error  Unable to resolve path to module '@/lib/utils'  import/no-unresolved
+
+/Users/galahassa/Dev/voiceflow/voiceflow-pro/apps/desktop/src/renderer/components/ui/workflow-automation.tsx
+    1:29  error    Unable to resolve path to module '@hookform/resolvers/zod'                                import/no-unresolved
+    2:10  error    'motion' is defined but never used                                                        @typescript-eslint/no-unused-vars
+    6:3   error    'Settings' is defined but never used                                                      @typescript-eslint/no-unused-vars
+   17:3   error    'Target' is defined but never used                                                        @typescript-eslint/no-unused-vars
+   20:3   error    'MessageSquare' is defined but never used                                                 @typescript-eslint/no-unused-vars
+   24:25  error    Unable to resolve path to module 'react-hook-form'                                        import/no-unresolved
+   34:10  error    'Label' is defined but never used                                                         @typescript-eslint/no-unused-vars
+  151:19  error    'onUpdate' is defined but never used. Allowed unused args must match /^_/u                @typescript-eslint/no-unused-vars
+  273:9   error    'integrationConnections' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  398:60  warning  Unexpected any. Specify a different type                                                  @typescript-eslint/no-explicit-any
+
+/Users/galahassa/Dev/voiceflow/voiceflow-pro/apps/desktop/src/renderer/index.tsx
+  4:27  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  5:18  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/galahassa/Dev/voiceflow/voiceflow-pro/apps/desktop/src/renderer/pages/NotFound.tsx
+  1:1  error  There should be at least one empty line between import groups  import/order
+
+/Users/galahassa/Dev/voiceflow/voiceflow-pro/apps/desktop/src/renderer/pages/TranscriptionPage.tsx
+   1:1   error    There should be at least one empty line between import groups                            import/order
+   2:1   error    `../types/api` import should occur after import of `../services/apiClient`               import/order
+   5:1   error    `../stores/uploadStore` import should occur after import of `../services/apiClient`      import/order
+   6:1   error    `../stores/transcriptStore` import should occur after import of `../services/apiClient`  import/order
+  10:10  error    'selectedTranscript' is assigned a value but never used                                  @typescript-eslint/no-unused-vars
+  15:29  error    'transcripts' is assigned a value but never used                                         @typescript-eslint/no-unused-vars
+  25:9   warning  Unexpected console statement                                                             no-console
+  36:5   warning  Unexpected console statement                                                             no-console
+  42:5   warning  Unexpected console statement                                                             no-console
+  49:9   warning  Unexpected console statement                                                             no-console
+  53:9   warning  Unexpected console statement                                                             no-console
+  63:11  warning  Unexpected console statement                                                             no-console
+  65:11  warning  Unexpected console statement                                                             no-console
+  76:11  warning  Unexpected console statement                                                             no-console
+
+/Users/galahassa/Dev/voiceflow/voiceflow-pro/apps/desktop/src/renderer/pages/VoiceFlowPro.tsx
+    1:1   error    There should be at least one empty line between import groups                                                  import/order
+    4:1   error    `../components/ui/dashboard` import should occur before import of `../components/ui/navigation-sidebar`        import/order
+    6:1   error    `../components/ui/batch-processor` import should occur before import of `../components/ui/navigation-sidebar`  import/order
+    7:1   error    There should be at least one empty line between import groups                                                  import/order
+    7:1   error    `../components/ui/ai-recipe-panel` import should occur before import of `../components/ui/app-shell`           import/order
+    8:1   error    There should be at least one empty line between import groups                                                  import/order
+    9:1   error    `../hooks/use-toast` import should occur before import of `./TranscriptionPage`                                import/order
+   10:1   error    `../stores/uploadStore` import should occur before import of `./TranscriptionPage`                             import/order
+   11:1   error    `../stores/transcriptStore` import should occur before import of `./TranscriptionPage`                         import/order
+   12:1   error    `../services/apiClient` import should occur before import of `./TranscriptionPage`                             import/order
+   35:9   warning  Unexpected console statement                                                                                   no-console
+  129:38  warning  Unexpected any. Specify a different type                                                                       @typescript-eslint/no-explicit-any
+  188:9   warning  Unexpected console statement                                                                                   no-console
+  192:9   warning  Unexpected console statement                                                                                   no-console
+  201:11  warning  Unexpected console statement                                                                                   no-console
+  203:11  warning  Unexpected console statement                                                                                   no-console
+  214:11  warning  Unexpected console statement                                                                                   no-console
+  238:47  warning  Unexpected any. Specify a different type                                                                       @typescript-eslint/no-explicit-any
+  259:33  warning  Unexpected console statement                                                                                   no-console
+  263:35  error    'variables' is defined but never used. Allowed unused args must match /^_/u                                    @typescript-eslint/no-unused-vars
+  283:33  error    'variables' is defined but never used. Allowed unused args must match /^_/u                                    @typescript-eslint/no-unused-vars
+
+/Users/galahassa/Dev/voiceflow/voiceflow-pro/apps/desktop/src/renderer/pages/VoiceFlowProSimple.tsx
+  4:23  error  Unable to resolve path to module '@/components/ui/badge'   import/no-unresolved
+  5:24  error  Unable to resolve path to module '@/components/ui/button'  import/no-unresolved
+  6:75  error  Unable to resolve path to module '@/components/ui/card'    import/no-unresolved
+  7:23  error  Unable to resolve path to module '@/components/ui/input'   import/no-unresolved
+
+/Users/galahassa/Dev/voiceflow/voiceflow-pro/apps/desktop/src/renderer/services/apiClient.ts
+   10:3   error    'LoginRequest' is defined but never used      @typescript-eslint/no-unused-vars
+   11:3   error    'RegisterRequest' is defined but never used   @typescript-eslint/no-unused-vars
+   24:3   error    'WebSocketMessage' is defined but never used  @typescript-eslint/no-unused-vars
+  185:55  warning  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  186:41  warning  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  199:55  warning  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  200:26  warning  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  219:53  warning  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  220:18  warning  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  264:48  warning  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  461:14  warning  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  490:35  warning  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  498:47  warning  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  506:37  warning  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  514:37  warning  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  553:9   warning  Unexpected console statement                  no-console
+  558:9   warning  Unexpected console statement                  no-console
+  568:52  warning  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  572:53  warning  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  576:49  warning  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+
+/Users/galahassa/Dev/voiceflow/voiceflow-pro/apps/desktop/src/renderer/stores/authStore.ts
+   26:11  error    'get' is defined but never used. Allowed unused args must match /^_/u   @typescript-eslint/no-unused-vars
+   44:25  warning  Unexpected any. Specify a different type                                @typescript-eslint/no-explicit-any
+   86:25  warning  Unexpected any. Specify a different type                                @typescript-eslint/no-explicit-any
+  112:25  warning  Unexpected any. Specify a different type                                @typescript-eslint/no-explicit-any
+  164:29  error    'user' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/galahassa/Dev/voiceflow/voiceflow-pro/apps/desktop/src/renderer/stores/modelsStore.ts
+  29:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/galahassa/Dev/voiceflow/voiceflow-pro/apps/desktop/src/renderer/stores/transcriptStore.ts
+   56:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   71:7   warning  Unexpected console statement              no-console
+   73:7   warning  Unexpected console statement              no-console
+   80:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  114:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  133:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  150:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  171:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  198:44  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  215:45  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  231:41  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/galahassa/Dev/voiceflow/voiceflow-pro/apps/desktop/src/renderer/stores/uploadStore.ts
+   28:57  error    'get' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+   86:21  warning  Unexpected any. Specify a different type                               @typescript-eslint/no-explicit-any
+  111:27  error    'removed' is assigned a value but never used                           @typescript-eslint/no-unused-vars
+
+/Users/galahassa/Dev/voiceflow/voiceflow-pro/apps/desktop/src/renderer/types/api.ts
+  101:13  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  116:9   warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+✖ 441 problems (242 errors, 199 warnings)
+  36 errors and 0 warnings potentially fixable with the `--fix` option.
+
+npm error Lifecycle script `lint` failed with error:
+npm error code 1
+npm error path /Users/galahassa/Dev/voiceflow/voiceflow-pro/apps/desktop
+npm error workspace @voiceflow-pro/desktop@1.0.0
+npm error location /Users/galahassa/Dev/voiceflow/voiceflow-pro/apps/desktop
+npm error command failed
+npm error command sh -c eslint src --ext .ts,.tsx
+galahassa@mac desktop % 

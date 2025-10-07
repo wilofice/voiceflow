@@ -6,8 +6,8 @@ import { ProtectedRoute } from './components/auth';
 import { Toaster } from './components/ui/sonner';
 import { Toaster as RadixToaster } from './components/ui/toaster';
 import { TooltipProvider } from './components/ui/tooltip';
-import { VoiceFlowPro } from './pages/VoiceFlowPro';
 import NotFound from './pages/NotFound';
+import { VoiceFlowPro } from './pages/VoiceFlowPro';
 
 const queryClient = new QueryClient();
 

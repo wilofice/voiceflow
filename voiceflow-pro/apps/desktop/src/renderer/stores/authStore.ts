@@ -23,7 +23,7 @@ interface AuthState {
 
 export const useAuthStore = create<AuthState>()(
   persist(
-    (set, get) => ({
+    (set, _get) => ({
       user: null,
       isAuthenticated: false,
       isLoading: false,
@@ -139,7 +139,7 @@ export const useAuthStore = create<AuthState>()(
               isAuthenticated: true,
               error: null,
             });
-          } catch (error) {
+          } catch (_error) {
             // Token might be invalid, clear auth state
             set({
               user: null,
@@ -161,7 +161,7 @@ export const useAuthStore = create<AuthState>()(
 );
 
 // Set up API client event listeners
-apiClient.on('auth:login', (user: User) => {
+apiClient.on('auth:login', (_user: User) => {
   useAuthStore.getState().initializeAuth();
 });
 

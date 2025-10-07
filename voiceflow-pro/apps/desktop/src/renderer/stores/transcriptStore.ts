@@ -68,9 +68,7 @@ export const useTranscriptStore = create<TranscriptState>((set, get) => ({
   createTranscript: async (data: CreateTranscriptRequest) => {
     set({ isCreating: true, error: null });
     try {
-      console.log('Creating transcript with data:', data);
       const transcript = await apiClient.createTranscript(data);
-      console.log('Transcript created successfully:', transcript);
       const { transcripts } = get();
       set({
         transcripts: [transcript, ...transcripts],

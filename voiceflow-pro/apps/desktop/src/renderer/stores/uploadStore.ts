@@ -25,7 +25,7 @@ interface UploadState {
   clearError: () => void;
 }
 
-export const useUploadStore = create<UploadState>((set, get) => ({
+export const useUploadStore = create<UploadState>((set, _get) => ({
   uploads: {},
   isUploading: false,
   error: null,
@@ -108,7 +108,7 @@ export const useUploadStore = create<UploadState>((set, get) => ({
 
   removeUpload: (uploadId: string) => {
     set((state) => {
-      const { [uploadId]: removed, ...remainingUploads } = state.uploads;
+      const { [uploadId]: _removed, ...remainingUploads } = state.uploads;
       return {
         uploads: remainingUploads,
         isUploading: Object.values(remainingUploads).some(

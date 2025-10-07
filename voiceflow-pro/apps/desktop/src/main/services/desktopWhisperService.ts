@@ -92,7 +92,7 @@ export class DesktopWhisperService {
                 
                 return candidate;
                 
-            } catch (error) {
+            } catch (_error) {
                 log.debug(`DesktopWhisperService: Binary not available: ${candidate}`);
                 continue;
             }

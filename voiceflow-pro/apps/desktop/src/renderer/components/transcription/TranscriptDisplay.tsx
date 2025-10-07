@@ -1,12 +1,3 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { useTranscriptStore } from '../../stores/transcriptStore';
-import { Transcript, TranscriptSegment } from '../../types/api';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-import { Button } from '../ui/button';
-import { Badge } from '../ui/badge';
-import { Progress } from '../ui/progress';
-import { Alert, AlertDescription } from '../ui/alert';
-import { Textarea } from '../ui/textarea';
 import { 
   Play, 
   Pause, 
@@ -22,6 +13,16 @@ import {
   AlertCircle,
   Loader2
 } from 'lucide-react';
+import React, { useEffect, useState, useRef } from 'react';
+
+import { useTranscriptStore } from '../../stores/transcriptStore';
+import { Transcript, TranscriptSegment } from '../../types/api';
+import { Alert, AlertDescription } from '../ui/alert';
+import { Badge } from '../ui/badge';
+import { Button } from '../ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
+import { Progress } from '../ui/progress';
+import { Textarea } from '../ui/textarea';
 
 interface TranscriptDisplayProps {
   transcriptId: string;
