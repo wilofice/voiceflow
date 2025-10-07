@@ -1,15 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { AppShell } from '../components/ui/app-shell';
-import { NavigationSidebar } from '../components/ui/navigation-sidebar';
-import { Dashboard } from '../components/ui/dashboard';
-import { TranscriptEditor } from '../components/ui/transcript-editor';
-import { BatchProcessor } from '../components/ui/batch-processor';
+
 import { AIRecipePanel } from '../components/ui/ai-recipe-panel';
-import { TranscriptionPage } from './TranscriptionPage';
+import { AppShell } from '../components/ui/app-shell';
+import { BatchProcessor } from '../components/ui/batch-processor';
+import { Dashboard } from '../components/ui/dashboard';
+import { NavigationSidebar } from '../components/ui/navigation-sidebar';
+import { TranscriptEditor } from '../components/ui/transcript-editor';
 import { useToast } from '../hooks/use-toast';
-import { useUploadStore } from '../stores/uploadStore';
-import { useTranscriptStore } from '../stores/transcriptStore';
 import { apiClient } from '../services/apiClient';
+import { useTranscriptStore } from '../stores/transcriptStore';
+import { useUploadStore } from '../stores/uploadStore';
+
+import { TranscriptionPage } from './TranscriptionPage';
+
 
 type View = 'dashboard' | 'transcripts' | 'transcript-editor' | 'batch-processing' | 'ai-recipes' | 'settings';
 
@@ -185,11 +188,11 @@ export const VoiceFlowPro: React.FC = () => {
       });
 
       for (const file of files) {
-        console.log('Starting upload and transcription for:', file.name);
+        // Starting upload and transcription for file
         
         // Step 1: Upload file to backend
         const uploadResponse = await uploadFile(file, { title: file.name });
-        console.log('Upload completed:', uploadResponse);
+        // Upload completed
         
         // Step 2: Try standard transcript creation first
         try {
@@ -198,9 +201,9 @@ export const VoiceFlowPro: React.FC = () => {
             title: file.name,
             language: 'auto'
           });
-          console.log('Transcript created successfully:', transcript);
+          // Transcript created successfully
         } catch (transcriptError) {
-          console.log('Standard transcript creation failed, trying direct Whisper API:', transcriptError);
+          // Standard transcript creation failed, trying direct Whisper API
           
           // Fallback: Use direct Whisper API with the original file
           const transcriptionResult = await apiClient.transcribeWithWhisper(
@@ -211,7 +214,7 @@ export const VoiceFlowPro: React.FC = () => {
               task: 'transcribe'
             }
           );
-          console.log('Direct Whisper transcription completed:', transcriptionResult);
+          // Direct Whisper transcription completed
         }
       }
       
@@ -226,7 +229,7 @@ export const VoiceFlowPro: React.FC = () => {
       // Navigate to transcripts view to see results
       setCurrentView('transcripts');
     } catch (error) {
-      console.error('Failed to upload and transcribe files:', error);
+      // Failed to upload and transcribe files
       toast({
         title: "Upload Failed",
         description: "Failed to process files. Please try again.",
@@ -256,7 +259,7 @@ export const VoiceFlowPro: React.FC = () => {
               className="flex-1"
               onPlay={() => toast({ title: "Audio", description: "Playback started" })}
               onPause={() => toast({ title: "Audio", description: "Playback paused" })}
-              onSeek={(time) => console.log('Seeking to:', time)}
+              onSeek={(_time) => {/* Audio seek */}}
             />
             <AIRecipePanel
               className="w-96"

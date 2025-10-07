@@ -45,7 +45,7 @@ export function setupIPC(services: Services) {
   log.info('IPC handlers set up successfully');
 }
 
-function setupAppHandlers(services: Services) {
+function setupAppHandlers(_services: Services) {
   // Get app version
   ipcMain.handle('app:get-version', () => {
     return require('../../../../package.json').version;
@@ -403,7 +403,7 @@ function setupWindowHandlers(services: Services) {
   });
 
   // Minimize window
-  ipcMain.handle('window:minimize', async (event: IpcMainInvokeEvent) => {
+  ipcMain.handle('window:minimize', async (_event: IpcMainInvokeEvent) => {
     try {
       const window = windowManager.getWindow('main');
       if (window) {
@@ -417,7 +417,7 @@ function setupWindowHandlers(services: Services) {
   });
 
   // Maximize/restore window
-  ipcMain.handle('window:toggle-maximize', async (event: IpcMainInvokeEvent) => {
+  ipcMain.handle('window:toggle-maximize', async (_event: IpcMainInvokeEvent) => {
     try {
       const window = windowManager.getWindow('main');
       if (window) {
@@ -483,7 +483,7 @@ function setupSecureStorageHandlers(services: Services) {
   });
 
   // Clear all secure values
-  ipcMain.handle('secure-store:clear', async (event: IpcMainInvokeEvent) => {
+  ipcMain.handle('secure-store:clear', async (_event: IpcMainInvokeEvent) => {
     try {
       await secureStorage.clear();
       return;

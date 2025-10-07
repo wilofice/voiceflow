@@ -1,27 +1,3 @@
-import React, { useEffect, useState } from 'react';
-import { useTranscriptStore } from '../../stores/transcriptStore';
-import { Transcript } from '../../types/api';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-import { Button } from '../ui/button';
-import { Input } from '../ui/input';
-import { Badge } from '../ui/badge';
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuTrigger,
-  DropdownMenuSeparator
-} from '../ui/dropdown-menu';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '../ui/alert-dialog';
 import { 
   Search, 
   MoreHorizontal, 
@@ -38,6 +14,31 @@ import {
   SortDesc,
   Eye
 } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+
+import { useTranscriptStore } from '../../stores/transcriptStore';
+import { Transcript } from '../../types/api';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '../ui/alert-dialog';
+import { Badge } from '../ui/badge';
+import { Button } from '../ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuTrigger,
+  DropdownMenuSeparator
+} from '../ui/dropdown-menu';
+import { Input } from '../ui/input';
 
 interface TranscriptListProps {
   onTranscriptSelect?: (transcript: Transcript) => void;

@@ -1,11 +1,11 @@
 import * as path from 'path';
 
-import { app, BrowserWindow, ipcMain, Menu, dialog } from 'electron';
+import { app, BrowserWindow, Menu, dialog } from 'electron';
 import contextMenu from 'electron-context-menu';
+import installExtension, { REACT_DEVELOPER_TOOLS } from 'electron-devtools-installer';
 import * as log from 'electron-log';
 import Store from 'electron-store';
 import { autoUpdater } from 'electron-updater';
-import installExtension, { REACT_DEVELOPER_TOOLS } from 'electron-devtools-installer';
 
 const isDevelopment = process.env.NODE_ENV === 'development' || process.argv.includes('--dev') || !app.isPackaged;
 
@@ -355,7 +355,7 @@ class VoiceFlowProApp {
             log.info(log_message);
         });
 
-        autoUpdater.on('update-downloaded', (info) => {
+        autoUpdater.on('update-downloaded', (_info) => {
             log.info('Update downloaded');
             // Notify user and restart
             autoUpdater.quitAndInstall();

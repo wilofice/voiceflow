@@ -1,10 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Transcript } from '../types/api';
+
 import { TranscriptList } from '../components/transcription/TranscriptList';
 import { Button } from '../components/ui/button';
-import { useUploadStore } from '../stores/uploadStore';
-import { useTranscriptStore } from '../stores/transcriptStore';
 import { apiClient } from '../services/apiClient';
+import { useTranscriptStore } from '../stores/transcriptStore';
+import { useUploadStore } from '../stores/uploadStore';
+import { Transcript } from '../types/api';
 
 export function TranscriptionPage() {
   const [selectedTranscript, setSelectedTranscript] = useState<Transcript | null>(null);

@@ -1,12 +1,3 @@
-import React, { useCallback, useState } from 'react';
-import { useDropzone } from 'react-dropzone';
-import { useUploadStore } from '../../stores/uploadStore';
-import { useTranscriptStore } from '../../stores/transcriptStore';
-import { Button } from '../ui/button';
-import { Card, CardContent } from '../ui/card';
-import { Progress } from '../ui/progress';
-import { Alert, AlertDescription } from '../ui/alert';
-import { Badge } from '../ui/badge';
 import { 
   Upload, 
   File, 
@@ -18,6 +9,16 @@ import {
   Video,
   Mic
 } from 'lucide-react';
+import React, { useCallback, useState } from 'react';
+import { useDropzone } from 'react-dropzone';
+
+import { useTranscriptStore } from '../../stores/transcriptStore';
+import { useUploadStore } from '../../stores/uploadStore';
+import { Alert, AlertDescription } from '../ui/alert';
+import { Badge } from '../ui/badge';
+import { Button } from '../ui/button';
+import { Card, CardContent } from '../ui/card';
+import { Progress } from '../ui/progress';
 
 const ACCEPTED_TYPES = {
   'audio/mpeg': ['.mp3'],
