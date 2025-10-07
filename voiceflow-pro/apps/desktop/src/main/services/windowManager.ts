@@ -1,6 +1,6 @@
 import * as path from 'path';
 
-import { BrowserWindow, screen, session } from 'electron';
+import { app, BrowserWindow, screen } from 'electron';
 import * as log from 'electron-log';
 import Store from 'electron-store';
 
@@ -15,9 +15,11 @@ interface WindowState {
 export class WindowManager {
   private store: Store<any>;
   private windows: Map<string, BrowserWindow> = new Map();
+  private readonly isDevelopment: boolean;
 
   constructor(store: Store<any>) {
     this.store = store;
+    this.isDevelopment = process.env.NODE_ENV === 'development' || !app.isPackaged;
   }
 
   async createMainWindow(): Promise<BrowserWindow> {
@@ -52,7 +54,7 @@ export class WindowManager {
       show: false, // Don't show until ready
       webPreferences: {
         nodeIntegration: false, // Security best practice
-        contextIsolation: true, // Security best practice
+        contextIsolation: true, // Required for preload contextBridge
         // enableRemoteModule: false, // Security best practice (deprecated in newer Electron)
         webSecurity: true,
         preload: path.join(__dirname, '../preload/index.js')
@@ -60,23 +62,46 @@ export class WindowManager {
       icon: this.getAppIcon()
     });
 
-    // Set Content Security Policy to allow Google Fonts
-mainWindow.webContents.session.webRequest.onHeadersReceived((details, callback) => {
-  callback({
-    responseHeaders: {
-      ...details.responseHeaders,
-      'Content-Security-Policy': [
-        "default-src 'self'",
-        "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
-        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-        "style-src-elem 'self' 'unsafe-inline' https://fonts.googleapis.com",
-        "font-src 'self' https://fonts.gstatic.com",
-        "img-src 'self' data: https:",
-        "connect-src 'self' http://localhost:3002 https://localhost:3002 ws://localhost:3002 wss://localhost:3002"
-      ].join('; ')
+    // Set Content Security Policy to allow development tooling
+    const scriptSrc = ["'self'", "'unsafe-inline'", "'unsafe-eval'"];
+    const styleSrc = ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'];
+    const fontSrc = ["'self'", 'https://fonts.gstatic.com'];
+    const imgSrc = ["'self'", 'data:', 'https:'];
+    const connectSrc = [
+      "'self'",
+      'http://localhost:3002',
+      'https://localhost:3002',
+      'ws://localhost:3002',
+      'wss://localhost:3002'
+    ];
+
+    if (this.isDevelopment) {
+      scriptSrc.push('chrome-extension://*', 'devtools://*');
+      styleSrc.push('chrome-extension://*', 'devtools://*');
+      connectSrc.push(
+        'http://localhost:3000',
+        'https://localhost:3000',
+        'ws://localhost:3000',
+        'wss://localhost:3000'
+      );
     }
-  });
-});
+
+    mainWindow.webContents.session.webRequest.onHeadersReceived((details, callback) => {
+      callback({
+        responseHeaders: {
+          ...details.responseHeaders,
+          'Content-Security-Policy': [
+            `default-src 'self'`,
+            `script-src ${scriptSrc.join(' ')}`,
+            `style-src ${styleSrc.join(' ')}`,
+            `style-src-elem ${styleSrc.join(' ')}`,
+            `font-src ${fontSrc.join(' ')}`,
+            `img-src ${imgSrc.join(' ')}`,
+            `connect-src ${connectSrc.join(' ')}`
+          ].join('; ')
+        }
+      });
+    });
 
     // Show window when ready
     mainWindow.once('ready-to-show', () => {

@@ -3,13 +3,14 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 module.exports = {
-  target: 'electron-renderer',
+  target: 'web',
   mode: process.env.NODE_ENV || 'development',
   entry: './src/renderer/index.tsx',
   output: {
     path: path.resolve(__dirname, 'dist/renderer'),
     filename: 'index.js',
     clean: true,
+    globalObject: 'globalThis',
   },
   resolve: {
     extensions: ['.tsx', '.ts', '.js', '.jsx'],
@@ -76,7 +77,4 @@ module.exports = {
     }),
   ],
   devtool: 'source-map',
-  externals: {
-    'electron': 'require("electron")',
-  },
 };

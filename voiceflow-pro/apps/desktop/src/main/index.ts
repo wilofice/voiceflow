@@ -5,6 +5,13 @@ import contextMenu from 'electron-context-menu';
 import * as log from 'electron-log';
 import Store from 'electron-store';
 import { autoUpdater } from 'electron-updater';
+import installExtension, { REACT_DEVELOPER_TOOLS } from 'electron-devtools-installer';
+
+const isDevelopment = process.env.NODE_ENV === 'development' || process.argv.includes('--dev') || !app.isPackaged;
+
+if (isDevelopment && process.env.NODE_ENV !== 'development') {
+    process.env.NODE_ENV = 'development';
+}
 
 // Import our services
 import { setupIPC } from './ipc/handlers';
@@ -57,6 +64,19 @@ class VoiceFlowProApp {
 
         // Wait for Electron to be ready
         await app.whenReady();
+
+        if (isDevelopment) {
+            try {
+                const name = await installExtension(REACT_DEVELOPER_TOOLS, {
+                    loadExtensionOptions: {
+                        allowFileAccess: true
+                    }
+                });
+                log.info(`React DevTools installed: ${name}`);
+            } catch (error) {
+                log.warn('Failed to install React DevTools extension:', error);
+            }
+        }
 
         // Initialize services
         await this.initializeServices();
@@ -148,15 +168,18 @@ class VoiceFlowProApp {
         const mainWindow = await this.windowManager.createMainWindow();
         
         // Load the app
-        if (process.env.NODE_ENV === 'development') {
+        if (isDevelopment) {
             // In development, load from the web dev server if available
             // Otherwise load the built renderer
             try {
                 await mainWindow.loadURL('http://localhost:3000');
-                mainWindow.webContents.openDevTools();
-            } catch {
+                log.info('Loaded renderer from http://localhost:3000');
+            } catch (error) {
                 await mainWindow.loadFile(path.join(__dirname, '../renderer/index.html'));
+                log.warn('Dev server not reachable, loaded bundled renderer instead.', error);
             }
+
+            mainWindow.webContents.openDevTools({ mode: 'undocked' });
         } else {
             await mainWindow.loadFile(path.join(__dirname, '../renderer/index.html'));
         }
