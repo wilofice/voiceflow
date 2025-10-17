@@ -197,23 +197,34 @@
 }
 
 @layer components {
-  /* Desktop app chrome */
-  .app-header {
-    height: 3rem;
-    background-color: hsl(var(--surface-alt) / 0.9);
-    backdrop-filter: blur(0.375rem);
-    border-bottom: 1px solid hsl(var(--border));
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 1rem;
-    -webkit-app-region: drag;
+  /* Desktop app chrome - Higher specificity to override Tailwind utilities */
+  header.app-header {
+    height: 3rem !important;
+    background-color: hsl(var(--surface-alt) / 0.9) !important;
+    backdrop-filter: blur(0.375rem) !important;
+    border-bottom: 1px solid hsl(var(--border)) !important;
+    display: grid !important;
+    grid-template-columns: 1fr auto !important;
+    align-items: center !important;
+    gap: 1rem !important;
+    padding: 0 1rem !important;
+    -webkit-app-region: drag !important;
   }
-  
-  .app-header button,
-  .app-header input,
-  .app-header select {
-    -webkit-app-region: no-drag;
+
+  /* macOS traffic light safe area - reserve space for system controls */
+  header.app-header.platform-darwin {
+    grid-template-columns: 100px 1fr auto !important;
+  }
+
+  header.app-header.platform-darwin > :first-child {
+    grid-column: 2 !important;
+  }
+
+  header.app-header button,
+  header.app-header input,
+  header.app-header select,
+  header.app-header > div {
+    -webkit-app-region: no-drag !important;
   }
   
   /* Waveform visualization */
@@ -832,25 +843,6 @@ body {
     }
 }
 
-.app-header {
-    display: flex;
-    height: 3rem;
-    align-items: center;
-    justify-content: space-between;
-    border-bottom-width: 1px;
-    border-color: hsl(var(--border));
-    background-color: hsl(var(--surface-alt) / .9);
-    padding-left: 1rem;
-    padding-right: 1rem;
-    --tw-backdrop-blur: blur(4px);
-    -webkit-backdrop-filter: var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);
-    backdrop-filter: var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);
-    -webkit-app-region: drag
-}
-
-.app-header button,.app-header input,.app-header select {
-    -webkit-app-region: no-drag
-}
 
 .waveform-bar.\!active,.waveform-bar.active {
     background-color: hsl(var(--waveform-active))

@@ -28,14 +28,22 @@ export const AppShell: React.FC<AppShellProps> = ({
   title = "VoiceFlowPro"
 }) => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  
+
   // Platform detection for window controls
-  const platform = typeof window !== 'undefined' 
+  const platform = typeof window !== 'undefined'
     ? navigator.platform.toLowerCase()
     : 'unknown';
-  
+
   const isMac = platform.includes('mac');
   const isWindows = platform.includes('win');
+
+  // Determine platform class for CSS
+  const platformClass = isMac ? 'platform-darwin' : isWindows ? 'platform-win32' : '';
+
+  // Inline styles for macOS traffic light safe area (failsafe)
+  const headerStyle: React.CSSProperties = isMac ? {
+    paddingLeft: '100px',
+  } : {};
 
   return (
     <div className={cn(
@@ -43,7 +51,10 @@ export const AppShell: React.FC<AppShellProps> = ({
       className
     )}>
       {/* Desktop App Header */}
-      <header className="app-header">
+      <header
+        className={cn("app-header", platformClass)}
+        style={headerStyle}
+      >
         <div className="flex items-center gap-3">
           <Button
             variant="ghost"
@@ -54,7 +65,7 @@ export const AppShell: React.FC<AppShellProps> = ({
           >
             <Menu className="w-4 h-4" />
           </Button>
-          
+
           <div className="flex items-center gap-2">
             <div className="w-6 h-6 rounded bg-gradient-primary flex items-center justify-center">
               <span className="text-xs font-bold text-white">V</span>
@@ -75,30 +86,20 @@ export const AppShell: React.FC<AppShellProps> = ({
           </Button>
         </div>
 
-        {/* Window Controls */}
-        <div className="flex items-center gap-1 ml-auto">
-          {isMac ? (
-            // macOS Traffic Light Controls
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-red-500 hover:bg-red-600 cursor-pointer" />
-              <div className="w-3 h-3 rounded-full bg-yellow-500 hover:bg-yellow-600 cursor-pointer" />
-              <div className="w-3 h-3 rounded-full bg-green-500 hover:bg-green-600 cursor-pointer" />
-            </div>
-          ) : (
-            // Windows Controls
-            <div className="flex items-center">
-              <Button variant="ghost" size="sm" className="focus-ring hover:bg-surface-alt">
-                <Minus className="w-4 h-4" />
-              </Button>
-              <Button variant="ghost" size="sm" className="focus-ring hover:bg-surface-alt">
-                <Square className="w-3 h-3" />
-              </Button>
-              <Button variant="ghost" size="sm" className="focus-ring hover:bg-destructive hover:text-destructive-foreground">
-                <X className="w-4 h-4" />
-              </Button>
-            </div>
-          )}
-        </div>
+        {/* Window Controls - Only show on Windows */}
+        {!isMac && (
+          <div className="flex items-center gap-1 ml-auto">
+            <Button variant="ghost" size="sm" className="focus-ring hover:bg-surface-alt">
+              <Minus className="w-4 h-4" />
+            </Button>
+            <Button variant="ghost" size="sm" className="focus-ring hover:bg-surface-alt">
+              <Square className="w-3 h-3" />
+            </Button>
+            <Button variant="ghost" size="sm" className="focus-ring hover:bg-destructive hover:text-destructive-foreground">
+              <X className="w-4 h-4" />
+            </Button>
+          </div>
+        )}
       </header>
 
       {/* Main Layout */}
