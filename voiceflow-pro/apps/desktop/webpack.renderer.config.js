@@ -80,8 +80,8 @@ module.exports = {
           noErrorOnMissing: true
         },
         {
-          from: path.resolve(__dirname, 'src/renderer/react-devtools-hook.js'),
-          to: path.resolve(__dirname, 'dist/renderer/react-devtools-hook.js'),
+          from: path.resolve(__dirname, 'src/renderer/init-devtools.js'),
+          to: path.resolve(__dirname, 'dist/renderer/init-devtools.js'),
         },
         // You can add more patterns here for other static assets
       ],

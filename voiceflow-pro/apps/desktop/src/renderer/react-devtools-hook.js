@@ -18,34 +18,26 @@
 
   console.log('🔌 Connecting to standalone React DevTools (localhost:8097)...');
 
-  // Try to connect to standalone React DevTools
-  function connectToDevTools() {
-    try {
-      const script = document.createElement('script');
-      script.src = 'http://localhost:8097';
+  // Create a synchronous script that loads BEFORE React
+  // This ensures the DevTools backend is ready when React initializes
+  const script = document.createElement('script');
+  script.src = 'http://localhost:8097';
 
-      script.onload = function() {
-        console.log('✅ Connected to React DevTools standalone server!');
-        console.log('   Open the React DevTools window to inspect your app');
-      };
+  // Important: NOT async or defer - we need this to block and load first
+  script.async = false;
+  script.defer = false;
 
-      script.onerror = function() {
-        console.warn('⚠️  Could not connect to React DevTools');
-        console.warn('   Make sure the standalone React DevTools is running:');
-        console.warn('   npm run react-devtools');
-      };
+  script.onload = function() {
+    console.log('✅ React DevTools backend loaded!');
+    console.log('   The DevTools window should now show your components');
+  };
 
-      document.head.appendChild(script);
-    } catch (error) {
-      console.error('❌ Failed to load React DevTools:', error);
-    }
-  }
+  script.onerror = function() {
+    console.warn('⚠️  Could not connect to React DevTools server');
+    console.warn('   Make sure it is running: npm run react-devtools');
+  };
 
-  // Connect when DOM is ready
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', connectToDevTools);
-  } else {
-    connectToDevTools();
-  }
+  // Append immediately - this will block until loaded
+  document.head.appendChild(script);
 
 })();
