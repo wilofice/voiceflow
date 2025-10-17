@@ -1,10 +1,13 @@
 const path = require('path');
+const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 
+const isDevelopment = process.env.NODE_ENV !== 'production';
+
 module.exports = {
   target: 'web',
-  mode: process.env.NODE_ENV || 'development',
+  mode: isDevelopment ? 'development' : 'production',
   entry: './src/renderer/index.tsx',
   output: {
     path: path.resolve(__dirname, 'dist/renderer'),
@@ -61,16 +64,24 @@ module.exports = {
     ],
   },
   plugins: [
+    new webpack.DefinePlugin({
+      'process.env.NODE_ENV': JSON.stringify(isDevelopment ? 'development' : 'production'),
+      '__DEV__': JSON.stringify(isDevelopment),
+    }),
     new HtmlWebpackPlugin({
       template: './src/renderer/index.html',
       filename: 'index.html',
     }),
     new CopyWebpackPlugin({
       patterns: [
-        { 
+        {
           from: path.resolve(__dirname, 'src/renderer/js'),
           to: path.resolve(__dirname, 'dist/renderer/js'),
           noErrorOnMissing: true
+        },
+        {
+          from: path.resolve(__dirname, 'src/renderer/react-devtools-hook.js'),
+          to: path.resolve(__dirname, 'dist/renderer/react-devtools-hook.js'),
         },
         // You can add more patterns here for other static assets
       ],
