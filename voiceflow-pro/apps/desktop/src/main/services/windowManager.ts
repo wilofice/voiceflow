@@ -1,6 +1,8 @@
 import * as path from 'path';
+import * as fs from 'fs';
+import * as os from 'os';
 
-import { app, BrowserWindow, screen } from 'electron';
+import { app, BrowserWindow, screen, session } from 'electron';
 import * as log from 'electron-log';
 import Store from 'electron-store';
 
@@ -76,13 +78,15 @@ export class WindowManager {
     ];
 
     if (this.isDevelopment) {
-      scriptSrc.push('chrome-extension://*', 'devtools://*');
+      scriptSrc.push('chrome-extension://*', 'devtools://*', 'http://localhost:8097');
       styleSrc.push('chrome-extension://*', 'devtools://*');
       connectSrc.push(
         'http://localhost:3000',
         'https://localhost:3000',
         'ws://localhost:3000',
-        'wss://localhost:3000'
+        'wss://localhost:3000',
+        'http://localhost:8097',
+        'ws://localhost:8097'
       );
     }
 
@@ -146,6 +150,54 @@ export class WindowManager {
 
     // Store reference
     this.windows.set('main', mainWindow);
+
+    // Install React DevTools in development
+    if (this.isDevelopment) {
+      // Create extensions directory if it doesn't exist
+      const extensionsPath = path.join(
+        app.getPath('userData'),
+        'extensions'
+      );
+
+      if (!fs.existsSync(extensionsPath)) {
+        log.info(`📁 Creating extensions directory: ${extensionsPath}`);
+        fs.mkdirSync(extensionsPath, { recursive: true });
+      }
+
+      mainWindow.webContents.once('dom-ready', async () => {
+        try {
+          log.info('📦 Installing React DevTools...');
+          log.info(`   Using session: ${mainWindow.webContents.session === session.defaultSession ? 'default' : 'custom'}`);
+
+          const { default: installExtension, REACT_DEVELOPER_TOOLS } = await import('electron-devtools-installer');
+
+          const extension = await installExtension(REACT_DEVELOPER_TOOLS, {
+            loadExtensionOptions: {
+              allowFileAccess: true,
+            },
+            forceDownload: false,
+            session: mainWindow.webContents.session
+          });
+
+          // Extension returns an object with 'name' and 'id' properties
+          log.info(`✅ React DevTools installed successfully!`);
+          log.info(`   Name: ${extension.name}`);
+          log.info(`   ID: ${extension.id}`);
+
+          // Verify extension is loaded
+          const loadedExtensions = mainWindow.webContents.session.getAllExtensions();
+          log.info(`   Loaded extensions: ${Object.keys(loadedExtensions).length}`);
+          Object.values(loadedExtensions).forEach((ext: any) => {
+            log.info(`      - ${ext.name} (${ext.id})`);
+          });
+        } catch (error) {
+          log.error('❌ React DevTools installation failed:', error);
+          if (error instanceof Error) {
+            log.error(`   Error details: ${error.message}`);
+          }
+        }
+      });
+    }
 
     log.info('Main window created successfully');
     return mainWindow;

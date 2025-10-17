@@ -65,18 +65,7 @@ class VoiceFlowProApp {
         // Wait for Electron to be ready
         await app.whenReady();
 
-        if (isDevelopment) {
-            try {
-                const name = await installExtension(REACT_DEVELOPER_TOOLS, {
-                    loadExtensionOptions: {
-                        allowFileAccess: true
-                    }
-                });
-                log.info(`React DevTools installed: ${name}`);
-            } catch (error) {
-                log.warn('Failed to install React DevTools extension:', error);
-            }
-        }
+        // Note: React DevTools will be installed after window creation for better compatibility
 
         // Initialize services
         await this.initializeServices();
