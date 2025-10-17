@@ -252,8 +252,8 @@ export class HybridTranscriptionService {
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
         const now = Date.now();
-        if (now - this.lastOpenAiWarning > 60_000) {
-          console.warn(`OpenAI API unreachable (${message}). Continuing with local/Docker whisper only.`);
+        if (now - this.lastOpenAiWarning > 600_000) {
+          //console.warn(`OpenAI API unreachable (${message}). Continuing with local/Docker whisper only.`);
           this.lastOpenAiWarning = now;
         }
       }
