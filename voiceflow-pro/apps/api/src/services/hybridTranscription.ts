@@ -421,17 +421,17 @@ export class HybridTranscriptionService {
   private getAvailableMethods(health: ServiceHealth): TranscriptionMethod[] {
     const available: TranscriptionMethod[] = [];
     
-    if (health.openai.available) {
-      available.push('openai');
-    }
+    // if (health.openai.available) {
+    //   available.push('openai');
+    // }
     
     if (health.whisperLocal.available) {
       available.push('whisper-local');
     }
     
-    if (health.whisperDocker.available) {
-      available.push('whisper-docker');
-    }
+    // if (health.whisperDocker.available) {
+    //   available.push('whisper-docker');
+    // }
     
     return available;
   }

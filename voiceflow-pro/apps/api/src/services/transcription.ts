@@ -1,13 +1,11 @@
-import OpenAI from 'openai';
 import { TranscriptStatus } from '@voiceflow-pro/database';
 import { prisma } from '@voiceflow-pro/database';
 import { getSignedUrl, AUDIO_BUCKET } from '../lib/supabase';
-import { Readable } from 'stream';
-import FormData from 'form-data';
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY || '',
-});
+// (Readable removed - not used after refactor)
+import { promises as fs } from 'fs';
+import os from 'os';
+import path from 'path';
+import { HybridTranscriptionService } from './hybridTranscription';
 
 // Progress callback type
 type ProgressCallback = (progress: {
@@ -39,7 +37,7 @@ export class TranscriptionService {
       onProgress?: ProgressCallback;
     } = {}
   ) {
-    const { language, prompt, onProgress } = options;
+  const { language, onProgress } = options;
 
     try {
       // Update status to processing
@@ -57,87 +55,75 @@ export class TranscriptionService {
         throw new Error('File too large. Maximum size is 25MB');
       }
 
-      // Create a readable stream from buffer
-      const audioStream = Readable.from(audioBuffer);
-      
-      // Create form data
-      const formData = new FormData();
-      formData.append('file', audioStream, {
-        filename: fileName,
-        contentType: `audio/${fileExtension}`,
-      });
-      formData.append('model', 'whisper-1');
-      
-      if (language) {
-        formData.append('language', language);
-      }
-      
-      if (prompt) {
-        formData.append('prompt', prompt);
-      }
-      
-      // Request detailed response format with timestamps
-      formData.append('response_format', 'verbose_json');
-      formData.append('timestamp_granularities[]', 'segment');
+      // Write buffer to a temporary file for hybrid/local transcription services
+      const tmpDir = os.tmpdir();
+      const tempFileName = `transcription-${transcriptId}-${Date.now()}.${fileExtension}`;
+      const tempFilePath = path.join(tmpDir, tempFileName);
 
-      // Send progress update
-      onProgress?.({
-        transcriptId,
-        progress: 30,
-        status: 'PROCESSING',
-        message: 'Sending audio to OpenAI...',
-      });
+      await fs.writeFile(tempFilePath, audioBuffer);
 
-      // Call OpenAI Whisper API
-      const response = await openai.audio.transcriptions.create({
-        file: audioStream as any,
-        model: 'whisper-1',
-        language: language || undefined,
-        prompt: prompt || undefined,
-        response_format: 'verbose_json',
-      });
+      try {
+        // Build hybrid request; let HybridTranscriptionService choose local first
+        const hybrid = HybridTranscriptionService.getInstance();
 
-      // Update progress
-      onProgress?.({
-        transcriptId,
-        progress: 70,
-        status: 'PROCESSING',
-        message: 'Processing transcription results...',
-      });
+        const hybridResult = await hybrid.transcribe({
+          filePath: tempFilePath,
+          method: 'auto',
+          options: {
+            model: undefined,
+            language: language,
+            task: 'transcribe',
+          },
+          priority: 'privacy', // prefer local by default; hybrid will adjust
+          fallbackEnabled: true,
+          userId: undefined,
+        });
 
-      // Process and save segments
-      const segments = await this.processTranscriptionResponse(transcriptId, response);
+        // Process and save segments (hybridResult should contain segments/text/duration)
+        const segments = await this.processTranscriptionResponse(transcriptId, {
+          segments: hybridResult.segments || [],
+          text: hybridResult.text || '',
+          language: hybridResult.language || language,
+          duration: hybridResult.duration || 0,
+        });
 
-      // Calculate total duration from segments
-      const duration = segments.length > 0 
-        ? Math.ceil(segments[segments.length - 1].endTime)
-        : 0;
+        const duration = hybridResult.duration || (segments.length > 0 ? Math.ceil((segments as any)[segments.length - 1].end) : 0);
 
-      // Update transcript with completed status
-      await prisma.transcript.update({
-        where: { id: transcriptId },
-        data: {
+        // Update transcript with completed status
+        await prisma.transcript.update({
+          where: { id: transcriptId },
+          data: {
+            status: 'COMPLETED',
+            duration,
+            language: hybridResult.language || language || 'en',
+          },
+        });
+
+        // Final progress update
+        onProgress?.({
+          transcriptId,
+          progress: 100,
           status: 'COMPLETED',
+          message: 'Transcription completed successfully',
+        });
+
+        return {
+          transcriptId,
+          segments,
+          language: hybridResult.language,
           duration,
-          language: response.language || language || 'en',
-        },
-      });
-
-      // Final progress update
-      onProgress?.({
-        transcriptId,
-        progress: 100,
-        status: 'COMPLETED',
-        message: 'Transcription completed successfully',
-      });
-
-      return {
-        transcriptId,
-        segments,
-        language: response.language,
-        duration,
-        text: response.text,
-      };
+          text: hybridResult.text,
+          resourceUsage: hybridResult.metadata?.resourceUsage,
+          model: hybridResult.model,
+        };
+      } finally {
+        // Clean up temp file
+        try {
+          await fs.unlink(tempFilePath);
+        } catch (e) {
+          // Ignore cleanup errors
+        }
+      }
 
     } catch (error: any) {
       console.error('Transcription error:', error);

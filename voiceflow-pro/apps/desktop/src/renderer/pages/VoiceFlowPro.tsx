@@ -28,10 +28,30 @@ export const VoiceFlowPro: React.FC = () => {
   const { uploadFile } = useUploadStore();
   const { createTranscript, transcripts, fetchTranscripts } = useTranscriptStore();
 
+  // Helper functions - defined before use
+  const formatDuration = (seconds: number): string => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+  };
+
+  const formatTimestamp = (dateString: string): string => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffDays = Math.floor(diffHours / 24);
+
+    if (diffHours < 1) return 'Just now';
+    if (diffHours < 24) return `${diffHours} hours ago`;
+    if (diffDays === 1) return '1 day ago';
+    return `${diffDays} days ago`;
+  };
+
   // Fetch transcripts on mount
   useEffect(() => {
     fetchTranscripts();
-    
+
     // Check Whisper service health
     apiClient.getWhisperHealth()
       .then(health => {
@@ -52,26 +72,6 @@ export const VoiceFlowPro: React.FC = () => {
     confidence: 95,
     starred: false,
   })) || [];
-
-  // Helper functions
-  const formatDuration = (seconds: number): string => {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
-  };
-
-  const formatTimestamp = (dateString: string): string => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-    const diffDays = Math.floor(diffHours / 24);
-
-    if (diffHours < 1) return 'Just now';
-    if (diffHours < 24) return `${diffHours} hours ago`;
-    if (diffDays === 1) return '1 day ago';
-    return `${diffDays} days ago`;
-  };
 
   const handleNavigation = (item: NavigationItem) => {
     switch (item.id) {
@@ -188,51 +188,35 @@ export const VoiceFlowPro: React.FC = () => {
       });
 
       for (const file of files) {
-        // Starting upload and transcription for file
-        
-        // Step 1: Upload file to backend
-        const uploadResponse = await uploadFile(file, { title: file.name });
-        // Upload completed
-        
-        // Step 2: Try standard transcript creation first
-        try {
-          const transcript = await createTranscript({ 
-            uploadId: uploadResponse.id,
-            title: file.name,
-            language: 'auto'
-          });
-          // Transcript created successfully
-        } catch (transcriptError) {
-          // Standard transcript creation failed, trying direct Whisper API
-          
-          // Fallback: Use direct Whisper API with the original file
-          const transcriptionResult = await apiClient.transcribeWithWhisper(
-            file, // Pass the original File object for multipart upload
-            {
-              model: 'base',
-              language: 'auto',
-              task: 'transcribe'
-            }
-          );
-          // Direct Whisper transcription completed
-        }
+        console.log('Starting upload for:', file.name);
+
+        // Upload file to backend - this automatically creates the transcript
+        // and queues it for transcription processing
+        const uploadResponse = await uploadFile(file, {
+          title: file.name,
+          language: 'auto'
+        });
+
+        console.log('Upload completed:', uploadResponse);
+        console.log('Transcript ID:', uploadResponse.transcriptId);
+        console.log('Status:', uploadResponse.status);
       }
-      
-      // Refresh transcript list
+
+      // Refresh transcript list to show the new uploads
       await fetchTranscripts();
-      
+
       toast({
         title: "Upload Complete",
-        description: `Successfully processed ${files.length} file(s)`,
+        description: `Successfully uploaded ${files.length} file(s). Transcription in progress...`,
       });
 
       // Navigate to transcripts view to see results
       setCurrentView('transcripts');
-    } catch (error) {
-      // Failed to upload and transcribe files
+    } catch (error: any) {
+      console.error('Failed to upload and transcribe files:', error);
       toast({
         title: "Upload Failed",
-        description: "Failed to process files. Please try again.",
+        description: error?.message || "Failed to process files. Please try again.",
         variant: "destructive",
       });
     }

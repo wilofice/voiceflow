@@ -47,42 +47,22 @@ export function TranscriptionPage() {
   const handleFilesDrop = async (files: File[]) => {
     try {
       for (const file of files) {
-        console.log('Starting upload and transcription for:', file.name);
-        
-        // Step 1: Upload file to backend
-        const uploadResponse = await uploadFile(file, { title: file.name });
+        console.log('Starting upload for:', file.name);
+
+        // Upload file to backend - this automatically creates the transcript
+        // and queues it for transcription processing
+        const uploadResponse = await uploadFile(file, {
+          title: file.name,
+          language: 'auto'
+        });
+
         console.log('Upload completed:', uploadResponse);
-        
-        // Step 2: Try to create transcript using the standard flow first
-        // If this fails, we'll know the backend expects direct Whisper API calls
-        try {
-          const transcript = await createTranscript({ 
-            uploadId: uploadResponse.id,
-            title: file.name,
-            language: 'auto'
-          });
-          console.log('Transcript created successfully:', transcript);
-        } catch (transcriptError) {
-          console.log('Standard transcript creation failed, trying direct Whisper API:', transcriptError);
-          
-          // Fallback: Use direct Whisper API with the original file
-          const transcriptionResult = await apiClient.transcribeWithWhisper(
-            file, // Pass the original File object for multipart upload
-            {
-              model: 'base',
-              language: 'auto',
-              task: 'transcribe'
-            }
-          );
-          console.log('Direct Whisper transcription completed:', transcriptionResult);
-        }
+        console.log('Transcript ID:', uploadResponse.transcriptId);
+        console.log('Status:', uploadResponse.status);
       }
-      
-      // Refresh transcript list
+
+      // Refresh transcript list to show the new uploads
       await fetchTranscripts();
-      
-      // Switch to list view to see results
-      setViewMode('list');
     } catch (error) {
       console.error('Failed to upload and transcribe files:', error);
     }

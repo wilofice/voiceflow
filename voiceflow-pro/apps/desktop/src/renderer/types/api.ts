@@ -44,7 +44,7 @@ export interface Transcript {
   language: string;
   status: 'QUEUED' | 'PROCESSING' | 'COMPLETED' | 'FAILED';
   audioUrl: string | null;
-  segments: TranscriptSegment[];
+  segments?: TranscriptSegment[]; // Optional - only populated when fetching individual transcript
   createdAt: string;
   updatedAt: string;
 }
@@ -78,11 +78,20 @@ export interface UploadMetadata {
 }
 
 export interface UploadResponse {
-  id: string;
-  filename: string;
-  size: number;
-  mimetype: string;
-  url: string;
+  uploadId: string; // This is the transcript ID
+  fileName: string;
+  fileSize: number;
+  status: string;
+  transcriptId: string;
+  audioUrl: string;
+  validationWarning?: string;
+
+  // Backwards compatibility
+  id?: string;
+  filename?: string;
+  size?: number;
+  mimetype?: string;
+  url?: string;
 }
 
 export interface PaginatedResponse<T> {
