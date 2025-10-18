@@ -78,21 +78,31 @@ export const useTranscriptStore = create<TranscriptState>((set, get) => ({
     } catch (error: any) {
       console.error('Failed to create transcript:', error);
       console.error('Error details:', {
-        message: error.message,
-        response: error.response?.data,
-        status: error.response?.status,
-        config: error.config
+        message: error?.message,
+        code: error?.code,
+        statusCode: error?.statusCode,
+        details: error?.details,
+        response: error?.response?.data,
+        status: error?.response?.status,
       });
-      
-      const errorMessage = error?.response?.data?.message || 
-                           error?.message || 
+
+      // Extract error message from various possible error formats
+      const errorMessage = error?.message ||
+                           error?.response?.data?.message ||
+                           error?.response?.data?.error?.message ||
                            'Failed to create transcript';
-      
+
       set({
         isCreating: false,
         error: errorMessage,
       });
-      throw new Error(errorMessage);
+
+      // Always throw a proper Error object
+      const errorToThrow = error instanceof Error ? error : new Error(errorMessage);
+      (errorToThrow as any).code = error?.code;
+      (errorToThrow as any).statusCode = error?.statusCode || error?.response?.status;
+      (errorToThrow as any).details = error?.details || error?.response?.data;
+      throw errorToThrow;
     }
   },
 

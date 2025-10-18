@@ -259,20 +259,28 @@ export class APIClient extends EventEmitter {
     }
   }
 
-  private normalizeError(error: AxiosError): APIError {
+  private normalizeError(error: AxiosError): Error {
+    let message: string;
+    let code: string;
+    let details: any;
+
     if (error.response?.data) {
       const errorData = error.response.data as any;
-      return {
-        code: errorData.error?.code || 'UNKNOWN_ERROR',
-        message: errorData.error?.message || error.message,
-        details: errorData.error?.details,
-      };
+      code = errorData.error?.code || errorData.code || 'UNKNOWN_ERROR';
+      message = errorData.error?.message || errorData.message || error.message;
+      details = errorData.error?.details || errorData.details;
+    } else {
+      code = error.code || 'NETWORK_ERROR';
+      message = error.message;
     }
 
-    return {
-      code: error.code || 'NETWORK_ERROR',
-      message: error.message,
-    };
+    // Create a proper Error object
+    const normalizedError = new Error(message);
+    (normalizedError as any).code = code;
+    (normalizedError as any).details = details;
+    (normalizedError as any).statusCode = error.response?.status;
+
+    return normalizedError;
   }
 
   private async retryableRequest<T>(
@@ -283,7 +291,18 @@ export class APIClient extends EventEmitter {
       ...this.retryConfig,
       ...config,
       onFailedAttempt: (error) => {
-        console.warn(`API request failed (attempt ${error.attemptNumber}):`, error.cause?.message || 'Unknown error');
+        const errorMessage = error instanceof Error ? error.message :
+                           (error as any)?.cause?.message ||
+                           'Unknown error';
+        console.warn(`API request failed (attempt ${error.attemptNumber}):`, errorMessage);
+
+        // Log more details for debugging
+        if ((error as any)?.cause?.response) {
+          console.warn('Response details:', {
+            status: (error as any).cause.response.status,
+            data: (error as any).cause.response.data
+          });
+        }
       },
     });
   }
@@ -360,6 +379,15 @@ export class APIClient extends EventEmitter {
       return this.client.get(`/api/transcripts?${params}`);
     });
 
+    // Backend returns { transcripts, pagination }, normalize to { data, pagination }
+    const responseData = response.data;
+    if (responseData.transcripts) {
+      return {
+        data: responseData.transcripts,
+        pagination: responseData.pagination
+      };
+    }
+
     return response.data;
   }
 
@@ -408,7 +436,7 @@ export class APIClient extends EventEmitter {
   ): Promise<UploadResponse> {
     const formData = new FormData();
     formData.append('file', file);
-    
+
     if (metadata.title) formData.append('title', metadata.title);
     if (metadata.language) formData.append('language', metadata.language);
 
@@ -425,8 +453,18 @@ export class APIClient extends EventEmitter {
     });
 
     const upload = response.data;
-    this.emit('upload:completed', upload);
-    return upload;
+
+    // Add backwards compatibility fields
+    const normalizedUpload: UploadResponse = {
+      ...upload,
+      id: upload.uploadId || upload.transcriptId,
+      filename: upload.fileName,
+      size: upload.fileSize,
+      url: upload.audioUrl,
+    };
+
+    this.emit('upload:completed', normalizedUpload);
+    return normalizedUpload;
   }
 
   // ===== MODEL METHODS =====
