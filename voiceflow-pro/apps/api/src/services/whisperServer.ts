@@ -288,7 +288,13 @@ export class WhisperServerService {
 
     // Add optional parameters
     if (options.language) {
-      command.push('--language', options.language);
+      // The whisper CLI does not accept 'auto' as a language value; omit the flag to allow auto-detection
+      if (options.language.toLowerCase() !== 'auto') {
+        command.push('--language', options.language);
+      } else {
+        // leave language unset to let whisper auto-detect
+        console.debug('WhisperServerService: omitting --language for auto-detection');
+      }
     }
 
     if (options.task === 'translate') {
