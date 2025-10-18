@@ -54,6 +54,16 @@ export const useTranscriptStore = create<TranscriptState>((set, get) => ({
         isLoading: false,
       });
     } catch (error: any) {
+      // If rate limited, keep existing transcripts and silently fail
+      const isRateLimited = error.message?.toLowerCase().includes('too many requests') ||
+                           error.statusCode === 429;
+
+      if (isRateLimited) {
+        console.warn('Rate limited, skipping update');
+        set({ isLoading: false }); // Keep existing transcripts
+        return; // Don't update error state on rate limit
+      }
+
       set({
         transcripts: [], // Ensure transcripts is always an array
         pagination: null,

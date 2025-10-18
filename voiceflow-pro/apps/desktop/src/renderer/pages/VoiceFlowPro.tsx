@@ -63,7 +63,13 @@ export const VoiceFlowPro: React.FC = () => {
   }, [fetchTranscripts]);
 
   // Auto-refresh transcripts when there are processing/queued items
+  // Only poll from dashboard view, not when on transcription page
   useEffect(() => {
+    // Don't poll if we're on the transcripts view (TranscriptionPage handles it)
+    if (currentView === 'transcripts') {
+      return;
+    }
+
     const hasActiveTranscripts = transcripts.some(
       t => t.status === 'PROCESSING' || t.status === 'QUEUED'
     );
@@ -72,19 +78,19 @@ export const VoiceFlowPro: React.FC = () => {
       return; // No active transcripts, no need to poll
     }
 
-    console.log('Active transcripts detected, starting polling...');
+    console.log('[Dashboard] Active transcripts detected, starting polling...');
 
-    // Poll every 3 seconds when there are active transcriptions
+    // Poll every 5 seconds when there are active transcriptions
     const pollInterval = setInterval(() => {
-      console.log('Polling for transcript updates...');
+      console.log('[Dashboard] Polling for transcript updates...');
       fetchTranscripts();
-    }, 3000);
+    }, 5000);
 
     return () => {
-      console.log('Stopping polling');
+      console.log('[Dashboard] Stopping polling');
       clearInterval(pollInterval);
     };
-  }, [transcripts, fetchTranscripts]);
+  }, [transcripts, fetchTranscripts, currentView]);
 
   // Convert transcripts for dashboard display
   const dashboardTranscripts = transcripts?.slice(0, 5).map(transcript => ({
