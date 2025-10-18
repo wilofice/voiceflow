@@ -62,6 +62,30 @@ export const VoiceFlowPro: React.FC = () => {
       });
   }, [fetchTranscripts]);
 
+  // Auto-refresh transcripts when there are processing/queued items
+  useEffect(() => {
+    const hasActiveTranscripts = transcripts.some(
+      t => t.status === 'PROCESSING' || t.status === 'QUEUED'
+    );
+
+    if (!hasActiveTranscripts) {
+      return; // No active transcripts, no need to poll
+    }
+
+    console.log('Active transcripts detected, starting polling...');
+
+    // Poll every 3 seconds when there are active transcriptions
+    const pollInterval = setInterval(() => {
+      console.log('Polling for transcript updates...');
+      fetchTranscripts();
+    }, 3000);
+
+    return () => {
+      console.log('Stopping polling');
+      clearInterval(pollInterval);
+    };
+  }, [transcripts, fetchTranscripts]);
+
   // Convert transcripts for dashboard display
   const dashboardTranscripts = transcripts?.slice(0, 5).map(transcript => ({
     id: transcript.id,

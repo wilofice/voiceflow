@@ -11,15 +11,14 @@ export function TranscriptionPage() {
   const [selectedTranscript, setSelectedTranscript] = useState<Transcript | null>(null);
   const [selectedTranscriptId, setSelectedTranscriptId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  
+
   const { uploadFile } = useUploadStore();
   const { createTranscript, transcripts, fetchTranscripts } = useTranscriptStore();
-
 
   // Fetch transcripts and check Whisper health on component mount
   useEffect(() => {
     fetchTranscripts();
-    
+
     // Check if Whisper service is available
     apiClient.getWhisperHealth()
       .then(health => {
@@ -29,6 +28,30 @@ export function TranscriptionPage() {
         console.warn('Whisper service not available:', error);
       });
   }, [fetchTranscripts]);
+
+  // Auto-refresh transcripts when there are processing/queued items
+  useEffect(() => {
+    const hasActiveTranscripts = transcripts.some(
+      t => t.status === 'PROCESSING' || t.status === 'QUEUED'
+    );
+
+    if (!hasActiveTranscripts) {
+      return; // No active transcripts, no need to poll
+    }
+
+    console.log('Active transcripts detected, starting polling...');
+
+    // Poll every 3 seconds when there are active transcriptions
+    const pollInterval = setInterval(() => {
+      console.log('Polling for transcript updates...');
+      fetchTranscripts();
+    }, 3000);
+
+    return () => {
+      console.log('Stopping polling');
+      clearInterval(pollInterval);
+    };
+  }, [transcripts, fetchTranscripts]);
 
   const handleTranscriptSelect = (transcript: Transcript) => {
     setSelectedTranscript(transcript);
