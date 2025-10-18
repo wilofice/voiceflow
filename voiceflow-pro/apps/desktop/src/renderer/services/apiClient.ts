@@ -375,9 +375,8 @@ export class APIClient extends EventEmitter {
       ...(status && { status }),
     });
 
-    const response = await this.retryableRequest(async () => {
-      return this.client.get(`/api/transcripts?${params}`);
-    });
+    // Don't retry transcript fetching to avoid rate limits during polling
+    const response = await this.client.get(`/api/transcripts?${params}`);
 
     // Backend returns { transcripts, pagination }, normalize to { data, pagination }
     const responseData = response.data;

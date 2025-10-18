@@ -39,16 +39,16 @@ export function TranscriptionPage() {
       return; // No active transcripts, no need to poll
     }
 
-    console.log('Active transcripts detected, starting polling...');
+    console.log('[TranscriptionPage] Active transcripts detected, starting polling...');
 
-    // Poll every 3 seconds when there are active transcriptions
+    // Poll every 5 seconds when there are active transcriptions
     const pollInterval = setInterval(() => {
-      console.log('Polling for transcript updates...');
+      console.log('[TranscriptionPage] Polling for transcript updates...');
       fetchTranscripts();
-    }, 3000);
+    }, 5000);
 
     return () => {
-      console.log('Stopping polling');
+      console.log('[TranscriptionPage] Stopping polling');
       clearInterval(pollInterval);
     };
   }, [transcripts, fetchTranscripts]);
