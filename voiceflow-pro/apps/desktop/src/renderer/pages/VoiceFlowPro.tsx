@@ -24,6 +24,7 @@ interface NavigationItem {
 
 export const VoiceFlowPro: React.FC = () => {
   const [currentView, setCurrentView] = useState<View>('dashboard');
+  const [selectedTranscript, setSelectedTranscript] = useState<any | null>(null);
   const { toast } = useToast();
   const { uploadFile } = useUploadStore();
   const { createTranscript, transcripts, fetchTranscripts } = useTranscriptStore();
@@ -253,6 +254,7 @@ export const VoiceFlowPro: React.FC = () => {
   };
 
   const handleTranscriptSelect = (transcript: any) => {
+    setSelectedTranscript(transcript);
     setCurrentView('transcript-editor');
     toast({
       title: "Opening Transcript",
@@ -264,13 +266,14 @@ export const VoiceFlowPro: React.FC = () => {
     switch (currentView) {
       case 'transcripts':
         return (
-          <TranscriptionPage />
+          <TranscriptionPage onTranscriptSelect={handleTranscriptSelect} />
         );
       case 'transcript-editor':
         return (
           <div className="flex h-full">
-            <TranscriptEditor 
+            <TranscriptEditor
               className="flex-1"
+              transcript={selectedTranscript}
               onPlay={() => toast({ title: "Audio", description: "Playback started" })}
               onPause={() => toast({ title: "Audio", description: "Playback paused" })}
               onSeek={(_time) => {/* Audio seek */}}
