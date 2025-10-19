@@ -7,7 +7,11 @@ import { useTranscriptStore } from '../stores/transcriptStore';
 import { useUploadStore } from '../stores/uploadStore';
 import { Transcript } from '../types/api';
 
-export function TranscriptionPage() {
+interface TranscriptionPageProps {
+  onTranscriptSelect?: (transcript: Transcript) => void;
+}
+
+export function TranscriptionPage({ onTranscriptSelect }: TranscriptionPageProps) {
   const [selectedTranscript, setSelectedTranscript] = useState<Transcript | null>(null);
   const [selectedTranscriptId, setSelectedTranscriptId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -56,14 +60,19 @@ export function TranscriptionPage() {
   const handleTranscriptSelect = (transcript: Transcript) => {
     setSelectedTranscript(transcript);
     setSelectedTranscriptId(transcript.id);
-    // TODO: Navigate to transcript editor view in parent
-    console.log('Selected transcript:', transcript);
+
+    // Navigate to transcript editor view in parent
+    if (onTranscriptSelect) {
+      onTranscriptSelect(transcript);
+    }
   };
 
   const handleTranscriptView = (transcriptId: string) => {
-    setSelectedTranscriptId(transcriptId);
-    // TODO: Navigate to transcript editor view in parent
-    console.log('View transcript:', transcriptId);
+    // Find the transcript by ID and navigate to it
+    const transcript = transcripts.find(t => t.id === transcriptId);
+    if (transcript && onTranscriptSelect) {
+      onTranscriptSelect(transcript);
+    }
   };
 
   // Handle file drops from dashboard
