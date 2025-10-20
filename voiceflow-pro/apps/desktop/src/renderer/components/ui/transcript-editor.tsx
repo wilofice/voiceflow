@@ -158,7 +158,7 @@ export const TranscriptEditor: React.FC<TranscriptEditorProps> = ({
       try {
         console.log('Fetching full transcript for:', transcript.id);
         const fullData = await apiClient.getTranscript(transcript.id);
-        setFullTranscript(fullData);
+        setFullTranscript(fullData.transcript);
 
         // Map segments from backend format to component format
         if (fullData.segments && fullData.segments.length > 0) {
