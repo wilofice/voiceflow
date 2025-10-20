@@ -240,3 +240,4 @@ voiceflow-pro/build-wasm/src/CMakeFiles/whisper.dir/link.txt
 voiceflow-pro/build-wasm/src/CMakeFiles/whisper.dir/progress.make
 voiceflow-pro/build-wasm/src/CMakeFiles/whisper.dir/whisper.cpp.o
 voiceflow-pro/build-wasm/src/CMakeFiles/whisper.dir/whisper.cpp.o.d
+*transcription-*.json
