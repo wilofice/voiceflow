@@ -337,14 +337,17 @@ export class WhisperServerService {
     return new Promise((resolve, reject) => {
       let stdout = '';
       let stderr = '';
-      
+      const spawnStart = Date.now();
+      // the input audio file is expected to be the last positional arg
+      const inputFilePath = command[command.length - 1];
+
       const process: ChildProcess = spawn(command[0], command.slice(1), {
         stdio: ['pipe', 'pipe', 'pipe']
       });
 
       process.stdout?.on('data', (data) => {
         stdout += data.toString();
-        
+
         // Update progress based on output
         const job = this.processingJobs.get(jobId);
         if (job) {
@@ -360,10 +363,32 @@ export class WhisperServerService {
         stderr += data.toString();
       });
 
-      process.on('close', (code) => {
+      process.on('close', async (code) => {
         if (code === 0) {
           try {
-            // Parse JSON output from whisper
+            // First try: locate the JSON file that whisper writes alongside the input file
+            try {
+              const jsonPath = await this.locateWhisperJsonForInput(inputFilePath, spawnStart);
+              if (jsonPath) {
+                const fileContent = await fs.readFile(jsonPath, 'utf8');
+                const parsed = JSON.parse(fileContent);
+                const result: TranscriptionResult = {
+                  text: parsed.text || '',
+                  segments: parsed.segments || [],
+                  language: parsed.language,
+                  duration: parsed.duration,
+                  processingTime: 0,
+                  model: '',
+                  method: 'whisper-server-local'
+                };
+                return resolve(result);
+              }
+            } catch (e) {
+              // If locating/parsing the file failed, fall back to parsing stdout below
+              console.warn('[whisper] failed to locate or parse whisper-generated json file:', (e as any)?.message || e);
+            }
+
+            // Fallback: try to parse JSON embedded in stdout
             const result = this.parseWhisperOutput(stdout);
             resolve(result);
           } catch (error) {
@@ -386,6 +411,71 @@ export class WhisperServerService {
         }
       }, 10 * 60 * 1000); // 10 minutes timeout
     });
+  }
+
+  /**
+   * Locate the JSON output file that whisper writes for the given input file.
+   * Search common directories (input file directory, configured tempPath, current working dir)
+   * and return the newest .json file that references the input base name and was
+   * modified after the sinceMs timestamp.
+   */
+  private async locateWhisperJsonForInput(inputFilePath: string, sinceMs: number): Promise<string | null> {
+    const candidates: string[] = [];
+    const dirCandidates = new Set<string>();
+
+    try {
+      const inputDir = path.dirname(inputFilePath || '');
+      if (inputDir) dirCandidates.add(inputDir);
+    } catch {}
+
+    if (this.config?.tempPath) dirCandidates.add(this.config.tempPath);
+    dirCandidates.add(process.cwd());
+
+    const baseName = path.basename(inputFilePath || '');
+    const baseNoExt = baseName.replace(path.extname(baseName), '');
+
+    for (const dir of Array.from(dirCandidates)) {
+      try {
+        const files = await fs.readdir(dir);
+        for (const f of files) {
+          if (!f.toLowerCase().endsWith('.json')) continue;
+          const full = path.join(dir, f);
+          try {
+            const st = await fs.stat(full);
+            const mtime = st.mtimeMs || st.ctimeMs || 0;
+            // must be newer than the process start time minus 2s
+            if (mtime + 2000 < sinceMs) continue;
+            // prefer files that include the input basename, or start with 'transcription-'
+            if (f.includes(baseNoExt) || f.startsWith('transcription-') || f.startsWith(baseNoExt)) {
+              candidates.push(full);
+            }
+          } catch {
+            continue;
+          }
+        }
+      } catch {
+        // ignore dir read errors
+      }
+    }
+
+    if (candidates.length === 0) return null;
+    // return the newest candidate
+    let newest: string | null = null;
+    let newestTime = 0;
+    for (const c of candidates) {
+      try {
+        const st = await fs.stat(c);
+        const m = st.mtimeMs || st.ctimeMs || 0;
+        if (m > newestTime) {
+          newestTime = m;
+          newest = c;
+        }
+      } catch {
+        continue;
+      }
+    }
+
+    return newest;
   }
 
   /**
