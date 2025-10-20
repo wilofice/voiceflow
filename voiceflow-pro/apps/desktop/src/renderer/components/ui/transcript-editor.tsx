@@ -157,8 +157,10 @@ export const TranscriptEditor: React.FC<TranscriptEditorProps> = ({
       setLoading(true);
       try {
         console.log('Fetching full transcript for:', transcript.id);
-        const fullData = await apiClient.getTranscript(transcript.id);
-        setFullTranscript(fullData.transcript);
+        const resp = await apiClient.getTranscript(transcript.id);
+        // API may return { transcript: { ... } } — prefer the inner object when present
+        const fullData = ((resp as any)?.transcript ?? resp) as Transcript;
+        setFullTranscript(fullData);
 
         // Map segments from backend format to component format
         if (fullData.segments && fullData.segments.length > 0) {
@@ -166,9 +168,9 @@ export const TranscriptEditor: React.FC<TranscriptEditorProps> = ({
             id: seg.id || `seg-${index}`,
             startMs: (seg.startTime || 0) * 1000, // Convert seconds to ms
             endMs: (seg.endTime || 0) * 1000,
-            text: seg.text,
-            speakerId: seg.speaker || `SPEAKER_${index % 3 + 1}`,
-            confidence: seg.confidence || 0.95,
+            text: (seg.text || '').trim(),
+            speakerId: seg.speakerId || `SPEAKER_${index % 3 + 1}`,
+            confidence: seg.confidence ?? 0.95,
           }));
           setMappedSegments(segments);
 

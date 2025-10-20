@@ -54,7 +54,7 @@ export interface TranscriptSegment {
   text: string;
   startTime: number;
   endTime: number;
-  speaker?: string;
+  speakerId?: string;
   confidence?: number;
 }
 
