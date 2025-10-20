@@ -79,15 +79,27 @@ export class TranscriptionService {
           userId: undefined,
         });
 
+        // Write full hybridResult to a telemetry file for offline inspection
+        try {
+          const telemetryFileName = `hybridResult-${transcriptId}-${Date.now()}.json`;
+          const telemetryFilePath = path.join(tmpDir, telemetryFileName);
+          await fs.writeFile(telemetryFilePath, JSON.stringify({ hybridResult }, null, 2));
+          console.info(`[transcription] hybridResult telemetry written to ${telemetryFilePath}`);
+          // attach telemetry path to the hybridResult for callers/tests
+          (hybridResult as any).__telemetryPath = telemetryFilePath;
+        } catch (e: any) {
+          console.warn('[transcription] failed to write hybridResult telemetry', e?.message || e);
+        }
         // Process and save segments (hybridResult should contain segments/text/duration)
-        const segments = await this.processTranscriptionResponse(transcriptId, {
+        const createdSegments = await this.processTranscriptionResponse(transcriptId, {
           segments: hybridResult.segments || [],
           text: hybridResult.text || '',
           language: hybridResult.language || language,
           duration: hybridResult.duration || 0,
         });
 
-        const duration = hybridResult.duration || (segments.length > 0 ? Math.ceil((segments as any)[segments.length - 1].end) : 0);
+        // Prefer hybridResult.duration, otherwise derive from DB-created segments
+        const duration = hybridResult.duration || (createdSegments.length > 0 ? Math.ceil(createdSegments[createdSegments.length - 1].endTime) : 0);
 
         // Update transcript with completed status
         await prisma.transcript.update({
@@ -108,8 +120,8 @@ export class TranscriptionService {
         });
 
         return {
-          transcriptId,
-          segments,
+         transcriptId,
+         segments: createdSegments,
           language: hybridResult.language,
           duration,
           text: hybridResult.text,
@@ -152,28 +164,61 @@ export class TranscriptionService {
     transcriptId: string,
     response: any
   ) {
-    const segments = response.segments || [];
-    
+    const incoming = response.segments || [];
+
+    console.debug(`[transcription] processTranscriptionResponse: received ${incoming.length} segments for transcript ${transcriptId}`);
+    if (incoming.length > 0) {
+      // Log a small sample for debugging
+      console.debug(`[transcription] sample segment:`, JSON.stringify(incoming[0]).slice(0, 1000));
+    }
+
     // Delete existing segments if any (for retries)
     await prisma.transcriptSegment.deleteMany({
       where: { transcriptId },
     });
 
-    // Create new segments
-    const createdSegments = await Promise.all(
-      segments.map(async (segment: any, index: number) => {
-        return prisma.transcriptSegment.create({
+    // Normalize incoming segments to expected shape and filter invalid entries
+    const segments = incoming.map((seg: any, index: number) => {
+      const start = seg.start ?? seg.startTime ?? seg.t0 ?? seg.begin ?? seg.begin_time ?? seg.start_ms ?? 0;
+      const end = seg.end ?? seg.endTime ?? seg.t1 ?? seg.finish ?? seg.end_ms ?? seg.duration ?? start;
+      const text = seg.text ?? seg.content ?? seg.transcript ?? '';
+      const confidence = seg.confidence ?? seg.conf ?? seg.avg_confidence ?? 0.9;
+
+      return {
+        start: Number(start) || 0,
+        end: Number(end) || 0,
+        text: String(text || ''),
+        confidence: Number(confidence) || 0.9,
+        index,
+      };
+    }).filter((s: any) => typeof s.start === 'number' && typeof s.end === 'number');
+
+    if (segments.length === 0) {
+      console.warn(`[transcription] no normalized segments available for transcript ${transcriptId}`);
+    }
+
+    const createdSegments: any[] = [];
+
+    for (const seg of segments) {
+      try {
+        const created = await prisma.transcriptSegment.create({
           data: {
             transcriptId,
-            startTime: segment.start || 0,
-            endTime: segment.end || 0,
-            text: segment.text || '',
-            speakerId: `SPEAKER_${(index % 3) + 1}`, // Basic speaker assignment
-            confidence: segment.confidence || 0.9,
+            startTime: seg.start,
+            endTime: seg.end,
+            text: seg.text,
+            speakerId: `SPEAKER_${(seg.index % 3) + 1}`,
+            confidence: seg.confidence,
           },
         });
-      })
-    );
+        createdSegments.push(created);
+      } catch (err: any) {
+        console.error(`[transcription] Failed to create segment for transcript ${transcriptId}:`, err?.message || err);
+        // continue with next segment
+      }
+    }
+
+    console.debug(`[transcription] created ${createdSegments.length} segments for transcript ${transcriptId}`);
 
     return createdSegments;
   }
