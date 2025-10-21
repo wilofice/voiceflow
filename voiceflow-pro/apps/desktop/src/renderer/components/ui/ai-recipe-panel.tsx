@@ -277,128 +277,119 @@ export const AIRecipePanel: React.FC<AIRecipePanelProps> = ({
           </div>
         </ScrollArea>
 
-        {/* Recipe Editor/Executor */}
-        <div className="w-80 flex flex-col">
-          {selectedRecipe ? (
-            <>
-              {/* Recipe Details */}
-              <div className="p-4 border-b border-border">
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="font-semibold text-text-primary">{selectedRecipe.name}</h3>
-                  <div className="flex items-center gap-1">
-                    <Button variant="ghost" size="sm" className="w-6 h-6 p-0">
-                      <Copy className="w-3 h-3" />
-                    </Button>
-                    <Button variant="ghost" size="sm" className="w-6 h-6 p-0">
-                      <Edit3 className="w-3 h-3" />
-                    </Button>
-                    <Button variant="ghost" size="sm" className="w-6 h-6 p-0">
-                      <Star className="w-3 h-3" />
-                    </Button>
-                  </div>
-                </div>
-                
-                <p className="text-sm text-text-secondary mb-3">{selectedRecipe.description}</p>
-                
-                {/* Cost Estimate */}
-                <div className="flex items-center justify-between p-2 rounded bg-surface-alt/30">
-                  <div className="flex items-center gap-2 text-sm">
-                    <Sparkles className="w-4 h-4 text-primary" />
-                    <span className="text-text-secondary">Estimated cost:</span>
-                  </div>
-                  <div className="text-sm font-medium text-text-primary">
-                    ${selectedRecipe.estimatedCost.toFixed(3)}
-                  </div>
+        {/* Recipe Editor/Executor (only render when a recipe is selected) */}
+        {selectedRecipe && (
+          <div className="w-80 flex-none flex-shrink-0 flex flex-col">
+            {/* Recipe Details */}
+            <div className="p-4 border-b border-border">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="font-semibold text-text-primary">{selectedRecipe.name}</h3>
+                <div className="flex items-center gap-1">
+                  <Button variant="ghost" size="sm" className="w-6 h-6 p-0">
+                    <Copy className="w-3 h-3" />
+                  </Button>
+                  <Button variant="ghost" size="sm" className="w-6 h-6 p-0">
+                    <Edit3 className="w-3 h-3" />
+                  </Button>
+                  <Button variant="ghost" size="sm" className="w-6 h-6 p-0">
+                    <Star className="w-3 h-3" />
+                  </Button>
                 </div>
               </div>
-
-              {/* Variables */}
-              {selectedRecipe.variables.length > 0 && (
-                <div className="p-4 border-b border-border">
-                  <h4 className="text-sm font-semibold text-text-primary mb-3">Variables</h4>
-                  <div className="space-y-3">
-                    {selectedRecipe.variables.map((variable) => (
-                      <div key={variable.key}>
-                        <label className="text-xs font-medium text-text-secondary mb-1 block">
-                          {variable.label}
-                        </label>
-                        {variable.type === 'select' ? (
-                          <select
-                            value={variables[variable.key] || variable.defaultValue}
-                            onChange={(e) => handleVariableChange(variable.key, e.target.value)}
-                            className="w-full p-2 rounded border border-border bg-background text-text-primary text-sm focus:border-primary focus:outline-none"
-                          >
-                            {variable.options?.map((option) => (
-                              <option key={option} value={option}>
-                                {option}
-                              </option>
-                            ))}
-                          </select>
-                        ) : variable.type === 'number' ? (
-                          <Input
-                            type="number"
-                            value={variables[variable.key] || variable.defaultValue}
-                            onChange={(e) => handleVariableChange(variable.key, Number(e.target.value))}
-                            className="text-sm"
-                          />
-                        ) : (
-                          <Input
-                            type="text"
-                            value={variables[variable.key] || variable.defaultValue || ''}
-                            onChange={(e) => handleVariableChange(variable.key, e.target.value)}
-                            className="text-sm"
-                          />
-                        )}
-                        {variable.description && (
-                          <p className="text-xs text-text-secondary mt-1">{variable.description}</p>
-                        )}
-                      </div>
-                    ))}
-                  </div>
+              
+              <p className="text-sm text-text-secondary mb-3">{selectedRecipe.description}</p>
+              
+              {/* Cost Estimate */}
+              <div className="flex items-center justify-between p-2 rounded bg-surface-alt/30">
+                <div className="flex items-center gap-2 text-sm">
+                  <Sparkles className="w-4 h-4 text-primary" />
+                  <span className="text-text-secondary">Estimated cost:</span>
                 </div>
-              )}
-
-              {/* Prompt Preview */}
-              <div className="flex-1 p-4">
-                <h4 className="text-sm font-semibold text-text-primary mb-2">Prompt Preview</h4>
-                <Textarea
-                  value={selectedRecipe.prompt}
-                  readOnly
-                  className="text-sm font-mono resize-none"
-                  rows={6}
-                />
-              </div>
-
-              {/* Execute Button */}
-              <div className="p-4 border-t border-border">
-                <Button
-                  onClick={handleExecute}
-                  disabled={isExecuting}
-                  className="w-full bg-gradient-primary hover:opacity-90 focus-ring"
-                >
-                  {isExecuting ? (
-                    <>
-                      <div className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin mr-2" />
-                      Processing...
-                    </>
-                  ) : (
-                    <>
-                      <Play className="w-4 h-4 mr-2" />
-                      Execute Recipe
-                    </>
-                  )}
-                </Button>
-              </div>
-            </>
-          ) : (
-            <div className="flex-1 flex items-center justify-center p-6">
-              <div className="text-center">
-                <Wand2 className="w-12 h-12 text-text-secondary mx-auto mb-4" />
-                <p className="text-text-secondary">Select a recipe to get started</p>
+                <div className="text-sm font-medium text-text-primary">
+                  ${selectedRecipe.estimatedCost.toFixed(3)}
+                </div>
               </div>
             </div>
-          )}
-        </div>
+
+            {/* Variables */}
+            {selectedRecipe.variables.length > 0 && (
+              <div className="p-4 border-b border-border">
+                <h4 className="text-sm font-semibold text-text-primary mb-3">Variables</h4>
+                <div className="space-y-3">
+                  {selectedRecipe.variables.map((variable) => (
+                    <div key={variable.key}>
+                      <label className="text-xs font-medium text-text-secondary mb-1 block">
+                        {variable.label}
+                      </label>
+                      {variable.type === 'select' ? (
+                        <select
+                          value={variables[variable.key] || variable.defaultValue}
+                          onChange={(e: React.ChangeEvent<HTMLSelectElement>) => handleVariableChange(variable.key, (e.target as HTMLSelectElement).value)}
+                          className="w-full p-2 rounded border border-border bg-background text-text-primary text-sm focus:border-primary focus:outline-none"
+                        >
+                          {variable.options?.map((option) => (
+                            <option key={option} value={option}>
+                              {option}
+                            </option>
+                          ))}
+                        </select>
+                      ) : variable.type === 'number' ? (
+                        <Input
+                          type="number"
+                          value={variables[variable.key] || variable.defaultValue}
+                          onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleVariableChange(variable.key, Number((e.target as HTMLInputElement).value))}
+                          className="text-sm"
+                        />
+                      ) : (
+                        <Input
+                          type="text"
+                          value={variables[variable.key] || variable.defaultValue || ''}
+                          onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleVariableChange(variable.key, (e.target as HTMLInputElement).value)}
+                          className="text-sm"
+                        />
+                      )}
+                      {variable.description && (
+                        <p className="text-xs text-text-secondary mt-1">{variable.description}</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Prompt Preview */}
+            <div className="flex-1 p-4">
+              <h4 className="text-sm font-semibold text-text-primary mb-2">Prompt Preview</h4>
+              <Textarea
+                value={selectedRecipe.prompt}
+                readOnly
+                className="text-sm font-mono resize-none"
+                rows={6}
+              />
+            </div>
+
+            {/* Execute Button */}
+            <div className="p-4 border-t border-border">
+              <Button
+                onClick={handleExecute}
+                disabled={isExecuting}
+                className="w-full bg-gradient-primary hover:opacity-90 focus-ring"
+              >
+                {isExecuting ? (
+                  <>
+                    <div className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin mr-2" />
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    <Play className="w-4 h-4 mr-2" />
+                    Execute Recipe
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -225,7 +225,7 @@ apiClient.on('transcript:progress', (data: any) => {
         : t
     ),
     currentTranscript: currentTranscript?.id === transcriptId
-      ? { ...currentTranscript, status: 'PROCESSING' as const }
+      ? ({ ...currentTranscript, status: 'PROCESSING' } as Transcript)
       : currentTranscript,
   });
 });
@@ -241,7 +241,7 @@ apiClient.on('transcript:completed', (data: any) => {
         : t
     ),
     currentTranscript: currentTranscript?.id === transcriptId
-      ? { ...currentTranscript, ...updatedTranscript, status: 'COMPLETED' as const }
+      ? ({ ...currentTranscript, ...updatedTranscript, status: 'COMPLETED' } as Transcript)
       : currentTranscript,
   });
 });
@@ -257,7 +257,7 @@ apiClient.on('transcript:error', (data: any) => {
         : t
     ),
     currentTranscript: currentTranscript?.id === transcriptId
-      ? { ...currentTranscript, status: 'FAILED' as const }
+      ? ({ ...currentTranscript, status: 'FAILED' } as Transcript)
       : currentTranscript,
     error: data.error || 'Transcription failed',
   });
