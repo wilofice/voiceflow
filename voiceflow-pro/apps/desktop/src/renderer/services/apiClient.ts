@@ -21,7 +21,14 @@ import {
   ProgressCallback,
   RequestConfig,
   ModelInfo,
-  WebSocketMessage
+  WebSocketMessage,
+  BatchJob,
+  BatchItem,
+  BatchJobWithItems,
+  CreateBatchJobRequest,
+  UpdateBatchJobRequest,
+  BatchProgressCallback,
+  BatchJobProgress,
 } from '../types/api';
 
 // Response schemas for validation
@@ -466,6 +473,149 @@ export class APIClient extends EventEmitter {
     return normalizedUpload;
   }
 
+  // ===== BATCH PROCESSING METHODS =====
+
+  async getBatchJobs(
+    page: number = 1,
+    limit: number = 20,
+    status?: string
+  ): Promise<PaginatedResponse<BatchJob>> {
+    const params = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString(),
+      ...(status && { status }),
+    });
+
+    const response = await this.retryableRequest(async () => {
+      return this.client.get(`/api/batch/jobs?${params}`);
+    });
+
+    return response.data;
+  }
+
+  async getBatchJob(id: string): Promise<BatchJobWithItems> {
+    const response = await this.retryableRequest(async () => {
+      return this.client.get(`/api/batch/jobs/${id}`);
+    });
+
+    return response.data;
+  }
+
+  async createBatchJob(data: CreateBatchJobRequest): Promise<BatchJob> {
+    const response = await this.retryableRequest(async () => {
+      return this.client.post('/api/batch/jobs', data);
+    });
+
+    const batchJob = response.data;
+    this.emit('batch:job_created', batchJob);
+    return batchJob;
+  }
+
+  async updateBatchJob(id: string, data: UpdateBatchJobRequest): Promise<BatchJob> {
+    const response = await this.retryableRequest(async () => {
+      return this.client.put(`/api/batch/jobs/${id}`, data);
+    });
+
+    const batchJob = response.data;
+    this.emit('batch:job_updated', batchJob);
+    return batchJob;
+  }
+
+  async deleteBatchJob(id: string): Promise<void> {
+    await this.retryableRequest(async () => {
+      return this.client.delete(`/api/batch/jobs/${id}`);
+    });
+
+    this.emit('batch:job_deleted', id);
+  }
+
+  async startBatchJob(id: string): Promise<BatchJob> {
+    const response = await this.retryableRequest(async () => {
+      return this.client.post(`/api/batch/jobs/${id}/start`);
+    });
+
+    const batchJob = response.data;
+    this.emit('batch:job_started', batchJob);
+    return batchJob;
+  }
+
+  async pauseBatchJob(id: string): Promise<BatchJob> {
+    const response = await this.retryableRequest(async () => {
+      return this.client.post(`/api/batch/jobs/${id}/pause`);
+    });
+
+    const batchJob = response.data;
+    this.emit('batch:job_paused', batchJob);
+    return batchJob;
+  }
+
+  async resumeBatchJob(id: string): Promise<BatchJob> {
+    const response = await this.retryableRequest(async () => {
+      return this.client.post(`/api/batch/jobs/${id}/resume`);
+    });
+
+    const batchJob = response.data;
+    this.emit('batch:job_resumed', batchJob);
+    return batchJob;
+  }
+
+  async cancelBatchJob(id: string): Promise<BatchJob> {
+    const response = await this.retryableRequest(async () => {
+      return this.client.post(`/api/batch/jobs/${id}/cancel`);
+    });
+
+    const batchJob = response.data;
+    this.emit('batch:job_cancelled', batchJob);
+    return batchJob;
+  }
+
+  async addFilesToBatch(
+    jobId: string,
+    files: File[],
+    onProgress?: BatchProgressCallback
+  ): Promise<{ added: number; items: BatchItem[] }> {
+    const formData = new FormData();
+
+    files.forEach((file, index) => {
+      formData.append(`file`, file);
+    });
+
+    const response = await this.client.post(`/api/batch/jobs/${jobId}/items`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+      onUploadProgress: (progressEvent) => {
+        if (onProgress && progressEvent.total) {
+          const progress = (progressEvent.loaded / progressEvent.total) * 100;
+          // Call progress callback for overall upload (not per-item)
+          onProgress('batch-upload', progress, progressEvent.loaded, progressEvent.total);
+        }
+      },
+    });
+
+    const result = response.data;
+    this.emit('batch:files_added', { jobId, count: result.added });
+    return result;
+  }
+
+  async removeBatchItem(jobId: string, itemId: string): Promise<void> {
+    await this.retryableRequest(async () => {
+      return this.client.delete(`/api/batch/jobs/${jobId}/items/${itemId}`);
+    });
+
+    this.emit('batch:item_removed', { jobId, itemId });
+  }
+
+  async retryBatchItem(jobId: string, itemId: string): Promise<BatchItem> {
+    const response = await this.retryableRequest(async () => {
+      return this.client.post(`/api/batch/jobs/${jobId}/items/${itemId}/retry`);
+    });
+
+    const item = response.data;
+    this.emit('batch:item_retried', { jobId, itemId });
+    return item;
+  }
+
   // ===== MODEL METHODS =====
 
   async getAvailableModels(): Promise<ModelInfo[]> {
@@ -613,6 +763,35 @@ export class APIClient extends EventEmitter {
       this.socket.on('transcript_error', (data: any) => {
         this.emit('transcript:error', data);
       });
+
+      // Batch job events
+      this.socket.on('batch_job_progress', (data: any) => {
+        this.emit('batch:job_progress', data);
+      });
+
+      this.socket.on('batch_item_progress', (data: any) => {
+        this.emit('batch:item_progress', data);
+      });
+
+      this.socket.on('batch_item_completed', (data: any) => {
+        this.emit('batch:item_completed', data);
+      });
+
+      this.socket.on('batch_item_error', (data: any) => {
+        this.emit('batch:item_error', data);
+      });
+
+      this.socket.on('batch_job_completed', (data: any) => {
+        this.emit('batch:job_completed', data);
+      });
+
+      this.socket.on('batch_job_paused', (data: any) => {
+        this.emit('batch:job_paused', data);
+      });
+
+      this.socket.on('batch_job_resumed', (data: any) => {
+        this.emit('batch:job_resumed', data);
+      });
     } catch (error) {
       console.warn('Failed to initialize WebSocket (continuing without real-time features):', error);
       this.socket = null;
@@ -645,6 +824,18 @@ export class APIClient extends EventEmitter {
   unsubscribeFromTranscript(transcriptId: string): void {
     if (this.socket && this.socket.connected) {
       this.socket.emit('unsubscribe', { transcriptId });
+    }
+  }
+
+  subscribeToBatchJob(batchJobId: string): void {
+    if (this.socket && this.socket.connected) {
+      this.socket.emit('subscribe_batch', { batchJobId });
+    }
+  }
+
+  unsubscribeFromBatchJob(batchJobId: string): void {
+    if (this.socket && this.socket.connected) {
+      this.socket.emit('unsubscribe_batch', { batchJobId });
     }
   }
 }

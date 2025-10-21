@@ -121,7 +121,9 @@ export interface RequestConfig {
 }
 
 export interface WebSocketMessage {
-  type: 'transcript_progress' | 'transcript_completed' | 'transcript_error';
+  type: 'transcript_progress' | 'transcript_completed' | 'transcript_error' |
+        'batch_job_progress' | 'batch_item_progress' | 'batch_item_completed' |
+        'batch_item_error' | 'batch_job_completed' | 'batch_job_paused' | 'batch_job_resumed';
   data: any;
   timestamp: string;
 }
@@ -132,4 +134,68 @@ export interface ModelInfo {
   size: string;
   downloaded: boolean;
   downloadProgress?: number;
+}
+
+// Batch Processing Types
+export type BatchJobStatus = 'DRAFT' | 'RUNNING' | 'PAUSED' | 'COMPLETED' | 'ERROR';
+export type BatchItemStatus = 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'ERROR' | 'CANCELLED';
+
+export interface BatchJob {
+  id: string;
+  userId: string;
+  name: string;
+  status: BatchJobStatus;
+  concurrency: number;
+  totalItems: number;
+  completedItems: number;
+  failedItems: number;
+  estimatedTimeRemaining?: number; // seconds
+  throughputMbps?: number;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt?: string | null;
+}
+
+export interface BatchItem {
+  id: string;
+  batchJobId: string;
+  transcriptId?: string | null;
+  fileName: string;
+  fileSize: number;
+  duration: number; // seconds
+  status: BatchItemStatus;
+  progress: number; // 0-100
+  errorMessage?: string | null;
+  eta?: number | null; // seconds
+  confidence?: number | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface BatchJobWithItems extends BatchJob {
+  items: BatchItem[];
+}
+
+export interface CreateBatchJobRequest {
+  name: string;
+  concurrency?: number;
+}
+
+export interface UpdateBatchJobRequest {
+  name?: string;
+  concurrency?: number;
+}
+
+export interface BatchProgressCallback {
+  (itemId: string, progress: number, loaded: number, total: number): void;
+}
+
+export interface BatchJobProgress {
+  jobId: string;
+  totalItems: number;
+  completedItems: number;
+  failedItems: number;
+  processingItems: number;
+  estimatedTimeRemaining?: number;
+  throughputMbps?: number;
 }
