@@ -172,7 +172,7 @@ export function TranscriptDisplay({
   const exportTranscript = () => {
     if (!currentTranscript) return;
 
-    const text = currentTranscript.segments
+    const text = (currentTranscript.segments || [])
       .map(segment => `[${formatTime(segment.startTime)}] ${segment.text}`)
       .join('\n\n');
 
@@ -343,7 +343,7 @@ export function TranscriptDisplay({
                 return (
                   <div
                     key={segment.id}
-                    ref={(el) => segmentRefs.current[`segment-${segment.startTime}`] = el}
+                    ref={(el) => { segmentRefs.current[`segment-${segment.startTime}`] = el; }}
                     className={`
                       p-4 rounded-lg border transition-all duration-200 cursor-pointer
                       ${isCurrentSegment 
@@ -359,10 +359,10 @@ export function TranscriptDisplay({
                           <span className="font-medium">
                             {formatTime(segment.startTime)} - {formatTime(segment.endTime)}
                           </span>
-                          {segment.speaker && (
+                          {segment.speakerId && (
                             <div className="flex items-center space-x-1">
                               <User className="h-3 w-3" />
-                              <span>{segment.speaker}</span>
+                              <span>{segment.speakerId}</span>
                             </div>
                           )}
                           {segment.confidence && (
@@ -376,8 +376,8 @@ export function TranscriptDisplay({
                           <div className="space-y-3">
                             <Textarea
                               value={editingSegment.text}
-                              onChange={(e) => setEditingSegment({
-                                ...editingSegment,
+                              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setEditingSegment({
+                                ...editingSegment!,
                                 text: e.target.value,
                               })}
                               className="min-h-[100px]"

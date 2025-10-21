@@ -43,7 +43,7 @@ import { Input } from '../ui/input';
 interface TranscriptListProps {
   onTranscriptSelect?: (transcript: Transcript) => void;
   onTranscriptView?: (transcriptId: string) => void;
-  selectedTranscriptId?: string;
+  selectedTranscriptId?: string | null;
   compact?: boolean;
 }
 
@@ -336,7 +336,8 @@ export function TranscriptList({
           {/* Search and Filter */}
           <div className="flex items-center space-x-4">
             <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              {/* TODO: fix position of search icon */}
+              {/* <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" /> */}
               <Input
                 placeholder="Search transcripts..."
                 value={searchTerm}

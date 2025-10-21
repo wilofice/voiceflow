@@ -106,7 +106,7 @@ export const AppShell: React.FC<AppShellProps> = ({
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar */}
         <AnimatePresence mode="wait">
-          {sidebarOpen && sidebar && (
+          {sidebarOpen && sidebar ? (
             <motion.aside
               initial={{ x: -280, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
@@ -125,7 +125,7 @@ export const AppShell: React.FC<AppShellProps> = ({
             >
               {sidebar}
             </motion.aside>
-          )}
+          ) : null}
         </AnimatePresence>
 
         {/* Main Content Area */}
