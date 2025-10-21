@@ -38,6 +38,22 @@ enum ProcessingLocation {
   CONTAINER
 }
 
+enum BatchJobStatus {
+  DRAFT
+  RUNNING
+  PAUSED
+  COMPLETED
+  ERROR
+}
+
+enum BatchItemStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  ERROR
+  CANCELLED
+}
+
 model User {
   id               String           @id @default(uuid())
   email            String           @unique
@@ -52,6 +68,7 @@ model User {
   sharedBy         TranscriptShare[]   @relation("SharedBy")
   sharedWith       TranscriptShare[]   @relation("SharedWith")
   preferences      UserPreferences?
+  batchJobs        BatchJob[]
 
   @@index([email])
   @@index([createdAt])
@@ -77,6 +94,7 @@ model Transcript {
   segments  TranscriptSegment[]
   comments  TranscriptComment[]
   shares    TranscriptShare[]
+  batchItem BatchItem?
 
   @@index([userId])
   @@index([status])
@@ -163,4 +181,51 @@ model UserPreferences {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+}
+
+model BatchJob {
+  id                      String         @id @default(uuid())
+  userId                  String
+  name                    String
+  status                  BatchJobStatus @default(DRAFT)
+  concurrency             Int            @default(3)
+  totalItems              Int            @default(0)
+  completedItems          Int            @default(0)
+  failedItems             Int            @default(0)
+  estimatedTimeRemaining  Int?           // seconds
+  throughputMbps          Float?
+  createdAt               DateTime       @default(now())
+  updatedAt               DateTime       @updatedAt
+  deletedAt               DateTime?
+
+  user  User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items BatchItem[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([userId, status])
+}
+
+model BatchItem {
+  id           String          @id @default(uuid())
+  batchJobId   String
+  transcriptId String?         @unique
+  fileName     String
+  fileSize     Int
+  duration     Int             @default(0) // seconds
+  status       BatchItemStatus @default(PENDING)
+  progress     Int             @default(0) // 0-100
+  errorMessage String?
+  eta          Int?            // seconds
+  confidence   Float?
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  batchJob   BatchJob    @relation(fields: [batchJobId], references: [id], onDelete: Cascade)
+  transcript Transcript? @relation(fields: [transcriptId], references: [id])
+
+  @@index([batchJobId])
+  @@index([status])
+  @@index([batchJobId, status])
 }

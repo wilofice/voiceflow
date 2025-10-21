@@ -7,6 +7,7 @@ import fastifyJwt from '@fastify/jwt';
 
 // Routes
 import { authRoutes } from './routes/auth';
+import { batchRoutes } from './routes/batch';
 import { transcriptRoutes } from './routes/transcripts';
 import { uploadRoutes } from './routes/upload';
 import { userRoutes } from './routes/users';
@@ -68,7 +69,7 @@ async function start() {
     await server.register(multipart, {
       limits: {
         fileSize: parseInt(process.env.MAX_FILE_SIZE || '524288000'), // 500MB default
-        files: 1, // Max number of files per request
+        files: 10, // Max number of files per request (increased for batch uploads)
       },
     });
 
@@ -99,13 +100,15 @@ async function start() {
 
     // Register routes
     await server.register(authRoutes, { prefix: '/api/auth' });
+    await server.register(batchRoutes, { prefix: '/api/batch' });
     await server.register(uploadRoutes, { prefix: '/api/upload' });
     await server.register(transcriptRoutes, { prefix: '/api/transcripts' });
     await server.register(userRoutes, { prefix: '/api/users' });
     await server.register(whisperRoutes, { prefix: '/api/whisper' });
     await server.register(modelsRoute, { prefix: '/api/models' });
-    
+
     console.log('✅ All routes registered successfully');
+    console.log('📍 Batch processing API available at /api/batch');
     console.log('📍 Whisper API available at /api/whisper');
 
     // Start server
