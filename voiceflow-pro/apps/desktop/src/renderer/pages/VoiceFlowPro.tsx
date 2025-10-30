@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 
 import { AIRecipePanel } from '../components/ui/ai-recipe-panel';
 import { AppShell } from '../components/ui/app-shell';
+import { BatchJobSelector } from '../components/ui/batch-job-selector';
 import { BatchProcessor } from '../components/ui/batch-processor';
 import { Dashboard } from '../components/ui/dashboard';
 import { NavigationSidebar } from '../components/ui/navigation-sidebar';
@@ -25,6 +26,7 @@ interface NavigationItem {
 export const VoiceFlowPro: React.FC = () => {
   const [currentView, setCurrentView] = useState<View>('dashboard');
   const [selectedTranscript, setSelectedTranscript] = useState<any | null>(null);
+  const [selectedBatchJobId, setSelectedBatchJobId] = useState<string | null>(null);
   const { toast } = useToast();
   const { uploadFile } = useUploadStore();
   const { createTranscript, transcripts, fetchTranscripts } = useTranscriptStore();
@@ -291,11 +293,20 @@ export const VoiceFlowPro: React.FC = () => {
         );
       case 'batch-processing':
         return (
-          <BatchProcessor 
-            onStart={() => toast({ title: "Batch Processing", description: "Starting batch job..." })}
-            onPause={() => toast({ title: "Batch Processing", description: "Pausing batch job..." })}
-            onStop={() => toast({ title: "Batch Processing", description: "Stopping batch job..." })}
-          />
+          <div className="flex h-full gap-4 p-6">
+            <div className="w-80 flex-shrink-0">
+              <BatchJobSelector
+                selectedJobId={selectedBatchJobId}
+                onJobSelect={setSelectedBatchJobId}
+              />
+            </div>
+            <div className="flex-1 min-w-0">
+              <BatchProcessor
+                jobId={selectedBatchJobId}
+                onJobChange={setSelectedBatchJobId}
+              />
+            </div>
+          </div>
         );
       case 'ai-recipes':
         return (
