@@ -31,7 +31,8 @@ export function TranscriptionPage({ onTranscriptSelect }: TranscriptionPageProps
       .catch(error => {
         console.warn('Whisper service not available:', error);
       });
-  }, [fetchTranscripts]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Run once on mount only
 
   // Auto-refresh transcripts when there are processing/queued items
   useEffect(() => {
@@ -55,7 +56,8 @@ export function TranscriptionPage({ onTranscriptSelect }: TranscriptionPageProps
       console.log('[TranscriptionPage] Stopping polling');
       clearInterval(pollInterval);
     };
-  }, [transcripts, fetchTranscripts]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [transcripts]); // Re-run when transcripts change, not when fetchTranscripts reference changes
 
   const handleTranscriptSelect = (transcript: Transcript) => {
     setSelectedTranscript(transcript);

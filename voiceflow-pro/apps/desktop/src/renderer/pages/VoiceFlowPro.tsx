@@ -63,7 +63,8 @@ export const VoiceFlowPro: React.FC = () => {
       .catch(error => {
         console.warn('Whisper service not available:', error);
       });
-  }, [fetchTranscripts]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Run once on mount only
 
   // Auto-refresh transcripts when there are processing/queued items
   // Only poll from dashboard view, not when on transcription page
@@ -93,7 +94,8 @@ export const VoiceFlowPro: React.FC = () => {
       console.log('[Dashboard] Stopping polling');
       clearInterval(pollInterval);
     };
-  }, [transcripts, fetchTranscripts, currentView]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [transcripts, currentView]); // Re-run when transcripts or view changes, not when fetchTranscripts reference changes
 
   // Convert transcripts for dashboard display
   const dashboardTranscripts = transcripts?.slice(0, 5).map(transcript => ({

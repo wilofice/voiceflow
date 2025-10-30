@@ -1,0 +1,285 @@
+Based on my code review, I've identified the root causes of all reported issues. Here's my detailed analysis:
+
+  ---
+  ISSUE #1: 429 Too Many Requests - Infinite Loop
+
+  Severity: CRITICALRoot Cause: Dependency array issues in useEffect hooks
+
+  Problem Location:
+  - batch-job-selector.tsx:65-67
+  - batch-processor.tsx:64-68
+
+  What's Happening:
+  // batch-job-selector.tsx
+  useEffect(() => {
+    fetchJobs();
+  }, [fetchJobs]); // ❌ fetchJobs reference changes → infinite loop
+
+  // batch-processor.tsx
+  useEffect(() => {
+    if (jobId) {
+      fetchJob(jobId);
+    }
+  }, [jobId, fetchJob]); // ❌ fetchJob reference changes → infinite loop
+
+  Why This Causes 429 Errors:
+  - fetchJobs and fetchJob are Zustand store functions
+  - Every time the store updates, these function references change
+  - This triggers the useEffect again
+  - Creates an infinite loop of API requests
+  - Server rate-limiter kicks in with 429 errors
+
+  Fix:
+  Remove functions from dependency arrays:
+  // ✅ Only run on mount
+  useEffect(() => {
+    fetchJobs();
+  }, []); // Empty array = run once on mount
+
+  // ✅ Only run when jobId changes
+  useEffect(() => {
+    if (jobId) {
+      fetchJob(jobId);
+    }
+  }, [jobId]); // Only jobId, not fetchJob
+
+  ---
+  ISSUE #2: Job Panel Not Switching Between Jobs
+
+  Severity: HIGHRoot Cause: Missing state reset in BatchProcessor
+
+  Problem:
+  When switching jobs, BatchProcessor shows cached data from the previous job because:
+  1. currentJob in the store is not cleared when jobId changes
+  2. The component shows stale data until the new job finishes loading
+
+  Fix:
+  Add explicit currentJob reset in batch-processor.tsx:
+  useEffect(() => {
+    if (jobId) {
+      // Clear current job first to avoid showing stale data
+      setCurrentJob(null);
+      fetchJob(jobId);
+    } else {
+      setCurrentJob(null);
+    }
+  }, [jobId]);
+
+  Also add setCurrentJob to the store actions (already exists at line 333 in batchStore.ts).
+
+  ---
+  ISSUE #3: Cannot Add More Files After First Upload
+
+  Severity: HIGHRoot Cause: Dropzone disabled state logic error
+
+  Problem Location: batch-processor.tsx:113
+  disabled: !jobId || currentJob?.status !== 'DRAFT',
+
+  What's Happening:
+  After adding the first file:
+  1. addFiles() is called, which fetches the updated job
+  2. During the fetch, currentJob is temporarily the old state
+  3. The dropzone checks currentJob?.status !== 'DRAFT'
+  4. If currentJob is stale or null during the update, dropzone becomes disabled
+  5. Never re-enables even after job is fetched
+
+  Additional Issue:
+  The addFiles function in batchStore.ts:249-271 refetches the job, but there's a race condition where currentJob might not update before the dropzone re-checks its disabled state.
+
+  Fix:
+  1. Use job.status from local state instead of relying on currentJob
+  2. Or: explicitly enable/disable based on loading state
+  3. Ensure dropzone re-evaluates when currentJob updates
+
+  ---
+  ISSUE #4: Cannot Delete Jobs in DRAFT or ERROR State
+
+  Severity: MEDIUMRoot Cause: Delete button logic in batch-job-selector.tsx:143-145
+
+  Problem:
+  const canDeleteJob = (job: BatchJob) => {
+    return job.status === 'DRAFT' || job.status === 'COMPLETED' || job.status === 'ERROR';
+  };
+
+  This function is correct, but it's only rendering the delete button for these states. The issue is likely the double-click confirmation logic (lines 92-106) combined with the 429 errors preventing the
+  delete API call from succeeding.
+
+  Fix:
+  1. Fix the 429 errors first (Issue #1)
+  2. Add loading state to delete button to prevent multiple clicks
+  3. Consider single-click with confirmation dialog instead of double-click pattern
+
+  ---
+  ISSUE #5: No Progress Updates After Starting Job
+
+  Severity: CRITICALRoot Cause: Backend WebSocket events not being emitted
+
+  Problem:
+  Looking at batchQueue.ts, I see these issues:
+
+  1. No WebSocket emissions - The service updates the database but never emits WebSocket events
+  2. Transcription queue integration incomplete (line 255):
+  await transcriptionQueue.addJob(transcript.id, transcript.audioUrl);
+  2. This queues the transcription, but:
+    - No callback to handleItemCompleted() when transcription finishes
+    - Progress updates are commented as "would be updated via WebSocket" (line 258)
+    - Items stay at 10% progress forever
+  3. Missing progress monitoring - The processItem() function sets progress to 10% but never updates it during transcription
+
+  Fix Required:
+  1. Add WebSocket emitter in batchQueue.ts
+  2. Hook into transcription queue events to call handleItemCompleted()
+  3. Emit batch:item_progress, batch:item_completed, batch:job_progress events
+  4. Update ETA and throughput in real-time
+
+  ---
+  ISSUE #6: KPIs Not Updating (Progress, ETA, Throughput)
+
+  Severity: HIGHRoot Cause: Same as Issue #5 - WebSocket events not emitted
+
+  Problem:
+  The backend calculates these metrics in updateJobProgress() (lines 376-423) but:
+  1. Function updates the database
+  2. Never emits WebSocket event with the updated progress
+  3. Frontend never receives updates
+  4. UI shows frozen metrics
+
+  Fix:
+  Add WebSocket emissions after database updates:
+  // After updating job progress
+  io.emit('batch:job_progress', {
+    jobId,
+    totalItems: job.totalItems,
+    completedItems: job.completedItems,
+    failedItems: job.failedItems,
+    estimatedTimeRemaining,
+    throughputMbps,
+  });
+
+  ---
+  📋 Proposed Fix Plan
+
+  Phase 1: Stop the 429 Errors (IMMEDIATE)
+
+  1. Fix useEffect dependency arrays in:
+    - batch-job-selector.tsx
+    - batch-processor.tsx
+  2. Test that requests stop flooding
+
+  Phase 2: Fix Job Switching & File Upload
+
+  1. Add setCurrentJob(null) before fetching new job
+  2. Fix dropzone disabled logic
+  3. Test job switching works
+  4. Test multiple file uploads work
+
+  Phase 3: Backend WebSocket Integration
+
+  1. Add Socket.IO emitter to batchQueue.ts
+  2. Emit events after:
+    - Item starts processing
+    - Item progress updates
+    - Item completes/fails
+    - Job progress updates
+    - Job completes
+  3. Hook transcription queue completion to handleItemCompleted()
+
+  Phase 4: Fix Delete Button
+
+  1. Add loading state during delete
+  2. Improve UX with confirmation dialog
+  3. Test delete in DRAFT and ERROR states
+
+  Phase 5: Testing
+
+  1. Test full workflow end-to-end
+  2. Verify no 429 errors
+  3. Verify all KPIs update in real-time
+  4. Verify job switching works
+  5. Verify multiple file uploads work
+
+  ---
+  ❓ Questions for You
+
+  1. Do you have Socket.IO set up on the backend? I see references to WebSocket but need to confirm the implementation.
+  2. Should I proceed with all fixes, or do you want me to tackle them in phases?
+  3. For the transcription queue integration - where is the transcription completion callback? I need to hook batchQueue.handleItemCompleted() to that.
+
+  ---
+  Would you like me to proceed with Phase 1 (fixing the 429 errors) first, then move to the other issues? This is the most critical and will immediately improve the system.
+
+
+ ✅ Phase 1 Complete: Fixed All Infinite Loop Issues
+
+  I've successfully fixed 6 critical useEffect infinite loops that were causing the 429 errors. Here's what was fixed:
+
+  Files Modified:
+
+  1. batch-job-selector.tsx
+
+  - Line 65-68: Removed fetchJobs from dependency array
+  - Fix: Changed [fetchJobs] → [] (run once on mount)
+
+  2. batch-processor.tsx
+
+  - Line 63-69: Removed fetchJob from dependency array
+  - Fix: Changed [jobId, fetchJob] → [jobId] (only re-run when jobId changes)
+
+  3. VoiceFlowPro.tsx ⚠️ MAJOR SOURCE OF 429 ERRORS
+
+  - Line 54-67: Removed fetchTranscripts from mount effect
+    - Fix: Changed [fetchTranscripts] → []
+  - Line 69-98: Removed fetchTranscripts from polling effect
+    - Fix: Changed [transcripts, fetchTranscripts, currentView] → [transcripts, currentView]
+
+  4. TranscriptionPage.tsx ⚠️ MAJOR SOURCE OF 429 ERRORS
+
+  - Line 22-35: Removed fetchTranscripts from mount effect
+    - Fix: Changed [fetchTranscripts] → []
+  - Line 37-60: Removed fetchTranscripts from polling effect
+    - Fix: Changed [transcripts, fetchTranscripts] → [transcripts]
+
+  ---
+  What These Fixes Do:
+
+  1. Stop infinite request loops: Functions from Zustand stores change reference on every state update, causing useEffect to re-run infinitely
+  2. Preserve intended behavior:
+    - Mount effects still run once when component loads
+    - Polling still happens when there are active transcripts
+    - Job fetching still happens when jobId changes
+    - Job list still fetches on mount
+  3. Dramatically reduce server requests: From thousands per minute → only when needed
+
+  ---
+  Expected Results After Testing:
+
+  ✅ No more 429 (Too Many Requests) errors✅ Network tab should show controlled, intentional requests only✅ Console errors should be significantly reduced✅ Application should feel more responsive✅
+  Server CPU/memory usage should drop dramatically
+
+  ---
+  Test Steps:
+
+  1. Clear browser cache and refresh the application
+  2. Open browser DevTools → Network tab
+  3. Navigate to Batch Processing page
+  4. Watch the Network tab:
+    - Should see initial requests when page loads
+    - Should NOT see continuous flood of requests
+    - DELETE requests should no longer fail with 429
+  5. Try the reported issues:
+    - Create a batch job
+    - Add a file (should work)
+    - Try adding another file (should work now)
+    - Try deleting the job (should work now)
+    - Switch between jobs (monitor if it works better)
+
+  ---
+  Next Steps After Your Testing:
+
+  Once you confirm Phase 1 fixes work, we can proceed to:
+
+  - Phase 2: Fix job switching & multiple file upload issues
+  - Phase 3: Add WebSocket events for real-time progress updates
+  - Phase 4: Fix delete button UX improvements
+
+  Please test and let me know the results! 🚀

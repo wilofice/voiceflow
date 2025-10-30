@@ -65,7 +65,8 @@ export const BatchProcessor: React.FC<BatchProcessorProps> = ({
     if (jobId) {
       fetchJob(jobId);
     }
-  }, [jobId, fetchJob]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [jobId]); // Only re-run when jobId changes, not when fetchJob reference changes
 
   // File upload with dropzone
   const { getRootProps, getInputProps, isDragActive } = useDropzone({

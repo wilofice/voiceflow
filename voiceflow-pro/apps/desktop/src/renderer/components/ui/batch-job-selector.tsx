@@ -64,7 +64,8 @@ export const BatchJobSelector: React.FC<BatchJobSelectorProps> = ({
   // Fetch jobs on mount
   useEffect(() => {
     fetchJobs();
-  }, [fetchJobs]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Empty deps = run once on mount only
 
   const handleCreateJob = async () => {
     if (!newJobName.trim()) return;
