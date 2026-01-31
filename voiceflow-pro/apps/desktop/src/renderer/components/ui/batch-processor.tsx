@@ -58,12 +58,16 @@ export const BatchProcessor: React.FC<BatchProcessorProps> = ({
     retryItem,
     removeItem,
     fetchJob,
+    setCurrentJob,
   } = useBatchStore();
 
   // Fetch job data when jobId changes
   useEffect(() => {
     if (jobId) {
+      setCurrentJob(null); // Clear stale data before fetching new job
       fetchJob(jobId);
+    } else {
+      setCurrentJob(null); // Clear when no job selected
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [jobId]); // Only re-run when jobId changes, not when fetchJob reference changes
@@ -111,7 +115,7 @@ export const BatchProcessor: React.FC<BatchProcessorProps> = ({
       'video/*': ['.mp4', '.mov', '.quicktime'],
     },
     multiple: true,
-    disabled: !jobId || currentJob?.status !== 'DRAFT',
+    disabled: !jobId || isUploading || currentJob?.status !== 'DRAFT',
   });
 
   const job = currentJob;
@@ -487,11 +491,31 @@ export const BatchProcessor: React.FC<BatchProcessorProps> = ({
                 <span className="text-sm text-text-secondary">
                   {selectedItems.size} selected
                 </span>
-                <Button variant="outline" size="sm" className="focus-ring">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="focus-ring"
+                  onClick={async () => {
+                    for (const itemId of selectedItems) {
+                      await handleRetry(itemId);
+                    }
+                    setSelectedItems(new Set());
+                  }}
+                >
                   <RotateCcw className="w-3 h-3 mr-1" />
                   Retry
                 </Button>
-                <Button variant="outline" size="sm" className="focus-ring">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="focus-ring hover:text-danger hover:border-danger"
+                  onClick={async () => {
+                    for (const itemId of selectedItems) {
+                      await handleRemove(itemId);
+                    }
+                    setSelectedItems(new Set());
+                  }}
+                >
                   <Trash2 className="w-3 h-3 mr-1" />
                   Remove
                 </Button>
@@ -569,12 +593,23 @@ export const BatchProcessor: React.FC<BatchProcessorProps> = ({
                             <Progress value={item.progress} className="h-1" />
                           </div>
                         )}
-                        
+
                         {getStatusBadge(item.status)}
-                        
-                        <Button variant="ghost" size="sm" className="focus-ring">
-                          <MoreHorizontal className="w-4 h-4" />
-                        </Button>
+
+                        {/* Remove button - only show for DRAFT jobs */}
+                        {job.status === 'DRAFT' && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="focus-ring hover:text-danger hover:bg-danger/10"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleRemove(item.id);
+                            }}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        )}
                       </div>
                     </div>
                     

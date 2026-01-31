@@ -4,6 +4,7 @@ import cors from '@fastify/cors';
 import multipart from '@fastify/multipart';
 import rateLimit from '@fastify/rate-limit';
 import fastifyJwt from '@fastify/jwt';
+import socketio from '@fastify/socketio';
 
 // Routes
 import { authRoutes } from './routes/auth';
@@ -82,6 +83,26 @@ async function start() {
       secret: process.env.JWT_SECRET,
     });
 
+    // Register Socket.IO for real-time updates
+    await server.register(socketio, {
+      cors: {
+        origin: process.env.NODE_ENV === 'development'
+          ? 'http://localhost:3000'
+          : (process.env.NEXT_PUBLIC_APP_URL || ''),
+        credentials: true,
+      },
+      transports: ['websocket', 'polling'],
+    });
+
+    // Log Socket.IO connection events
+    server.io.on('connection', (socket) => {
+      console.log('✅ WebSocket client connected:', socket.id);
+
+      socket.on('disconnect', () => {
+        console.log('❌ WebSocket client disconnected:', socket.id);
+      });
+    });
+
     // Initialize Supabase storage bucket
     try {
       await createStorageBucket();
@@ -110,6 +131,7 @@ async function start() {
     console.log('✅ All routes registered successfully');
     console.log('📍 Batch processing API available at /api/batch');
     console.log('📍 Whisper API available at /api/whisper');
+    console.log('📡 WebSocket available at /socket.io');
 
     // Start server
     const port = parseInt(process.env.PORT || '3002');
