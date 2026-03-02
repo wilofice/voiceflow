@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project_plan>
+<node title="Screenshot 04 — Transcription Models" id="s04-root" priority="medium" status="pending">
+    <node title="Top Bar / Toolbar" id="s04-topbar" priority="medium" status="pending">
+        <node title="Window Controls" id="s04-topbar-window-controls" priority="medium" status="pending">
+            <comment>Standard macOS close, minimize, zoom buttons at top-left of the window. [Inferred]</comment>
+        </node>
+        <node title="More Options (ellipsis)" id="s04-topbar-ellipsis" priority="medium" status="pending">
+            <comment>Three-dot control near the header; opens additional actions for the Models screen. [Inferred]</comment>
+        </node>
+        <node title="Search" id="s04-topbar-search" priority="medium" status="pending">
+            <comment>Field with placeholder "Search…" to filter models.</comment>
+        </node>
+    </node>
+
+    <node title="Sidebars / Panels" id="s04-panels" priority="medium" status="pending">
+        <comment>No sidebars visible on this screen.</comment>
+    </node>
+
+    <node title="Main Workspace" id="s04-main" priority="medium" status="pending">
+        <node title="Header" id="s04-main-header" priority="medium" status="pending">
+            <node title="Transcription Models Title" id="s04-main-title" priority="medium" status="pending">
+                <comment>Page heading at the top-left.</comment>
+            </node>
+        </node>
+
+        <node title="Downloaded" id="s04-downloaded" priority="medium" status="pending">
+            <node title="Large v3 Turbo (card)" id="s04-model-large-v3-turbo" priority="medium" status="pending">
+                <comment>Badges: Favorite (star), Speaker Recognition; action button: "Activate" (model currently not active). Engine: WhisperKit.</comment>
+            </node>
+            <node title="Small (card)" id="s04-model-small" priority="medium" status="pending">
+                <comment>Badges: Speaker Recognition; status button: "Active" (current model). Engine: WhisperKit. Size noted: 483 MB.</comment>
+            </node>
+        </node>
+
+        <node title="Recommended Models" id="s04-recommended" priority="medium" status="pending">
+            <node title="Language Specific (category)" id="s04-cat-language-specific" priority="medium" status="pending">
+                <comment>Models that can only transcribe in one language; row navigates to list.</comment>
+            </node>
+            <node title="WhisperKit (category)" id="s04-cat-whisperkit" priority="medium" status="pending">
+                <comment>Models using the WhisperKit engine for greater accuracy, faster performance, and real-time transcripts.</comment>
+            </node>
+            <node title="Parakeet (category)" id="s04-cat-parakeet" priority="medium" status="pending">
+                <comment>Models using Nvidia Parakeet engine for improved accuracy and faster, real-time performance.</comment>
+            </node>
+            <node title="Whisper C++ (category)" id="s04-cat-whisper-cpp" priority="medium" status="pending">
+                <comment>Models that use the Whisper C++ engine.</comment>
+            </node>
+            <node title="Pro (category)" id="s04-cat-pro" priority="medium" status="pending">
+                <comment>Models available exclusively to Pro users. [Pro]</comment>
+            </node>
+            <node title="Speaker Recognition (category)" id="s04-cat-speaker-recognition" priority="medium" status="pending">
+                <comment>Models that can identify and separate different speakers.</comment>
+            </node>
+            <node title="Advanced (category)" id="s04-cat-advanced" priority="medium" status="pending">
+                <comment>Models intended for advanced users.</comment>
+            </node>
+        </node>
+    </node>
+
+    <node title="Dialogs / Popovers" id="s04-dialogs" priority="medium" status="pending">
+        <node title="Model Actions" id="s04-dialogs-model-actions" priority="medium" status="pending">
+            <comment>Context popover from a model card with actions like Activate/Deactivate, Favorite, or Remove. [Inferred]</comment>
+        </node>
+        <node title="Category Drill‑down" id="s04-dialogs-category-drilldown" priority="medium" status="pending">
+            <comment>Detail lists shown after clicking a Recommended Models category. [Inferred]</comment>
+        </node>
+        <node title="Search Results" id="s04-dialogs-search-results" priority="medium" status="pending">
+            <comment>Filtered model list as you type in the Search field. [Inferred]</comment>
+        </node>
+        <node title="More Options Menu" id="s04-dialogs-ellipsis-menu" priority="medium" status="pending">
+            <comment>Menu opened from the top-right ellipsis with page‑level actions. [Inferred]</comment>
+        </node>
+    </node>
+
+    <node title="Status &amp; Progress" id="s04-status" priority="medium" status="pending">
+        <comment>No progress indicators present on this screen.</comment>
+    </node>
+
+    <node title="Contextual Help / Shortcuts" id="s04-help" priority="medium" status="pending">
+        <comment>No inline help or shortcuts shown on this screen.</comment>
+    </node>
+
+    <node title="Menus" id="s04-menus" priority="medium" status="pending">
+        <comment>Application menus not visible in this screenshot. [Inferred]</comment>
+    </node>
+
+    <node title="Menu Bar Extras / Status Icons" id="s04-menubar-extras" priority="medium" status="pending">
+        <comment>No menu bar extras visible in this screenshot. [Inferred]</comment>
+    </node>
+</node>
+
+
+</project_plan>

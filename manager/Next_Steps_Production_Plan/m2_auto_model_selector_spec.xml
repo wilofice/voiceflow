@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project_plan>
+  <node title="M2 — Smart Auto Model/Provider Selector" id="spec-m2-automodel" priority="high" status="pending">
+    <comment>Select local/cloud model based on duration, language, and hardware to balance speed/cost/accuracy.</comment>
+  </node>
+</project_plan>

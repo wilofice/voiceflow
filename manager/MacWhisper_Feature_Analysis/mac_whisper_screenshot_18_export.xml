@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project_plan>
+<node title="Screenshot 18 — Export" id="s18-root" priority="medium" status="pending">
+    <node title="Top Bar / Toolbar" id="s18-topbar" priority="medium" status="pending">
+        <node title="Window Controls" id="s18-topbar-window-controls" priority="medium" status="pending">
+            <comment>Standard macOS close, minimize, zoom buttons at top-left of the window.</comment>
+        </node>
+        <node title="Back (chevron)" id="s18-topbar-back" priority="medium" status="pending">
+            <comment>Returns to the previous view. [Inferred]</comment>
+        </node>
+        <node title="Copy (button)" id="s18-topbar-copy" priority="medium" status="pending">
+            <comment>Copies the current export output to clipboard.</comment>
+        </node>
+        <node title="Export (menu)" id="s18-topbar-export" priority="medium" status="pending">
+            <comment>Opens a dropdown of export-related actions.</comment>
+        </node>
+        <node title="Toolbar Icons" id="s18-topbar-icons" priority="medium" status="pending">
+            <node title="Adjust/Settings" id="s18-topbar-adjust" priority="medium" status="pending">
+                <comment>Icon for additional settings for the export panel. [Inferred]</comment>
+            </node>
+            <node title="Share" id="s18-topbar-share" priority="medium" status="pending">
+                <comment>Shares the export result via system share sheet. [Inferred]</comment>
+            </node>
+            <node title="Favorite" id="s18-topbar-favorite" priority="medium" status="pending">
+                <comment>Marks the item as favorite. [Inferred]</comment>
+            </node>
+        </node>
+    </node>
+
+    <node title="Sidebars / Panels" id="s18-panels" priority="medium" status="pending">
+        <node title="Right Export Panel" id="s18-right-panel" priority="medium" status="pending">
+            <comment>Contains export configuration grouped by Style, Format, and Options.</comment>
+            <node title="Panel Tabs" id="s18-right-tabs" priority="medium" status="pending">
+                <node title="Adjust" id="s18-right-tab-adjust" priority="medium" status="pending">
+                    <comment>Tab for style/format options. [Inferred]</comment>
+                </node>
+                <node title="Share (selected)" id="s18-right-tab-share" priority="medium" status="pending">
+                    <comment>Active tab indicated by blue highlight; shares/export options shown.</comment>
+                </node>
+                <node title="Favorite" id="s18-right-tab-favorite" priority="medium" status="pending">
+                    <comment>Marks the export preset as favorite. [Inferred]</comment>
+                </node>
+            </node>
+        </node>
+    </node>
+
+    <node title="Main Workspace" id="s18-main" priority="medium" status="pending">
+        <node title="Export Preview" id="s18-preview" priority="medium" status="pending">
+            <comment>Large preview area showing the result text. Chips indicate current Style (Transcript) and Format (.txt).</comment>
+            <node title="Preview Chips" id="s18-preview-chips" priority="medium" status="pending">
+                <node title="Style Chip: Transcript" id="s18-chip-style" priority="medium" status="pending">
+                    <comment>Indicates active style.</comment>
+                </node>
+                <node title="Format Chip: .txt" id="s18-chip-format" priority="medium" status="pending">
+                    <comment>Indicates selected output format.</comment>
+                </node>
+            </node>
+        </node>
+
+        <node title="STYLE" id="s18-style" priority="medium" status="pending">
+            <node title="Transcript (selected)" id="s18-style-transcript" priority="medium" status="pending">
+                <comment>Exports the full transcript text.</comment>
+            </node>
+            <node title="Subtitles" id="s18-style-subtitles" priority="medium" status="pending">
+                <comment>Exports subtitle-style output.</comment>
+            </node>
+            <node title="Segments" id="s18-style-segments" priority="medium" status="pending">
+                <comment>Exports one row per segment.</comment>
+            </node>
+            <node title="Whisper [Pro]" id="s18-style-whisper" priority="medium" status="pending">
+                <comment>Pro-only export style.</comment>
+            </node>
+            <node title="Dote [Pro]" id="s18-style-dote" priority="medium" status="pending">
+                <comment>Pro-only export style with curly-braces icon.</comment>
+            </node>
+        </node>
+
+        <node title="FORMAT" id="s18-format" priority="medium" status="pending">
+            <node title=".txt (selected)" id="s18-format-txt" priority="medium" status="pending">
+                <comment>Plain text export.</comment>
+            </node>
+            <node title=".docx [Pro]" id="s18-format-docx" priority="medium" status="pending">
+                <comment>Microsoft Word document export for Pro users.</comment>
+            </node>
+            <node title=".html [Pro]" id="s18-format-html" priority="medium" status="pending">
+                <comment>HTML export for Pro users.</comment>
+            </node>
+            <node title=".pdf [Pro]" id="s18-format-pdf" priority="medium" status="pending">
+                <comment>PDF export for Pro users.</comment>
+            </node>
+            <node title=".json [Pro]" id="s18-format-json" priority="medium" status="pending">
+                <comment>JSON export for Pro users.</comment>
+            </node>
+        </node>
+
+        <node title="OPTIONS" id="s18-options" priority="medium" status="pending">
+            <node title="Grouping (menu)" id="s18-options-grouping" priority="medium" status="pending">
+                <comment>Current value: None. Options include: None; By sentences.</comment>
+            </node>
+            <node title="Speaker paragraphs note" id="s18-options-note" priority="medium" status="pending">
+                <comment>The Speaker paragraphs option is unavailable unless speakers are assigned to your transcript.</comment>
+            </node>
+        </node>
+
+        <node title="Actions" id="s18-actions" priority="medium" status="pending">
+            <node title="Copy (button)" id="s18-action-copy" priority="medium" status="pending">
+                <comment>Copies current preview output.</comment>
+            </node>
+            <node title="Export File (button)" id="s18-action-export-file" priority="medium" status="pending">
+                <comment>Exports to a file using selected style/format/options.</comment>
+            </node>
+        </node>
+    </node>
+
+    <node title="Dialogs / Popovers" id="s18-dialogs" priority="medium" status="pending">
+        <node title="Export Menu" id="s18-dialogs-export-menu" priority="medium" status="pending">
+            <comment>Dropdown of actions opened by the top toolbar Export button. [Inferred]</comment>
+        </node>
+        <node title="Save File Dialog" id="s18-dialogs-save-file" priority="medium" status="pending">
+            <comment>System save dialog to choose destination and filename for exported file. [Inferred]</comment>
+        </node>
+        <node title="Grouping Options" id="s18-dialogs-grouping-options" priority="medium" status="pending">
+            <comment>Dropdown with None and By sentences choices.</comment>
+        </node>
+    </node>
+
+    <node title="Status &amp; Progress" id="s18-status" priority="medium" status="pending">
+        <comment>No progress indicators present on this screen.</comment>
+    </node>
+
+    <node title="Contextual Help / Shortcuts" id="s18-help" priority="medium" status="pending">
+        <comment>Per-option descriptions shown in the Options area; no shortcuts listed.</comment>
+    </node>
+
+    <node title="Menus" id="s18-menus" priority="medium" status="pending">
+        <comment>Application menus not visible in this screenshot. [Inferred]</comment>
+    </node>
+
+    <node title="Menu Bar Extras / Status Icons" id="s18-menubar-extras" priority="medium" status="pending">
+        <comment>No menu bar extras visible in this screenshot. [Inferred]</comment>
+    </node>
+</node>
+
+
+</project_plan>

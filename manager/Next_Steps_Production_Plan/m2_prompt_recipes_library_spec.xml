@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project_plan>
+  <node title="M2 — Prompt Recipes Library" id="spec-m2-recipes" priority="medium" status="pending">
+    <comment>Curated, shareable prompt recipes with guardrails and token budgeting.</comment>
+  </node>
+</project_plan>

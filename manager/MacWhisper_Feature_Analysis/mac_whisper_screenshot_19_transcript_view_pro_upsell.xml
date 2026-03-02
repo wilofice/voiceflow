@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project_plan>
+<node title="Screenshot 19 — Transcript View & Pro Upsell" id="s19-root" priority="medium" status="pending">
+    <node title="Top Bar / Toolbar" id="s19-topbar" priority="medium" status="pending">
+        <node title="Window Controls" id="s19-topbar-window-controls" priority="medium" status="pending">
+            <comment>Standard macOS close, minimize, zoom buttons at top-left of the window. [Inferred]</comment>
+        </node>
+        <node title="Back (chevron)" id="s19-topbar-back" priority="medium" status="pending">
+            <comment>Returns to previous view.</comment>
+        </node>
+        <node title="Copy (button)" id="s19-topbar-copy" priority="medium" status="pending">
+            <comment>Copies current transcript.</comment>
+        </node>
+        <node title="Export (menu, disabled)" id="s19-topbar-export" priority="medium" status="pending">
+            <comment>Export dropdown appears disabled.</comment>
+        </node>
+        <node title="Search in transcript (field)" id="s19-topbar-search" priority="medium" status="pending">
+            <comment>Text field to search within transcript.</comment>
+        </node>
+        <node title="More Options (double chevrons)" id="s19-topbar-more" priority="medium" status="pending">
+            <comment>Additional actions menu. [Inferred]</comment>
+        </node>
+        <node title="Favorite (star)" id="s19-topbar-favorite" priority="medium" status="pending">
+            <comment>Toolbar star; matches the selected Favorites sidebar tab. [Inferred]</comment>
+        </node>
+    </node>
+
+    <node title="Sidebars / Panels" id="s19-panels" priority="medium" status="pending">
+        <node title="Right Sidebar — Tabs" id="s19-right-tabs" priority="medium" status="pending">
+            <node title="Adjust" id="s19-right-tab-adjust" priority="medium" status="pending">
+                <comment>Sliders icon. [Inferred]</comment>
+            </node>
+            <node title="Share" id="s19-right-tab-share" priority="medium" status="pending">
+                <comment>Share icon. [Inferred]</comment>
+            </node>
+            <node title="Translate" id="s19-right-tab-translate" priority="medium" status="pending">
+                <comment>Translation icon. [Inferred]</comment>
+            </node>
+            <node title="Export/Share" id="s19-right-tab-export" priority="medium" status="pending">
+                <comment>Share arrow icon appears selected earlier. [Inferred]</comment>
+            </node>
+            <node title="Favorite (selected)" id="s19-right-tab-favorite" priority="medium" status="pending">
+                <comment>Star tab is active; shows Pro feature upsell.</comment>
+            </node>
+        </node>
+        <node title="Whisper Transcription Pro Upsell" id="s19-pro-upsell" priority="medium" status="pending">
+            <node title="Headline &amp; Subtext" id="s19-pro-headline" priority="medium" status="pending">
+                <comment>Title: "Whisper Transcription Pro"; subtext promotes advanced features.</comment>
+            </node>
+            <node title="Feature Tiles" id="s19-pro-tiles" priority="medium" status="pending">
+                <node title="More Accurate Transcription [Pro]" id="s19-pro-accurate" priority="medium" status="pending">
+                    <comment>Accuracy improvements.</comment>
+                </node>
+                <node title="AI Chat &amp; Summary [Pro]" id="s19-pro-chat-summary" priority="medium" status="pending">
+                    <comment>Chat and summarization features.</comment>
+                </node>
+                <node title="System‑wide Dictation [Pro]" id="s19-pro-dictation" priority="medium" status="pending">
+                    <comment>Dictate anywhere on macOS.</comment>
+                </node>
+                <node title="Record Meetings [Pro]" id="s19-pro-record-meetings" priority="medium" status="pending">
+                    <comment>Capture meetings.</comment>
+                </node>
+                <node title="Automatic Translation [Pro]" id="s19-pro-auto-translation" priority="medium" status="pending">
+                    <comment>Translate transcriptions automatically.</comment>
+                </node>
+                <node title="Unlimited speakers [Pro]" id="s19-pro-unlimited-speakers" priority="medium" status="pending">
+                    <comment>Speaker management without limits.</comment>
+                </node>
+                <node title="Record App Audio [Pro]" id="s19-pro-app-audio" priority="medium" status="pending">
+                    <comment>Record system/app audio.</comment>
+                </node>
+                <node title="Cloud Transcription [Pro]" id="s19-pro-cloud" priority="medium" status="pending">
+                    <comment>Transcribe via cloud providers.</comment>
+                </node>
+                <node title="Transcribe YouTube &amp; URLs [Pro]" id="s19-pro-youtube" priority="medium" status="pending">
+                    <comment>URL-based transcription.</comment>
+                </node>
+                <node title="Transcribe Podcasts [Pro]" id="s19-pro-podcasts" priority="medium" status="pending">
+                    <comment>Podcast transcription support.</comment>
+                </node>
+                <node title="And many more features! [Pro]" id="s19-pro-more" priority="medium" status="pending">
+                    <comment>Additional Pro capabilities.</comment>
+                </node>
+            </node>
+            <node title="Upgrade to Pro (button)" id="s19-pro-upgrade" priority="medium" status="pending">
+                <comment>CTA button at bottom of sidebar.</comment>
+            </node>
+        </node>
+    </node>
+
+    <node title="Main Workspace" id="s19-main" priority="medium" status="pending">
+        <node title="Transcript Editor" id="s19-main-editor" priority="medium" status="pending">
+            <comment>Editable transcript area showing recognized text.</comment>
+        </node>
+        <node title="Improve Quality (button)" id="s19-main-improve-quality" priority="medium" status="pending">
+            <comment>Blue button with star chip at top-right of the editor.</comment>
+        </node>
+        <node title="Playback Controls" id="s19-main-playback" priority="medium" status="pending">
+            <node title="Play (button)" id="s19-playback-play" priority="medium" status="pending">
+                <comment>Starts/stops audio playback.</comment>
+            </node>
+            <node title="Timeline Slider" id="s19-playback-slider" priority="medium" status="pending">
+                <comment>Seek bar beneath the editor.</comment>
+            </node>
+            <node title="Timecode" id="s19-playback-timecode" priority="medium" status="pending">
+                <comment>00:00 / 00:16 displayed at bottom-right.</comment>
+            </node>
+            <node title="Playback Rate" id="s19-playback-rate" priority="medium" status="pending">
+                <comment>Indicator "1x" near timecode.</comment>
+            </node>
+        </node>
+    </node>
+
+    <node title="Dialogs / Popovers" id="s19-dialogs" priority="medium" status="pending">
+        <node title="Improve Quality Options" id="s19-dialogs-improve" priority="medium" status="pending">
+            <comment>Popover or panel with enhancement choices. [Inferred]</comment>
+        </node>
+        <node title="Search Results" id="s19-dialogs-search" priority="medium" status="pending">
+            <comment>Inline find navigation within transcript. [Inferred]</comment>
+        </node>
+        <node title="Export Menu" id="s19-dialogs-export" priority="medium" status="pending">
+            <comment>Actions for exporting; currently disabled. [Inferred]</comment>
+        </node>
+        <node title="Pro Purchase Flow" id="s19-dialogs-pro-purchase" priority="medium" status="pending">
+            <comment>Upgrade checkout opened from sidebar CTA. [Inferred]</comment>
+        </node>
+    </node>
+
+    <node title="Status &amp; Progress" id="s19-status" priority="medium" status="pending">
+        <comment>No progress indicators present on this screen.</comment>
+    </node>
+
+    <node title="Contextual Help / Shortcuts" id="s19-help" priority="medium" status="pending">
+        <comment>No inline help or shortcuts shown on this screen.</comment>
+    </node>
+
+    <node title="Menus" id="s19-menus" priority="medium" status="pending">
+        <comment>Application menus not visible in this screenshot. [Inferred]</comment>
+    </node>
+
+    <node title="Menu Bar Extras / Status Icons" id="s19-menubar-extras" priority="medium" status="pending">
+        <comment>No menu bar extras visible in this screenshot. [Inferred]</comment>
+    </node>
+</node>
+
+
+</project_plan>

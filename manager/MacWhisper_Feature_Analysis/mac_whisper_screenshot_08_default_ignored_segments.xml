@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project_plan>
+<node title="Screenshot 08 — Default Ignored Segments" id="s08-root" priority="medium" status="pending">
+    <node title="Top Bar / Toolbar" id="s08-topbar" priority="medium" status="pending">
+        <node title="Back (chevron)" id="s08-topbar-back" priority="medium" status="pending">
+            <comment>Returns to the Ignored Segments screen.</comment>
+        </node>
+        <node title="Default Ignored Segments Title" id="s08-topbar-title" priority="medium" status="pending">
+            <comment>Page heading shown at the top.</comment>
+        </node>
+    </node>
+
+    <node title="Sidebars / Panels" id="s08-panels" priority="medium" status="pending">
+        <comment>No sidebars visible on this screen.</comment>
+    </node>
+
+    <node title="Main Workspace" id="s08-main" priority="medium" status="pending">
+        <node title="Header Row" id="s08-header-row" priority="medium" status="pending">
+            <node title="Segment (column header)" id="s08-col-segment" priority="medium" status="pending">
+                <comment>Label for the left column containing the default phrases.</comment>
+            </node>
+            <node title="Remove (column header)" id="s08-col-remove" priority="medium" status="pending">
+                <comment>Label for the right column with delete controls.</comment>
+            </node>
+        </node>
+
+        <node title="Default Segment Items" id="s08-default-items" priority="medium" status="pending">
+            <node title="[BLANK_AUDIO]" id="s08-item-blank-audio-1" priority="medium" status="pending">
+                <comment>Row with trash icon on the right.</comment>
+            </node>
+            <node title="[ BLANK_AUDIO ]" id="s08-item-blank-audio-2" priority="medium" status="pending">
+                <comment>Row with trash icon on the right.</comment>
+            </node>
+            <node title="[Music]" id="s08-item-music-brackets-1" priority="medium" status="pending">
+                <comment>Row with trash icon on the right.</comment>
+            </node>
+            <node title="[music]" id="s08-item-music-brackets-2" priority="medium" status="pending">
+                <comment>Row with trash icon on the right.</comment>
+            </node>
+            <node title="[MUSIC PLAYING]" id="s08-item-music-playing" priority="medium" status="pending">
+                <comment>Row with trash icon on the right.</comment>
+            </node>
+            <node title="[MUSIC]" id="s08-item-music-uppercase" priority="medium" status="pending">
+                <comment>Row with trash icon on the right.</comment>
+            </node>
+            <node title="(music)" id="s08-item-music-parens" priority="medium" status="pending">
+                <comment>Row with trash icon on the right.</comment>
+            </node>
+            <node title="[no audio]" id="s08-item-no-audio" priority="medium" status="pending">
+                <comment>Row with trash icon on the right.</comment>
+            </node>
+            <node title="[ Silence ]" id="s08-item-silence-spaced" priority="medium" status="pending">
+                <comment>Row with trash icon on the right.</comment>
+            </node>
+            <node title="[silence]" id="s08-item-silence-brackets" priority="medium" status="pending">
+                <comment>Row with trash icon on the right.</comment>
+            </node>
+            <node title="[inaudible]" id="s08-item-inaudible" priority="medium" status="pending">
+                <comment>Row with trash icon on the right.</comment>
+            </node>
+            <node title="[GASP]" id="s08-item-gasp" priority="medium" status="pending">
+                <comment>Row with trash icon on the right.</comment>
+            </node>
+            <node title="[ Pause ]" id="s08-item-pause-brackets-spaced" priority="medium" status="pending">
+                <comment>Row with trash icon on the right.</comment>
+            </node>
+            <node title="( retirement bell rang )" id="s08-item-retirement-bell" priority="medium" status="pending">
+                <comment>Row with trash icon on the right.</comment>
+            </node>
+            <node title="( silence )" id="s08-item-silence-parens-spaced" priority="medium" status="pending">
+                <comment>Row with trash icon on the right.</comment>
+            </node>
+            <node title="(crunching)" id="s08-item-crunching" priority="medium" status="pending">
+                <comment>Row with trash icon on the right.</comment>
+            </node>
+            <node title="(door slams)" id="s08-item-door-slams" priority="medium" status="pending">
+                <comment>Row with trash icon on the right.</comment>
+            </node>
+            <node title="(silence)" id="s08-item-silence-parens" priority="medium" status="pending">
+                <comment>Row with trash icon on the right.</comment>
+            </node>
+            <node title="[Pause]" id="s08-item-pause-brackets" priority="medium" status="pending">
+                <comment>Row with trash icon on the right.</comment>
+            </node>
+            <node title="[Silencio]" id="s08-item-silencio" priority="medium" status="pending">
+                <comment>Row with trash icon on the right.</comment>
+            </node>
+            <node title="(scissors snipping)" id="s08-item-scissors-snipping" priority="medium" status="pending">
+                <comment>Row with trash icon on the right.</comment>
+            </node>
+            <node title="(Applause.)" id="s08-item-applause" priority="medium" status="pending">
+                <comment>Row with trash icon on the right.</comment>
+            </node>
+            <node title="(Pause)" id="s08-item-pause-parens" priority="medium" status="pending">
+                <comment>Row with trash icon on the right; additional items continue below the fold.</comment>
+            </node>
+        </node>
+
+        <node title="Scrolling" id="s08-scrolling" priority="medium" status="pending">
+            <comment>Vertical scrollbar indicates a long list exceeding the viewport.</comment>
+        </node>
+    </node>
+
+    <node title="Dialogs / Popovers" id="s08-dialogs" priority="medium" status="pending">
+        <node title="Remove Confirmation" id="s08-dialogs-remove-confirm" priority="medium" status="pending">
+            <comment>Confirmation dialog when deleting a default phrase. [Inferred]</comment>
+        </node>
+    </node>
+
+    <node title="Status &amp; Progress" id="s08-status" priority="medium" status="pending">
+        <comment>No progress indicators present on this screen.</comment>
+    </node>
+
+    <node title="Contextual Help / Shortcuts" id="s08-help" priority="medium" status="pending">
+        <comment>No inline help or shortcuts shown on this screen.</comment>
+    </node>
+
+    <node title="Menus" id="s08-menus" priority="medium" status="pending">
+        <comment>Application menus not visible in this screenshot. [Inferred]</comment>
+    </node>
+
+    <node title="Menu Bar Extras / Status Icons" id="s08-menubar-extras" priority="medium" status="pending">
+        <comment>No menu bar extras visible in this screenshot. [Inferred]</comment>
+    </node>
+</node>
+
+
+</project_plan>

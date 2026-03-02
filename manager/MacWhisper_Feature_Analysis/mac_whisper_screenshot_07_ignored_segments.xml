@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project_plan>
+<node title="Screenshot 07 — Ignored Segments" id="s07-root" priority="medium" status="pending">
+    <node title="Top Bar / Toolbar" id="s07-topbar" priority="medium" status="pending">
+        <node title="Window Controls" id="s07-topbar-window-controls" priority="medium" status="pending">
+            <comment>Standard macOS close, minimize, zoom buttons at top-left of the window. [Inferred]</comment>
+        </node>
+    </node>
+
+    <node title="Sidebars / Panels" id="s07-panels" priority="medium" status="pending">
+        <comment>No sidebars visible on this screen.</comment>
+    </node>
+
+    <node title="Main Workspace" id="s07-main" priority="medium" status="pending">
+        <node title="Header" id="s07-header" priority="medium" status="pending">
+            <node title="Ignored Segments Title" id="s07-header-title" priority="medium" status="pending">
+                <comment>Page heading at the top-left.</comment>
+            </node>
+        </node>
+
+        <node title="Unwanted Segment Filtering" id="s07-filtering" priority="medium" status="pending">
+            <node title="Ignore Unwanted Segments (toggle) [Pro]" id="s07-filtering-toggle" priority="medium" status="pending">
+                <comment>Off. Enables automatic filtering of unwanted segments from transcriptions. Pro-gated feature.</comment>
+            </node>
+        </node>
+
+        <node title="Default" id="s07-default" priority="medium" status="pending">
+            <node title="Default Ignored Segments (row)" id="s07-default-row" priority="medium" status="pending">
+                <comment>Shows count: 45; chevron indicates a navigable list of default phrases.</comment>
+            </node>
+        </node>
+
+        <node title="Custom" id="s07-custom" priority="medium" status="pending">
+            <node title="Add Segment (input)" id="s07-custom-add-input" priority="medium" status="pending">
+                <comment>Placeholder: "Type your segment text..." Allows adding custom phrases to ignore.</comment>
+            </node>
+            <node title="Custom Helper Text" id="s07-custom-help" priority="medium" status="pending">
+                <comment>Explains that segments entirely matching any ignored phrase will be dropped and not appear in the transcript.</comment>
+            </node>
+        </node>
+
+        <node title="Actions" id="s07-actions" priority="medium" status="pending">
+            <node title="Reset to Defaults (button)" id="s07-action-reset" priority="medium" status="pending">
+                <comment>Disabled. Removes the custom ignore list and restores the default list.</comment>
+            </node>
+            <node title="Share With Developers (button)" id="s07-action-share" priority="medium" status="pending">
+                <comment>Disabled. Submits your ignore list to help improve default lists.</comment>
+            </node>
+            <node title="Share Explanation" id="s07-action-share-explainer" priority="medium" status="pending">
+                <comment>Describes optional submission of ignore lists to improve defaults for multiple countries.</comment>
+            </node>
+        </node>
+    </node>
+
+    <node title="Dialogs / Popovers" id="s07-dialogs" priority="medium" status="pending">
+        <node title="Default Ignored Segments List" id="s07-dialogs-default-list" priority="medium" status="pending">
+            <comment>View of the 45 default phrases with options to inspect or copy. [Inferred]</comment>
+        </node>
+        <node title="Add Segment Confirmation" id="s07-dialogs-add-confirm" priority="medium" status="pending">
+            <comment>Feedback or validation when adding a custom phrase. [Inferred]</comment>
+        </node>
+        <node title="Pro Upgrade Prompt" id="s07-dialogs-pro-upgrade" priority="medium" status="pending">
+            <comment>Displayed if toggling Ignore Unwanted Segments in Free edition. [Pro] [Inferred]</comment>
+        </node>
+        <node title="Share With Developers Consent" id="s07-dialogs-share-consent" priority="medium" status="pending">
+            <comment>Consent dialog prior to submitting custom ignore list. [Inferred]</comment>
+        </node>
+    </node>
+
+    <node title="Status &amp; Progress" id="s07-status" priority="medium" status="pending">
+        <comment>No progress indicators present on this screen.</comment>
+    </node>
+
+    <node title="Contextual Help / Shortcuts" id="s07-help" priority="medium" status="pending">
+        <comment>Inline helper texts describe effects of ignoring segments and sharing lists.</comment>
+    </node>
+
+    <node title="Menus" id="s07-menus" priority="medium" status="pending">
+        <comment>Application menus not visible in this screenshot. [Inferred]</comment>
+    </node>
+
+    <node title="Menu Bar Extras / Status Icons" id="s07-menubar-extras" priority="medium" status="pending">
+        <comment>No menu bar extras visible in this screenshot. [Inferred]</comment>
+    </node>
+</node>
+
+
+</project_plan>

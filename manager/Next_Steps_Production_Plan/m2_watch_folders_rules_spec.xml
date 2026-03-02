@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project_plan>
+  <node title="M2 — Watch Folders 2.0 (Rules)" id="spec-m2-watch" priority="medium" status="pending">
+    <comment>Per-folder rules for model/provider, output formats, and post-process recipes.</comment>
+  </node>
+</project_plan>

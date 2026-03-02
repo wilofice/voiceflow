@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project_plan>
+  <node title="M2 — On-device Speaker Diarization + Highlights" id="spec-m2-diarization" priority="high" status="pending">
+    <comment>Accurate speaker detection with VAD and highlight extraction without cloud dependency.</comment>
+  </node>
+</project_plan>

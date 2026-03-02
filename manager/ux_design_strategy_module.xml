@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project_plan>
+    <node title="UX Design Strategy &amp; AI-Assisted Implementation" priority="high" status="pending" id="ux-design-strategy-module-001">
+        <comment>Comprehensive UX design strategy leveraging AI tools and efficient design processes for a developer with limited UX design experience. This approach combines strategic UX research with AI-assisted visual design to create professional results quickly.</comment>
+        <node title="AI-Assisted UX Research &amp; Strategy" priority="high" status="pending" id="ai-assisted-ux-research-002">
+            <comment>Use AI tools and systematic research methods to conduct professional-level UX research without extensive UX background. Focus on actionable insights that directly inform design decisions.</comment>
+            <node title="Competitive UX Analysis with AI Tools" priority="high" status="pending" id="competitive-ux-analysis-ai-003">
+                <comment>Systematically analyze competitor interfaces using AI-powered analysis tools to identify best practices, common patterns, and differentiation opportunities.</comment>
+                <node title="Screenshot Analysis &amp; Pattern Extraction" priority="high" status="done" id="screenshot-analysis-004">
+                    <comment>Completed. See detailed findings in voiceflowpro/MacWhisper_Feature_Analysis/*. Key UI patterns and gaps extracted for roadmap.</comment>
+                </node>
+                <node title="User Flow Reverse Engineering" priority="high" status="done" id="user-flow-reverse-engineering-005">
+                    <comment>Completed. Full competitor flow maps documented in voiceflowpro/MacWhisper_Feature_Analysis. Bottlenecks and upsell moments identified.</comment>
+                </node>
+                <node title="Feature Gap Analysis Matrix" priority="medium" status="in-progress" id="feature-gap-analysis-matrix-006">
+                    <comment>Create systematic feature comparison matrix across competitors. Use AI to help categorize features by user value, implementation difficulty, and differentiation potential. Identify "blue ocean" features that no competitor offers well.</comment>
+                </node>
+            </node>
+            <node title="User Persona Development with AI Research" priority="high" status="pending" id="user-persona-ai-research-007">
+                <comment>Develop detailed user personas using AI-assisted research techniques. Combine online research, competitor reviews analysis, and AI-generated user scenarios to create actionable persona profiles.</comment>
+                <node title="Review Mining &amp; Sentiment Analysis" priority="high" status="pending" id="review-mining-analysis-008">
+                    <comment>Use AI tools to analyze hundreds of App Store and review site comments for MacWhisper, Audio Note, and similar apps. Extract common pain points, feature requests, and use case patterns. Identify user language and priorities.</comment>
+                </node>
+                <node title="AI-Generated User Journey Scenarios" priority="medium" status="pending" id="ai-user-journey-scenarios-009">
+                    <comment>Use AI (Claude, GPT-4) to generate detailed user journey scenarios based on identified personas. Create realistic scenarios for: podcast editor, journalist, researcher, meeting participant, content creator. Include emotional states and context.</comment>
+                </node>
+                <node title="Pain Point Prioritization Matrix" priority="medium" status="pending" id="pain-point-prioritization-010">
+                    <comment>Use AI to help prioritize user pain points by frequency (how often mentioned) and intensity (impact on user experience). Create actionable priority matrix that guides design decisions and feature development order.</comment>
+                </node>
+            </node>
+        </node>
+        <node title="AI-Powered Visual Design Creation" priority="high" status="pending" id="ai-visual-design-creation-011">
+            <comment>Leverage AI design tools and efficient design processes to create professional-quality visual designs without extensive design experience. Focus on tools that complement development skills.</comment>
+            <node title="Design Tool Selection &amp; Setup" priority="high" status="pending" id="design-tool-selection-012">
+                <comment>Select cost-effective design tools that integrate well with AI assistance and development workflows. Prioritize tools with free tiers, AI features, and easy handoff to development.</comment>
+                <node title="Primary Design Platform Selection" priority="high" status="pending" id="primary-design-platform-013">
+                    <comment>RECOMMENDED: Use Figma Community (free) + AI tools for primary design work. Alternative: Penpot (open-source, free) for complete control. Both support AI plugins and have strong component systems suitable for developers.</comment>
+                </node>
+                <node title="AI Design Assistant Integration" priority="high" status="pending" id="ai-design-assistant-014">
+                    <comment>Set up AI design assistants: (1) v0.dev by Vercel for rapid UI generation from text prompts, (2) Figma AI plugins (Automator, Designer GPT), (3) Claude/GPT-4 for design critique and iteration. These tools accelerate design creation for non-designers.</comment>
+                </node>
+                <node title="Design System Foundation Setup" priority="medium" status="pending" id="design-system-setup-015">
+                    <comment>Use Figma Community design systems or AI-generated systems as starting points. Adapt existing Mac app design systems to VoiceFlow branding. Focus on components that directly translate to code (buttons, inputs, cards, layouts).</comment>
+                </node>
+            </node>
+            <node title="Rapid Wireframing with AI Assistance" priority="high" status="pending" id="rapid-wireframing-ai-016">
+                <comment>Create comprehensive wireframes quickly using AI-assisted tools and systematic approaches. Focus on information architecture and user flows rather than visual polish initially.</comment>
+                <node title="AI-Generated Initial Wireframes" priority="high" status="pending" id="ai-generated-wireframes-017">
+                    <comment>Use v0.dev or similar tools to generate initial wireframes from text descriptions: "Create a Mac app interface for audio transcription with drag-drop area, progress indicator, and transcript editor." Iterate rapidly on generated concepts.</comment>
+                </node>
+                <node title="Information Architecture Validation" priority="high" status="pending" id="information-architecture-validation-018">
+                    <comment>Use AI tools to validate information architecture decisions. Present wireframes to AI for critique: "Analyze this interface for Mac users transcribing audio files. What might be confusing or inefficient?" Use feedback to iterate quickly.</comment>
+                </node>
+                <node title="User Flow Wireframe Sequences" priority="medium" status="pending" id="user-flow-wireframe-sequences-019">
+                    <comment>Create complete wireframe sequences for key user flows: onboarding, file import, transcription processing, editing, export. Use AI to identify missing steps or transition states that could cause user confusion.</comment>
+                </node>
+            </node>
+            <node title="High-Fidelity Design with AI Enhancement" priority="high" status="pending" id="high-fidelity-ai-design-020">
+                <comment>Transform wireframes into polished, professional designs using AI assistance for visual elements, color schemes, and typography. Focus on Mac-native appearance and professional credibility.</comment>
+                <node title="AI-Assisted Visual Style Development" priority="high" status="pending" id="ai-visual-style-021">
+                    <comment>Use AI to generate color palettes, typography scales, and visual style options based on prompts like: "Create a professional, trustworthy color scheme for a Mac productivity app that competes with premium software." Test multiple AI-generated options.</comment>
+                </node>
+                <node title="Component Design with AI Generation" priority="high" status="pending" id="component-design-ai-022">
+                    <comment>Use AI tools to design individual components: buttons, input fields, progress indicators, transcript cards. Prompt: "Design a macOS-style progress bar for audio transcription that shows percentage and time remaining." Refine AI outputs for consistency.</comment>
+                </node>
+                <node title="Icon &amp; Asset Creation" priority="medium" status="pending" id="icon-asset-creation-023">
+                    <comment>Use AI image generation (DALL-E, Midjourney, Stable Diffusion) for initial icon concepts. Refine with vector tools or hire designer for final versions. Focus on transcription-specific iconography: waveforms, microphones, document types.&lt;/component&gt;
+                </comment>
+                </node>
+            </node>
+        </node>
+        <node title="Design Validation &amp; Testing Strategy" priority="high" status="pending" id="design-validation-testing-024">
+            <comment>Validate design decisions efficiently using AI-assisted testing methods and rapid feedback cycles. Focus on identifying major usability issues before development begins.</comment>
+            <node title="AI-Assisted Usability Analysis" priority="high" status="pending" id="ai-usability-analysis-025">
+                <comment>Use AI tools to analyze designs for potential usability issues before user testing. This pre-validates designs and identifies obvious problems early in the process.</comment>
+                <node title="Cognitive Walkthrough with AI" priority="high" status="pending" id="cognitive-walkthrough-ai-026">
+                    <comment>Perform cognitive walkthroughs using AI: Present designs to Claude/GPT-4 with user scenarios and ask for step-by-step usability analysis. "A podcast editor wants to transcribe a 2-hour recording. Walk through this interface and identify potential friction points."</comment>
+                </node>
+                <node title="Accessibility Pre-Audit with AI" priority="medium" status="pending" id="accessibility-pre-audit-027">
+                    <comment>Use AI to identify potential accessibility issues in designs: color contrast problems, text size issues, keyboard navigation gaps. Ask AI: "Review these designs for WCAG compliance and Mac accessibility guidelines."</comment>
+                </node>
+                <node title="Cross-Platform Consistency Check" priority="medium" status="pending" id="cross-platform-consistency-028">
+                    <comment>Use AI to validate designs against Mac Human Interface Guidelines: "Review these interface designs for compliance with macOS design patterns and user expectations. What elements might feel non-native to Mac users?"</comment>
+                </node>
+            </node>
+            <node title="Rapid User Feedback Collection" priority="high" status="pending" id="rapid-user-feedback-029">
+                <comment>Collect user feedback on designs efficiently using online tools and targeted outreach. Focus on validation of core assumptions rather than detailed preferences.</comment>
+                <node title="Online Design Testing Platforms" priority="high" status="pending" id="online-design-testing-030">
+                    <comment>Use platforms like UsabilityHub, Maze, or UserTesting for quick design validation tests. Focus on: first impression tests, navigation clarity, feature discoverability. Target Mac users and current transcription tool users.</comment>
+                </node>
+                <node title="Community Feedback Integration" priority="medium" status="pending" id="community-feedback-integration-031">
+                    <comment>Share design concepts in relevant communities (Reddit r/MacApps, Designer Hangout, Product Hunt discussions) for feedback. Frame requests around specific questions rather than general opinions.</comment>
+                </node>
+                <node title="Competitive User Recruitment" priority="medium" status="pending" id="competitive-user-recruitment-032">
+                    <comment>Recruit current MacWhisper and similar tool users for design feedback through targeted outreach. Offer early access or discounts in exchange for design review sessions via screen sharing.</comment>
+                </node>
+            </node>
+        </node>
+        <node title="Developer-Friendly Design Handoff" priority="high" status="pending" id="developer-friendly-handoff-033">
+            <comment>Create design specifications and assets that are optimized for developer implementation. Since you're handling both design and development, focus on specifications that accelerate coding rather than traditional design handoff.</comment>
+            <node title="Code-Ready Design Specifications" priority="high" status="pending" id="code-ready-specifications-034">
+                <comment>Create design specifications that directly translate to code implementation. Focus on measurements, component states, and interaction specifications rather than abstract design concepts.</comment>
+                <node title="Component State Documentation" priority="high" status="pending" id="component-state-documentation-035">
+                    <comment>Document every interactive component with all states: default, hover, active, disabled, loading, error. Include exact measurements, colors, and transition specifications. Create specifications that can be directly implemented in CSS/React.</comment>
+                </node>
+                <node title="Responsive Behavior Specifications" priority="medium" status="pending" id="responsive-behavior-specs-036">
+                    <comment>Document how interface elements behave at different window sizes and screen densities. Include minimum/maximum sizes, text wrapping behavior, and layout priority for resizing scenarios common in desktop apps.</comment>
+                </node>
+                <node title="Animation &amp; Transition Specifications" priority="medium" status="pending" id="animation-transition-specs-037">
+                    <comment>Specify timing, easing, and choreography for transitions and animations. Include CSS transition values and animation curves that can be directly implemented. Focus on Mac-appropriate subtle animations.</comment>
+                </node>
+            </node>
+            <node title="Asset Organization &amp; Export" priority="medium" status="pending" id="asset-organization-export-038">
+                <comment>Organize design assets for efficient development implementation. Structure assets in formats and organization that accelerate development workflow.</comment>
+                <node title="Scalable Asset Export System" priority="medium" status="pending" id="scalable-asset-export-039">
+                    <comment>Export all assets in scalable formats (SVG for icons, @1x/@2x PNG for complex graphics) organized by component and screen. Use consistent naming conventions that map directly to component file structure.</comment>
+                </node>
+                <node title="Design Token Generation" priority="medium" status="pending" id="design-token-generation-040">
+                    <comment>Export design tokens (colors, spacing, typography, shadows) in CSS custom properties and JSON formats. Use tools like Style Dictionary or Figma plugins to generate consistent tokens for implementation.</comment>
+                </node>
+                <node title="Component Library Structure" priority="medium" status="pending" id="component-library-structure-041">
+                    <comment>Organize design components in structure that matches planned code component architecture. This enables easy reference during development and maintains design-code consistency throughout development.</comment>
+                </node>
+            </node>
+        </node>
+        <node title="Design Process Automation &amp; Efficiency" priority="medium" status="pending" id="design-process-automation-042">
+            <comment>Automate repetitive design tasks and create efficient workflows that minimize time spent on design production while maintaining quality. Focus on developer-friendly automation.</comment>
+            <node title="AI-Powered Design Iteration" priority="medium" status="pending" id="ai-design-iteration-043">
+                <comment>Set up workflows for rapid design iteration using AI assistance. Create templates and prompts that enable quick exploration of design alternatives without starting from scratch.</comment>
+                <node title="Design Variation Generation System" priority="medium" status="pending" id="design-variation-system-044">
+                    <comment>Create prompts and workflows for generating design variations: "Create 3 alternative layouts for this transcription interface, optimizing for different user priorities: speed, accuracy, and collaboration." Use for A/B testing options.</comment>
+                </node>
+                <node title="Automated Design Quality Checks" priority="low" status="pending" id="automated-quality-checks-045">
+                    <comment>Use AI to perform routine design quality checks: contrast ratios, text readability, spacing consistency, component alignment. Automate QA tasks that would normally require design expertise.</comment>
+                </node>
+            </node>
+            <node title="Cross-Platform Design Scaling" priority="low" status="pending" id="cross-platform-scaling-046">
+                <comment>Prepare design system for future Windows and Linux versions. Create foundation that can be adapted to other platforms without complete redesign.</comment>
+                <node title="Platform-Agnostic Core Components" priority="low" status="pending" id="platform-agnostic-components-047">
+                    <comment>Design core components with platform adaptation in mind. Separate platform-specific styling (buttons, inputs) from platform-agnostic functionality (layouts, information hierarchy). This enables efficient cross-platform expansion.</comment>
+                </node>
+            </node>
+        </node>
+        <node title="Competitive Differentiation Roadmap" priority="high" status="pending" id="diff-roadmap-001">
+            <comment>Built from MacWhisper analysis (see voiceflowpro/MacWhisper_Feature_Analysis). Focus on shipping production value that surpasses parity.</comment>
+            <node title="M1 (2 weeks) — Ship Value Now" priority="high" status="pending" id="diff-m1-002">
+                <node title="YouTube/URL Ingest MVP" priority="high" status="pending" id="m1-youtube-001">
+                    <comment>Implement robust URL ingest using yt-dlp with fallback, auto language detection, and progress UI.</comment>
+                    <node title="Acceptance Criteria" priority="high" status="pending" id="m1-youtube-acc-001">
+                        <comment>- Paste YouTube/Vimeo URL and receive a transcript.
+- Handle age-restricted and redirected URLs via fallback.
+- Errors surfaced with actionable remediation.
+- Supports auto language detection and correct model selection.</comment>
+                    </node>
+                </node>
+                <node title="AI Summary + Chapters (One-click Recipe)" priority="high" status="pending" id="m1-ai-recipe-002">
+                    <comment>One-click action: Transcribe → Summarize → Generate Chapters + Action Items with editable prompt templates.</comment>
+                    <node title="Acceptance Criteria" priority="high" status="pending" id="m1-ai-recipe-acc-002">
+                        <comment>- Single button produces TL;DR, chapters (timestamps), action items.
+- User can customize prompts; defaults provided.
+- Outputs included in export formats.</comment>
+                    </node>
+                </node>
+                <node title="Batch Turbo (Parallel + Resume)" priority="high" status="pending" id="m1-batch-003">
+                    <comment>Parallelize batch jobs with per-file status, error isolation, and resumable queues.</comment>
+                    <node title="Acceptance Criteria" priority="high" status="pending" id="m1-batch-acc-003">
+                        <comment>- Run N files concurrently based on CPU/cores.
+- Failed files can be retried without restarting entire batch.
+- ETA and cost/time estimates shown.</comment>
+                    </node>
+                </node>
+                <node title="Export V1 (Markdown, SRT/VTT, JSON)" priority="medium" status="pending" id="m1-export-004">
+                    <comment>Ship essential exports with clean formatting, chapters, and action items when available.</comment>
+                    <node title="Acceptance Criteria" priority="medium" status="pending" id="m1-export-acc-004">
+                        <comment>- Markdown with headings, chapters, action items.
+- SRT/VTT with accurate timestamps.
+- JSON with segments, speakers (if present), chapters.</comment>
+                    </node>
+                </node>
+            </node>
+
+            <node title="M2 (4–6 weeks) — Differentiators" priority="high" status="pending" id="diff-m2-003">
+                <node title="Smart Auto Model/Provider Selector" priority="high" status="pending" id="m2-automodel-001">
+                    <comment>Automatically choose best local/cloud model given duration, language, hardware, and accuracy target. User can override.</comment>
+                </node>
+                <node title="On-device Speaker Diarization + Highlights" priority="high" status="pending" id="m2-diarization-002">
+                    <comment>Accurate speaker splits with VAD; AI extracts highlights and speaker-specific action items. Privacy-first, offline default.</comment>
+                </node>
+                <node title="Watch Folders 2.0 (Rules)" priority="medium" status="pending" id="m2-watch-003">
+                    <comment>Per-folder rules: model/provider, language, output format, naming, and post-process recipes.</comment>
+                </node>
+                <node title="AI Prompt Recipes Library" priority="medium" status="pending" id="m2-recipes-004">
+                    <comment>Curated, shareable recipes (meeting notes, podcast show notes, research summary) with token budgeting and guardrails.</comment>
+                </node>
+            </node>
+
+            <node title="M3 (6–10 weeks) — Growth &amp; Integrations" priority="medium" status="pending" id="diff-m3-004">
+                <node title="System Audio Capture Wizard" priority="medium" status="pending" id="m3-audio-wizard-001">
+                    <comment>Guided setup for virtual device, permissions, and per-app capture with QA checks.</comment>
+                </node>
+                <node title="Editor Inline AI Actions" priority="medium" status="pending" id="m3-editor-ai-002">
+                    <comment>Inline rewrite, translate, timestamp align, filler removal with granular undo and cost preview.</comment>
+                </node>
+                <node title="Integrations: Notion, Obsidian, Slack" priority="medium" status="pending" id="m3-integrations-003">
+                    <comment>One-click export/connectors with auth, mapping, and rate-limit aware background jobs.</comment>
+                </node>
+            </node>
+        </node>
+    </node>
+</project_plan>

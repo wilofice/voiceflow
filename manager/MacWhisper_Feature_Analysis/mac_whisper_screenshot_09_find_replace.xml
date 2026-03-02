@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project_plan>
+<node title="Screenshot 09 — Find & Replace" id="s09-root" priority="medium" status="pending">
+    <node title="Top Bar / Toolbar" id="s09-topbar" priority="medium" status="pending">
+        <node title="Window Controls" id="s09-topbar-window-controls" priority="medium" status="pending">
+            <comment>Standard macOS close, minimize, zoom buttons at top-left of the window. [Inferred]</comment>
+        </node>
+        <node title="Search" id="s09-topbar-search" priority="medium" status="pending">
+            <comment>Field labeled "Search" to filter replace entries.</comment>
+        </node>
+    </node>
+
+    <node title="Sidebars / Panels" id="s09-panels" priority="medium" status="pending">
+        <comment>No sidebars visible on this screen.</comment>
+    </node>
+
+    <node title="Main Workspace" id="s09-main" priority="medium" status="pending">
+        <node title="Header" id="s09-header" priority="medium" status="pending">
+            <node title="Find &amp; Replace Title" id="s09-header-title" priority="medium" status="pending">
+                <comment>Page heading at the top-left.</comment>
+            </node>
+        </node>
+
+        <node title="Replacements" id="s09-replacements" priority="medium" status="pending">
+            <node title="Description" id="s09-replacements-desc" priority="medium" status="pending">
+                <comment>Add words or phrases to be automatically replaced in new transcripts.</comment>
+            </node>
+            <node title="Add Replacement (button)" id="s09-replacements-add" priority="medium" status="pending">
+                <comment>Top-right + button to create a new global replace rule.</comment>
+            </node>
+            <node title="Empty List Placeholder" id="s09-replacements-empty" priority="medium" status="pending">
+                <comment>Centered prompt: "Add your first global replace word to start" with a search icon; indicates no rules yet.</comment>
+            </node>
+        </node>
+
+        <node title="Matching Options" id="s09-options" priority="medium" status="pending">
+            <node title="Case Sensitive (toggle)" id="s09-option-case-sensitive" priority="medium" status="pending">
+                <comment>Off. Whether to consider case sensitivity when matching.</comment>
+            </node>
+            <node title="Only Replace Separate Words (toggle)" id="s09-option-separate-words" priority="medium" status="pending">
+                <comment>On. If turned off, matched parts of words will also be replaced; turn off for languages without spaces (e.g., Chinese).</comment>
+            </node>
+        </node>
+
+        <node title="Bulk Actions" id="s09-bulk-actions" priority="medium" status="pending">
+            <node title="Import List (button)" id="s09-action-import" priority="medium" status="pending">
+                <comment>Imports a predefined set of replace rules.</comment>
+            </node>
+            <node title="Remove All (button)" id="s09-action-remove-all" priority="medium" status="pending">
+                <comment>Clears all existing replace rules.</comment>
+            </node>
+        </node>
+    </node>
+
+    <node title="Dialogs / Popovers" id="s09-dialogs" priority="medium" status="pending">
+        <node title="Add Replacement Dialog" id="s09-dialogs-add" priority="medium" status="pending">
+            <comment>Form to specify find term and replacement; invoked by + button. [Inferred]</comment>
+        </node>
+        <node title="Import List — File Picker" id="s09-dialogs-import" priority="medium" status="pending">
+            <comment>System file chooser to select a list for import. [Inferred]</comment>
+        </node>
+        <node title="Remove All — Confirmation" id="s09-dialogs-remove-all" priority="medium" status="pending">
+            <comment>Confirmation prompt before deleting all rules. [Inferred]</comment>
+        </node>
+        <node title="Search Results" id="s09-dialogs-search-results" priority="medium" status="pending">
+            <comment>Filtered list of rules shown as the user types in the Search field. [Inferred]</comment>
+        </node>
+    </node>
+
+    <node title="Status &amp; Progress" id="s09-status" priority="medium" status="pending">
+        <comment>No progress indicators present on this screen.</comment>
+    </node>
+
+    <node title="Contextual Help / Shortcuts" id="s09-help" priority="medium" status="pending">
+        <comment>Inline helper texts explain the effects of each matching option.</comment>
+    </node>
+
+    <node title="Menus" id="s09-menus" priority="medium" status="pending">
+        <comment>Application menus not visible in this screenshot. [Inferred]</comment>
+    </node>
+
+    <node title="Menu Bar Extras / Status Icons" id="s09-menubar-extras" priority="medium" status="pending">
+        <comment>No menu bar extras visible in this screenshot. [Inferred]</comment>
+    </node>
+</node>
+
+
+</project_plan>

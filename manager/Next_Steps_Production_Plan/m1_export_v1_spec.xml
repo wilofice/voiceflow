@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project_plan>
+  <node title="M1 — Export V1" id="spec-m1-export" priority="medium" status="pending">
+    <comment>Ship Markdown, SRT/VTT, and JSON exports with optional chapters/action items.</comment>
+    <node title="Acceptance Criteria" id="spec-m1-export-acc" priority="medium" status="pending">
+      <comment>- Markdown includes headings and chapters.
+- SRT/VTT timestamps are monotonic and accurate.
+- JSON schema documented and versioned.</comment>
+    </node>
+  </node>
+</project_plan>

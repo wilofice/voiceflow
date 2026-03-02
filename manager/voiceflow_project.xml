@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project_plan>
+    <node title="VoiceFlow Project Plan" priority="high" status="pending" id="a1b2c3d4-e5f6-4a9b-8c7d-1e2f3a4b5c6d">
+        <comment>This master plan outlines the comprehensive strategy for developing, launching, and scaling the VoiceFlow Project. This fourth revision enhances clarity by providing detailed explanations for each task, ensuring the 'why' behind the 'what' is always clear.</comment>
+        <node title="Phase 0: Vision, KPIs &amp; Motivation" priority="medium" status="pending" id="f0a1b2c3-d4e5-4f6a-b7c8-d9e0f1a2b3c4">
+            <comment>This phase defines the 'Why' of the project. It's the North Star that guides all decisions, providing motivation and a clear definition of success. It visualizes the end goal: a profitable, impactful, and growing business.</comment>
+            <node title="Project Vision &amp; Mission" priority="medium" status="pending" id="g1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d">
+                <comment>What is the ultimate dream for VoiceFlow Pro? This is the 'bling bling' - the big picture that motivates every single task in this plan.</comment>
+                <node title="Vision Statement" priority="medium" status="pending" id="h2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6e">
+                    <comment>To become the leading, most intuitive, and privacy-focused transcription service for creators and professionals on the web.</comment>
+                </node>
+                <node title="Mission Statement" priority="medium" status="pending" id="i3d4e5f6-a7b8-4c9d-0e1f-2a3b4c5d6e7f">
+                    <comment>To empower individuals and teams to unlock the value in their audio content by providing a fast, accurate, and user-friendly transcription tool that respects their data and privacy.</comment>
+                </node>
+            </node>
+            <node title="Financial Goals (The Return on Investment)" priority="medium" status="pending" id="j4e5f6a7-b8c9-4d0e-1f2a-3b4c5d6e7f8g">
+                <comment>The financial targets that will make this project sustainable and profitable. These are the numbers that translate effort into reward.</comment>
+                <node title="Target Monthly Recurring Revenue (MRR)" priority="medium" status="pending" id="k5f6a7b8-c9d0-4e1f-2a3b-4c5d6e7f8g9h">
+                    <comment>GOAL: Achieve $5,000 MRR within 12 months of launch. This is the primary indicator of financial health and product-market fit.</comment>
+                </node>
+                <node title="Target Average Revenue Per User (ARPU)" priority="medium" status="pending" id="l6a7b8c9-d0e1-4f2a-3b4c-5d6e7f8g9h0i">
+                    <comment>GOAL: Achieve an ARPU of $15. This will be driven by the Pro and Teams pricing tiers. A higher ARPU indicates we are delivering high value to our customers.</comment>
+                </node>
+                <node title="Projected Break-Even Point" priority="medium" status="pending" id="m7b8c9d0-e1f2-4a3b-4c5d-6e7f8g9h0i1j">
+                    <comment>ANALYSIS: Estimate the point at which monthly revenue covers all monthly costs (e.g., hosting, legal, marketing tools). This is the point where the business becomes self-sustaining.</comment>
+                </node>
+            </node>
+            <node title="User &amp; Growth KPIs" priority="medium" status="pending" id="n8c9d0e1-f2a3-4b4c-5d6e-7f8g9h0i1j2k">
+                <comment>Metrics that measure our growth and impact on users. This is how we know we are building something people love and are willing to pay for.</comment>
+                <node title="Target Active User Base" priority="medium" status="pending" id="o9d0e1f2-a3b4-4c5d-6e7f-8g9h0i1j2k3l">
+                    <comment>GOAL: Acquire 1,000 paying customers within 6 months of launch. This is a direct measure of market adoption.</comment>
+                </node>
+                <node title="Target Conversion Rate" priority="medium" status="pending" id="p0e1f2a3-b4c5-4d6e-7f8g-9h0i1j2k3l4m">
+                    <comment>GOAL: Achieve a 5% conversion rate from free/trial users to paid subscribers. This measures the effectiveness of our onboarding and the perceived value of our premium features.</comment>
+                </node>
+                <node title="User Satisfaction (NPS)" priority="medium" status="pending" id="q1f2a3b4-c5d6-4e7f-8g9h-0i1j2k3l4m5n">
+                    <comment>GOAL: Maintain a Net Promoter Score (NPS) of 50 or higher. This will be measured via in-app surveys and is a key indicator of user happiness and word-of-mouth potential.</comment>
+                </node>
+            </node>
+        </node>
+        <node title="Phase 1: Technical Development" priority="high" status="pending" id="e5f6g7h8-i9j0-4k1l-2m3n-4o5p6q7r8s9t">
+            <comment>This phase focuses on building out the core application features beyond the MVP, ensuring a robust and scalable technical foundation. The core transcription engine is complete, so the focus now shifts to user-facing features and infrastructure.</comment>
+            <node title="Core Transcription Engine" priority="high" status="completed" id="b9c0d1e2-f3g4-4h5i-6j7k-8l9m0n1o2p3q">
+                <comment>The initial MVP for browser-side transcription is complete and validated, using @xenova/transformers.js. This is a major milestone. The development server is running and the whisper-demo page is functional for audio file uploads and transcription.</comment>
+            </node>
+            <node title="Feature Parity with Competitors" priority="high" status="pending" id="c8d9e0f1-a2b3-4c5d-6e7f-8g9h0i1j2k3l">
+                <comment>To be competitive, we need to implement features offered by MacWhisper and Audio Note. This is critical for market acceptance and moving beyond the MVP. This work can be parallelized with Phase 2 activities, meaning business and tech tracks can proceed simultaneously.</comment>
+                <node title="Advanced Export Functionality" priority="high" status="in-progress" id="l4m5n6o7-p8q9-4r0s-1t2u-3v4w5x6y7z8a">
+                    <comment>Allow users to export transcripts in various formats. This is a key feature for professional users who need to integrate transcripts into other workflows. A reusable export module should be created to easily add new formats in the future, reducing future development time.</comment>
+                    <node title="Implement Subtitle Export" priority="high" status="in-progress" id="r4s5t6u7-v8w9-4x0y-1z2a-3b4c5d6e7f8g">
+                        <comment>Support for .srt and .vtt formats is standard and required by content creators (podcasters, video editors) to add captions to their media.</comment>
+                    </node>
+                    <node title="Implement Document Export" priority="medium" status="in-progress" id="u1v2w3x4-y5z6-4a7b-8c9d-0e1f2g3h4i5j">
+                        <comment>Support for .txt, .pdf, and .docx formats for wider usability in business and academic contexts, allowing users to easily share and archive transcripts.</comment>
+                    </node>
+                </node>
+                <node title="Transcript Interaction" priority="high" status="pending" id="i9j0k1l2-m3n4-4o5p-6q7r-8s9t0u1v2w3x">
+                    <comment>Enhance the user's ability to work with the generated transcript, turning it from static text into a dynamic document. Performance with large transcripts (1+ hour) must be a consideration to avoid a sluggish UI for power users.</comment>
+                    <node title="Implement Transcript Search" priority="high" status="pending" id="m3n4o5p6-q7r8-4s9t-0u1v-2w3x4y5z6a7b">
+                        <comment>Allow users to search for specific words within the transcript. This is a fundamental feature for navigating and finding key information in long audio files.</comment>
+                    </node>
+                    <node title="Implement In-Place Editing" priority="medium" status="pending" id="q7r8s9t0-u1v2-4w3x-4y5z-6a7b8c9d0e1f">
+                        <comment>Allow users to correct transcription errors directly in the UI. This builds user trust, improves the final output quality, and makes the tool more valuable.</comment>
+                    </node>
+                    <node title="Link Audio Playback to Transcript" priority="medium" status="pending" id="a2b3c4d5-e6f7-4g8h-9i0j-k1l2m3n4o5p6">
+                        <comment>Clicking on a word in the transcript should jump to that point in the audio playback. This is a huge time-saver for users who need to verify the accuracy of the transcription.</comment>
+                    </node>
+                </node>
+            </node>
+            <node title="Advanced Features &amp; Differentiators" priority="medium" status="pending" id="b3c4d5e6-f7g8-4h9i-0j1k-l2m3n4o5p6q7">
+                <comment>Features that will set VoiceFlow Pro apart from the competition and create a strong, unique value proposition. These should be prioritized based on feedback from user interviews to ensure we are building what the market actually wants.</comment>
+                <node title="Cloud &amp; Productivity Integrations" priority="medium" status="pending" id="1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d">
+                    <comment>Allow users to connect their accounts to popular cloud services for seamless exporting. This moves VoiceFlow from a standalone tool to an integrated part of their workflow.</comment>
+                    <node title="Export to Google Docs" priority="medium" status="pending" id="3c4d5e6f-7a8b-9c0d-1e2f-3a4b5c6d7e8f">
+                        <comment>Implement Google Account OAuth and use the Google Docs API to create a new document from the transcript.</comment>
+                    </node>
+                    <node title="Export to Notion" priority="medium" status="pending" id="5e6f7a8b-9c0d-1e2f-3a4b-5c6d7e8f9g0h">
+                        <comment>Integrate with Notion's API to send the transcript to a new page or database, potentially using Notion's AI features to summarize.</comment>
+                    </node>
+                    <node title="Export to OneDrive / Word" priority="low" status="pending" id="7a8b9c0d-1e2f-3a4b-5c6d-7e8f9g0h1i2j">
+                        <comment>Connect with Microsoft accounts to export the transcript as a Word document directly to a user's OneDrive.</comment>
+                    </node>
+                </node>
+                <node title="AI-Powered Text Transformations" priority="high" status="pending" id="9c0d1e2f-3a4b-5c6d-7e8f-9g0h1i2j3k4l">
+                    <comment>Use a Large Language Model (LLM) to process the raw transcript into more useful formats. This is a major value-add that saves users significant time.</comment>
+                    <node title="Automatic Summarization" priority="high" status="pending" id="1e2f3a4b-5c6d-7e8f-9g0h-1i2j3k4l5m6n">
+                        <comment>Generate a concise summary of the entire transcript, highlighting key points and decisions.</comment>
+                    </node>
+                    <node title="Action Item Detection" priority="high" status="pending" id="3a4b5c6d-7e8f-9g0h-1i2j-3k4l5m6n7o8p">
+                        <comment>Automatically identify and list out action items or tasks mentioned during a conversation (e.g., "I will send the report by Friday").</comment>
+                    </node>
+                </node>
+                <node title="Real-time Transcription" priority="medium" status="pending" id="c4d5e6f7-g8h9-4i0j-1k2l-m3n4o5p6q7r8">
+                    <comment>Transcribe audio from the microphone in real-time. This provides instant feedback and allows the app to function as a live note-taker during meetings or lectures.</comment>
+                </node>
+                <node title="Speaker Diarization" priority="medium" status="pending" id="e6f7g8h9-i0j1-4k2l-3m4n-o5p6q7r8s9t0">
+                    <comment>Identify and label different speakers in the transcript (e.g., 'Speaker 1', 'Speaker 2'). This is a high-value feature for interviews, meetings, and podcasts, making the transcript much more readable.</comment>
+                </node>
+                <node title="Workflow Exports" priority="medium" status="pending" id="5c6d7e8f-9g0h-1i2j-3k4l-5m6n7o8p9q1r">
+                    <comment>Allow users to export content directly into other productivity tools.</comment>
+                    <node title="Export to To-Do List App" priority="medium" status="pending" id="7e8f9g0h-1i2j-3k4l-5m6n-7o8p9q1r2s3t">
+                        <comment>Integrate with APIs from Todoist, Asana, or Trello to create new tasks from detected action items.</comment>
+                    </node>
+                    <node title="Export to Mind Map" priority="low" status="pending" id="9g0h1i2j-3k4l-5m6n-7o8p-9q1r2s3t4u5v">
+                        <comment>Generate a .XMind or .MM file from the transcript's summary or key topics, allowing for visual exploration of the content.</comment>
+                    </node>
+                </node>
+                <node title="Custom Vocabulary" priority="medium" status="pending" id="1i2j3k4l-5m6n-7o8p-9q1r-2s3t4u5v6w7x">
+                    <comment>Allow users to add a list of custom words, names, or acronyms to improve transcription accuracy for their specific domain (e.g., medical, legal, company-specific jargon).</comment>
+                </node>
+                <node title="System Audio Transcription" priority="low" status="pending" id="d5e6f7g8-h9i0-4j1k-2l3m-n4o5p6q7r8s9">
+                    <comment>RISK: This is technically complex on the web and may require a separate desktop application. It is de-prioritized for the initial launch but remains a key feature for a future 'Pro' offering targeting remote workers.</comment>
+                </node>
+            </node>
+            <node title="Infrastructure &amp; Backend" priority="high" status="pending" id="f7g8h9i0-j1k2-4l3m-4n5o-p6q7r8s9t0u1">
+                <comment>Ensure the backend services are ready for production, focusing on security, scalability, and user management. DEPENDENCY: This must be in place before paid launch to handle user accounts and data.</comment>
+                <node title="Setup User Authentication" priority="high" status="pending" id="g8h9i0j1-k2l3-4m4n-5o6p-q7r8s9t0u1v2">
+                    <comment>Integrate Supabase for user login, registration, and management. This is a foundational step for any SaaS product, enabling user-specific data and subscriptions.</comment>
+                </node>
+                <node title="Develop File Storage Solution" priority="high" status="pending" id="h9i0j1k2-l3m4-4n5o-6p7q-r8s9t0u1v2w3">
+                    <comment>Implement secure, scalable storage for user audio files and transcripts, likely using Supabase Storage. This ensures user data is safe and accessible only to them.</comment>
+                </node>
+                <node title="Setup CI/CD Pipeline" priority="high" status="pending" id="i0j1k2l3-m4n5-4o6p-7q8r-s9t0u1v2w3x4">
+                    <comment>Set up a Continuous Integration/Continuous Deployment pipeline (e.g., using GitHub Actions) to automate testing and deployment to Vercel/AWS. This increases development speed and reduces the risk of manual deployment errors.</comment>
+                </node>
+            </node>
+            <node title="User Onboarding &amp; Experience" priority="high" status="pending" id="a9b8c7d6-e5f4-3a2b-1c0d-9e8f7a6b5c4d">
+                <comment>Create a seamless and welcoming experience for new users to drive activation (the moment a user understands the value) and long-term retention. A good onboarding flow is a feature in itself and can significantly reduce churn.</comment>
+                <node title="Design Welcome Tour" priority="medium" status="pending" id="b8c7d6e5-f4a3-2b1c-0d9e-8f7a6b5c4d3e">
+                    <comment>Create a short, interactive tour that highlights key features and guides users to their first successful transcription. This is crucial for demonstrating value quickly (the 'Aha!' moment).</comment>
+                </node>
+                <node title="Implement Onboarding Checklist" priority="low" status="pending" id="c7d6e5f4-a3b2-1c0d-9e8f-7a6b5c4d3e2f">
+                    <comment>A simple, dismissible checklist to guide new users through essential setup steps (e.g., 'Upload first file', 'Try an export', 'Invite a team member'). This encourages deeper product exploration.</comment>
+                </node>
+                <node title="Create Email Onboarding Sequence" priority="medium" status="pending" id="f4a3b2c1-d09e-8f7a-6b5c-4d3e2f1a0b9c">
+                    <comment>Write a 5-7 email sequence (using a service like Mailchimp or Resend) to educate new users on features, provide tips, and keep them engaged during their critical first week.</comment>
+                </node>
+            </node>
+        </node>
+        <node title="Phase 2: Business Foundation" priority="high" status="pending" id="j1k2l3m4-n5o6-4p7q-8r9s-t0u1v2w3x4y5">
+            <comment>Establish the legal and financial structure of the business. This is a critical path to launch and can be done in parallel with technical development. It ensures the business can operate legally and accept money.</comment>
+            <node title="Legal Foundation" priority="high" status="pending" id="k2l3m4n5-o6p7-4q8r-9s0t-u1v2w3x4y5z6">
+                <comment>Draft and finalize all necessary legal documents to protect the business from liability and inform users of their rights. These must be easily accessible from the application footer and agreed to upon signup.</comment>
+                <node title="Draft Terms of Service &amp; Privacy Policy" priority="high" status="pending" id="l3m4n5o6-p7q8-4r9s-0t1u-v2w3x4y5z6a7">
+                    <comment>Create comprehensive ToS (rules of use) and Privacy Policy (data handling) documents, including GDPR/CCPA compliance clauses for data protection. Use templates as a starting point but get them reviewed.</comment>
+                </node>
+                <node title="Draft License Agreement" priority="high" status="pending" id="m4n5o6p7-q8r9-4s0t-1u2v-w3x4y5z6a7b8">
+                    <comment>Define the terms of use for the software under different licensing tiers (e.g., Individual, Team, Lifetime). This governs what users can and cannot do with the software.</comment>
+                </node>
+                <node title="Attorney Review" priority="high" status="pending" id="n5o6p7q8-r9s0-4t1u-2v3w-x4y5z6a7b8c9">
+                    <comment>Have all legal documents reviewed by a qualified attorney specializing in software and SaaS. This is a non-negotiable step to ensure legal compliance and minimize risk.</comment>
+                </node>
+            </node>
+            <node title="Business Registration" priority="high" status="pending" id="o6p7q8r9-s0t1-4u2v-3w4x-y5z6a7b8c9d0">
+                <comment>Officially register the business entity to operate legally, open a bank account, and file taxes.</comment>
+                <node title="Form LLC" priority="high" status="pending" id="p7q8r9s0-t1u2-4v3w-4x5y-z6a7b8c9d0e1">
+                    <comment>Register 'VoiceFlow Pro LLC' in the chosen jurisdiction. An LLC provides liability protection, separating your personal assets from the business. Obtain an EIN (Employer Identification Number) from the IRS for tax purposes.</comment>
+                </node>
+                <node title="File for Trademark" priority="medium" status="pending" id="q8r9s0t1-u2v3-4w4x-5y6z-a7b8c9d0e1f2">
+                    <comment>Perform a trademark search and file an application for the 'VoiceFlow Pro' name and logo. This protects your brand identity from being used by others.</comment>
+                </node>
+            </node>
+            <node title="Payment &amp; Pricing" priority="high" status="pending" id="r9s0t1u2-v3w4-4x5y-6z7a-b8c9d0e1f2g3">
+                <comment>Set up the system to process payments and define the pricing strategy. DEPENDENCY: User interviews should inform value-based pricing (pricing based on the value provided, not just cost or competitor prices).</comment>
+                <node title="Define Pricing Tiers" priority="high" status="pending" id="d6e5f4a3-b2c1-0d9e-8f7a-6b5c4d3e2f1a">
+                    <comment>Finalize pricing for different tiers (e.g., Free, Pro, Teams). This should be based on features, usage limits (e.g., transcription hours/month), and the value each tier provides to different user segments, informed by competitor analysis and user interviews.</comment>
+                </node>
+                <node title="Configure Stripe Account" priority="high" status="pending" id="s0t1u2v3-w4x5-4y6z-7a8b-c9d0e1f2g3h4">
+                    <comment>Set up Stripe, configure products and plans matching the pricing tiers, and integrate webhooks for subscription events (e.g., successful payment, failed payment) to automate account management.</comment>
+                </node>
+                <node title="Build Pricing &amp; Checkout UI" priority="high" status="pending" id="t1u2v3w4-x5y6-4z7a-8b9c-d0e1f2g3h4i5">
+                    <comment>Develop the public-facing pricing page that clearly outlines the features of each tier, and integrate the Stripe checkout flow into the application's subscription management area.</comment>
+                </node>
+                <node title="Implement Subscription Management UI" priority="high" status="pending" id="e5f4a3b2-c1d0-9e8f-7a6b-5c4d3e2f1a0b">
+                    <comment>Create the in-app UI for users to view their current plan, upgrade, downgrade, cancel their subscription, and view their invoice history. This is crucial for user self-service and reducing support load.</comment>
+                </node>
+                <node title="Test Payment Flow End-to-End" priority="high" status="pending" id="u2v3w4x5-y6z7-4a8b-9c0d-e1f2g3h4i5j6">
+                    <comment>Conduct thorough testing of the entire payment and subscription lifecycle (signup, upgrade, downgrade, cancellation, failed payments) using Stripe's test environment to prevent any issues with real money.</comment>
+                </node>
+            </node>
+        </node>
+        <node title="Phase 3: Marketing &amp; Go-to-Market" priority="high" status="pending" id="v3w4x5y6-z7a8-4b9c-0d1e-f2g3h4i5j6k7">
+            <comment>Prepare for launch and build a pipeline of potential customers. Marketing is not a post-launch activity; it should start long before launch day to build momentum.</comment>
+            <node title="Branding &amp; Assets" priority="high" status="pending" id="w4x5y6z7-a8b9-4c0d-1e2f-g3h4i5j6k7l8">
+                <comment>Develop a strong, professional brand identity that resonates with the target audience. DEPENDENCY: This should be done before the landing page is built, as it will inform the design.</comment>
+                <node title="Design Logo and Visual Identity" priority="high" status="pending" id="x5y6z7a8-b9c0-4d1e-2f3g-h4i5j6k7l8m9">
+                    <comment>Create the logo, define the color palette, and choose typography. This visual identity will be used across the app, website, and all marketing materials for a consistent look and feel.</comment>
+                </node>
+            </node>
+            <node title="Pre-Launch Marketing" priority="high" status="pending" id="y6z7a8b9-c0d1-4e2f-3g4h-i5j6k7l8m9n0">
+                <comment>Generate interest and leads before the product is live to ensure there is an audience on launch day.</comment>
+                <node title="Develop Landing Page" priority="high" status="pending" id="z7a8b9c0-d1e2-4f3g-4h5i-j6k7l8m9n0o1">
+                    <comment>Create a compelling landing page that clearly explains the value proposition (what problem it solves) and has a prominent call-to-action for visitors to join a waitlist.</comment>
+                </node>
+                <node title="Content Marketing" priority="medium" status="pending" id="a8b9c0d1-e2f3-4g4h-5i6j-k7l8m9n0o1p2">
+                    <comment>Write blog posts and social media content about topics your target audience cares about (e.g., 'How to Transcribe a Podcast for Free', '5 Productivity Tips for Journalists') to attract them and build SEO authority.</comment>
+                </node>
+                <node title="Build Waitlist" priority="high" status="pending" id="b2c1d09e-8f7a-6b5c-4d3e-2f1a0b9c8d7e">
+                    <comment>Actively promote the landing page across relevant channels (Reddit, Twitter, LinkedIn, etc.) to build an email list of potential first users. GOAL: Aim for at least 500 sign-ups before launch day. This list is your most valuable asset on launch day.</comment>
+                </node>
+            </node>
+        </node>
+        <node title="Phase 4: User Feedback &amp; Validation" priority="high" status="pending" id="b9c0d1e2-f3g4-4h5i-6j7k-l8m9n0o1p2q3">
+            <comment>Validate the product with real users to ensure it solves their problems effectively. This phase runs in parallel with development and is the most critical for de-risking the project and avoiding building something nobody wants.</comment>
+            <node title="Customer Discovery" priority="high" status="pending" id="c0d1e2f3-g4h5-4i6j-7k8l-m9n0o1p2q3r4">
+                <comment>Based on the 'Entrepreneurial Journey' coaching, this is a top priority. Get out of the building and talk to users to validate every assumption before writing code.</comment>
+                <node title="Identify Target User Profiles" priority="high" status="pending" id="d1e2f3g4-h5i6-4j7k-8l9m-n0o1p2q3r4s5">
+                    <comment>Define and document ideal customer profiles (personas), including their goals, pain points, and daily workflows. This helps focus interview and marketing efforts on the right people.</comment>
+                </node>
+                <node title="Conduct User Interviews" priority="high" status="pending" id="e2f3g4h5-i6j7-4k8l-9m0n-o1p2q3r4s5t6">
+                    <comment>Schedule and conduct at least 20-30 interviews to deeply understand user pain points, existing workflows, and willingness to pay. Create an interview script to ensure consistent data collection and avoid leading questions.</comment>
+                </node>
+            </node>
+            <node title="Alpha &amp; Beta Testing" priority="high" status="pending" id="f3g4h5i6-j7k8-4l9m-0n1o-p2q3r4s5t6u7">
+                <comment>Roll out the product to a limited audience to gather feedback, find bugs, and refine the user experience before public launch.</comment>
+                <node title="Private Alpha Test" priority="high" status="pending" id="g4h5i6j7-k8l9-4m0n-1o2p-q3r4s5t6u7v8">
+                    <comment>Invite a small group of 5-10 trusted users (identified during interviews) to test the initial product and provide detailed feedback. Offer them a significant discount or lifetime deal for their contribution to incentivize quality feedback.</comment>
+                </node>
+                <node title="Public Beta Program" priority="high" status="pending" id="h5i6j7k8-l9m0-4n1o-2p3q-r4s5t6u7v8w9">
+                    <comment>Open the beta to the pre-launch waitlist to test scalability, gather broader feedback, and generate early buzz. Define clear success metrics (e.g., 50% of beta users transcribe &gt;3 files) to gauge product-market fit.</comment>
+                </node>
+                <node title="Implement Feedback Loop" priority="high" status="pending" id="i6j7k8l9-m0n1-4o2p-3q4r-s5t6u7v8w9x0">
+                    <comment>Set up a system (e.g., Discord, Canny.io) to collect, categorize, and prioritize user feedback systematically. Crucially, 'close the loop' by notifying users when their feedback is implemented to show you are listening and build a loyal community.</comment>
+                </node>
+            </node>
+        </node>
+        <node title="Phase 5: Official Launch &amp; Rollout" priority="high" status="pending" id="j7k8l9m0-n1o2-4p3q-4r5s-t6u7v8w9x0y1">
+            <comment>The official public launch of VoiceFlow Pro. This is the culmination of all previous phases and the beginning of the growth phase.</comment>
+            <node title="Launch Preparation" priority="high" status="pending" id="k8l9m0n1-o2p3-4q4r-5s6t-u7v8w9x0y1z2">
+                <comment>Final checks and preparations in the week leading up to the launch to ensure a smooth rollout.</comment>
+                <node title="Finalize Production Build" priority="high" status="pending" id="l9m0n1o2-p3q4-4r5s-6t7u-v8w9x0y1z2a3">
+                    <comment>Incorporate critical feedback from beta testing, perform final QA, and 'freeze the code' (no new features, only critical bug fixes) for the launch version to ensure stability.</comment>
+                </node>
+                <node title="Prepare Launch Marketing Campaign" priority="high" status="pending" id="m0n1o2p3-q4r5-4s6t-7u8v-w9x0y1z2a3b4">
+                    <comment>Prepare emails for the waitlist (with a special launch day offer), social media announcements, and create a launch kit for Product Hunt or other platforms. Have everything ready to go before launch day.</comment>
+                </node>
+            </node>
+            <node title="Launch Day" priority="high" status="pending" id="n1o2p3q4-r5s6-4t7u-8v9w-x0y1z2a3b4c5">
+                <comment>Execute the launch plan with precision. The goal is to maximize visibility and drive initial sign-ups.</comment>
+                <node title="Go Live" priority="high" status="pending" id="o2p3q4r5-s6t7-4u8v-9w0x-y1z2a3b4c5d6">
+                    <comment>Deploy the final application build, enable public sign-ups, and switch payment processing from test to live mode.</comment>
+                </node>
+                <node title="Announce Launch on Key Channels" priority="high" status="pending" id="p3q4r5s6-t7u8-4v9w-0x1y-z2a3b4c5d6e7">
+                    <comment>Send out all launch communications across all planned channels (Email to the waitlist, Twitter, LinkedIn, Product Hunt) in a coordinated manner to create a single, impactful launch event.</comment>
+                </node>
+            </node>
+            <node title="Post-Launch" priority="high" status="pending" id="q4r5s6t7-u8v9-4w0x-1y2z-a3b4c5d6e7f8">
+                <comment>The work doesn't stop at launch. This phase is about monitoring, supporting, and iterating based on real-world data.</comment>
+                <node title="Monitor System Performance &amp; Analytics" priority="high" status="pending" id="r5s6t7u8-v9w0-4x1y-2z3a-b4c5d6e7f8g9">
+                    <comment>Closely watch server load, error rates (with a tool like Sentry), user sign-up funnels, conversion rates, and feature usage (with a tool like Vercel Analytics or Plausible) to understand what is happening.</comment>
+                </node>
+                <node title="Proactive Customer Support" priority="high" status="pending" id="s6t7u8v9-w0x1-4y2z-3a4b-c5d6e7f8g9h0">
+                    <comment>Be ready to respond to user questions and issues promptly across all channels to build a reputation for excellent support. Create canned responses for common questions to improve response time.</comment>
+                </node>
+                <node title="Plan V1.1 Roadmap" priority="medium" status="pending" id="t7u8v9w0-x1y2-4z3a-4b5c-d6e7f8g9h0i1">
+                    <comment>Begin planning the next iteration of features based on post-launch feedback and initial usage data, focusing on quick wins and high-impact improvements that will drive growth and retention.</comment>
+                </node>
+            </node>
+        </node>
+    </node>
+</project_plan>

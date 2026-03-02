@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project_plan>
+<node title="Screenshot 02 — Watched Folders" id="s02-root" priority="medium" status="pending">
+    <node title="Top Bar / Toolbar" id="s02-topbar" priority="medium" status="pending">
+        <node title="Window Controls" id="s02-topbar-window-controls" priority="medium" status="pending">
+            <comment>Standard macOS close, minimize, zoom buttons at top-left of the window. [Inferred]</comment>
+        </node>
+    </node>
+
+    <node title="Sidebars / Panels" id="s02-panels" priority="medium" status="pending">
+        <comment>No sidebars visible on this screen.</comment>
+    </node>
+
+    <node title="Main Workspace" id="s02-main" priority="medium" status="pending">
+        <node title="Header" id="s02-main-header" priority="medium" status="pending">
+            <node title="Watched Folders Title" id="s02-main-header-title" priority="medium" status="pending">
+                <comment>Section header at the top of the page.</comment>
+            </node>
+            <node title="BETA Badge" id="s02-main-header-beta" priority="medium" status="pending">
+                <comment>Indicator showing the feature is in beta.</comment>
+            </node>
+        </node>
+
+        <node title="Watch Folders" id="s02-main-watch-folders" priority="medium" status="pending">
+            <node title="Add Watch Folder (button)" id="s02-main-add-watch-folder" priority="medium" status="pending">
+                <comment>Opens a folder picker to add a new watched folder.</comment>
+            </node>
+            <node title="Description Text" id="s02-main-watch-desc" priority="medium" status="pending">
+                <comment>Explains that files placed in watch folders will be transcribed automatically.</comment>
+            </node>
+            <node title="Support Email Link" id="s02-main-watch-support" priority="medium" status="pending">
+                <comment>Link to support@macwhisper.com for feedback on the feature.</comment>
+            </node>
+            <node title="Watch Folder List" id="s02-main-watch-list" priority="medium" status="pending">
+                <comment>Currently empty; displays added folders when configured.</comment>
+            </node>
+        </node>
+
+        <node title="Features" id="s02-main-features" priority="medium" status="pending">
+            <node title="Auto-Transcribe Watch Folder (toggle)" id="s02-main-auto-transcribe" priority="medium" status="pending">
+                <comment>On. Transcribes and exports files automatically when added to the folder.</comment>
+            </node>
+        </node>
+
+        <node title="Export Formats" id="s02-main-export-formats" priority="medium" status="pending">
+            <node title="Transcript (txt) (row)" id="s02-main-export-txt" priority="medium" status="pending">
+                <comment>One configured export format; row includes a disclosure control at the right.</comment>
+            </node>
+            <node title="Add Export Format (button)" id="s02-main-add-export-format" priority="medium" status="pending">
+                <comment>Adds new automatic export formats for detected files.</comment>
+            </node>
+            <node title="Footer Help Text" id="s02-main-export-help" priority="medium" status="pending">
+                <comment>Explains that chosen formats will be exported automatically for detected files.</comment>
+            </node>
+        </node>
+    </node>
+
+    <node title="Dialogs / Popovers" id="s02-dialogs" priority="medium" status="pending">
+        <node title="Add Watch Folder — Folder Picker" id="s02-dialogs-folder-picker" priority="medium" status="pending">
+            <comment>System folder selection dialog triggered by Add Watch Folder. [Inferred]</comment>
+        </node>
+        <node title="Export Format Picker" id="s02-dialogs-export-format-picker" priority="medium" status="pending">
+            <comment>Popover/dialog to choose additional export formats (e.g., transcript types). [Inferred]</comment>
+        </node>
+        <node title="Transcript (txt) Row Details" id="s02-dialogs-export-row-details" priority="medium" status="pending">
+            <comment>Disclosure popover for configuring options of the selected export format. [Inferred]</comment>
+        </node>
+    </node>
+
+    <node title="Status &amp; Progress" id="s02-status" priority="medium" status="pending">
+        <comment>No progress indicators present on this screen.</comment>
+    </node>
+
+    <node title="Contextual Help / Shortcuts" id="s02-help" priority="medium" status="pending">
+        <comment>No keyboard shortcuts shown; includes a support email link for feedback.</comment>
+    </node>
+
+    <node title="Menus" id="s02-menus" priority="medium" status="pending">
+        <comment>Application menus not visible in this screenshot. [Inferred]</comment>
+    </node>
+
+    <node title="Menu Bar Extras / Status Icons" id="s02-menubar-extras" priority="medium" status="pending">
+        <comment>No menu bar extras visible in this screenshot. [Inferred]</comment>
+    </node>
+</node>
+
+
+</project_plan>

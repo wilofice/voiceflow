@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project_plan>
+  <node title="Competitive Analysis Summary" id="summary-001" priority="high" status="done">
+    <comment>Summary distilled from MacWhisper screenshots and flows in voiceflowpro/MacWhisper_Feature_Analysis.</comment>
+    <node title="Home Dashboard Patterns" id="summary-home-001" priority="high" status="done">
+      <comment>- Strong Pro upsell on landing; Batch, Cloud, App Audio gated.
+- URL import field prominent; Drag &amp; Drop guidance; quick actions hub.
+- Secondary actions for support, models, reviews, iOS app.</comment>
+    </node>
+    <node title="AI Services Model" id="summary-aiservices-002" priority="high" status="done">
+      <comment>- Provider tiles (OpenAI, Anthropic, Azure, xAI, etc.) require setup.
+- No visible auto-selection or cost/latency guidance.
+- Opportunity: sensible defaults + auto model/provider selection.</comment>
+    </node>
+    <node title="Opportunities to Win" id="summary-win-003" priority="high" status="done">
+      <comment>- Ship immediate value: URL ingest, one-click summaries/chapters, parallel batch, clean exports.
+- Reduce setup friction with auto provider/model selection and ready-made prompt recipes.
+- Privacy-forward offline diarization; richer post-process automations (Watch Folders 2.0).</comment>
+    </node>
+  </node>
+</project_plan>

@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project_plan>
+<node title="Screenshot 01 — General Preferences" id="s01-root" priority="medium" status="pending">
+    <node title="Top Bar / Toolbar" id="s01-topbar" priority="medium" status="pending">
+        <node title="Window Controls" id="s01-topbar-window-controls" priority="medium" status="pending">
+            <comment>Standard macOS close, minimize, zoom buttons at top-left of the window. [Inferred]</comment>
+        </node>
+    </node>
+
+    <node title="Sidebars / Panels" id="s01-panels" priority="medium" status="pending">
+        <node title="Left Navigation" id="s01-panel-leftnav" priority="medium" status="pending">
+            <comment>Sidebar for navigating preference categories; includes a search field at the top.</comment>
+            <node title="Search" id="s01-leftnav-search" priority="medium" status="pending">
+                <comment>Filters preference items within the sidebar.</comment>
+            </node>
+            <node title="GENERAL › General (selected)" id="s01-leftnav-general" priority="medium" status="pending">
+                <comment>Main General preferences page currently displayed.</comment>
+            </node>
+            <node title="GENERAL › Global" id="s01-leftnav-global" priority="medium" status="pending">
+                <comment>Opens Global preferences. [Inferred]</comment>
+            </node>
+            <node title="GENERAL › Watched Folders" id="s01-leftnav-watched-folders" priority="medium" status="pending">
+                <comment>Configure folders to auto-import media. [Inferred]</comment>
+            </node>
+            <node title="AUDIO &amp; VIDEO › Microphone" id="s01-leftnav-microphone" priority="medium" status="pending">
+                <comment>Microphone input settings. [Inferred]</comment>
+            </node>
+            <node title="AUDIO &amp; VIDEO › YouTube" id="s01-leftnav-youtube" priority="medium" status="pending">
+                <comment>YouTube import/options. [Inferred]</comment>
+            </node>
+            <node title="TRANSCRIPTION › Transcription Models" id="s01-leftnav-models" priority="medium" status="pending">
+                <comment>Model selection and management. [Inferred]</comment>
+            </node>
+            <node title="TRANSCRIPTION › Speakers" id="s01-leftnav-speakers" priority="medium" status="pending">
+                <comment>Speaker labeling/diarization options. [Inferred]</comment>
+            </node>
+            <node title="TRANSCRIPTION › Translation" id="s01-leftnav-translation" priority="medium" status="pending">
+                <comment>Translation settings. [Inferred]</comment>
+            </node>
+            <node title="TRANSCRIPTION › Ignored Segments" id="s01-leftnav-ignored-segments" priority="medium" status="pending">
+                <comment>Rules to skip segments. [Inferred]</comment>
+            </node>
+            <node title="TRANSCRIPTION › Find &amp; Replace" id="s01-leftnav-find-replace" priority="medium" status="pending">
+                <comment>Bulk text editing tools. [Inferred]</comment>
+            </node>
+            <node title="TRANSCRIPTION › Batch Transcription" id="s01-leftnav-batch" priority="medium" status="pending">
+                <comment>Run transcriptions on multiple files. [Inferred]</comment>
+            </node>
+            <node title="AI › Services" id="s01-leftnav-ai-services" priority="medium" status="pending">
+                <comment>External AI integrations. [Inferred]</comment>
+            </node>
+            <node title="AI › Prompts" id="s01-leftnav-ai-prompts" priority="medium" status="pending">
+                <comment>Prompt templates/configurations. [Inferred]</comment>
+            </node>
+            <node title="AI › Cloud Transcription" id="s01-leftnav-ai-cloud" priority="medium" status="pending">
+                <comment>Cloud-based transcription options. [Inferred]</comment>
+            </node>
+            <node title="Advanced" id="s01-leftnav-advanced" priority="medium" status="pending">
+                <comment>Advanced settings. [Inferred]</comment>
+            </node>
+            <node title="Pro" id="s01-leftnav-pro" priority="medium" status="pending">
+                <comment>Upgrade or Pro features. [Inferred]</comment>
+            </node>
+            <node title="About" id="s01-leftnav-about" priority="medium" status="pending">
+                <comment>About/version info. [Inferred]</comment>
+            </node>
+        </node>
+    </node>
+
+    <node title="Main Workspace" id="s01-main" priority="medium" status="pending">
+        <node title="General Settings" id="s01-main-general-group" priority="medium" status="pending">
+            <node title="Play sound when finished (toggle)" id="s01-main-play-sound" priority="medium" status="pending">
+                <comment>Off. Plays a small sound when a transcription completes.</comment>
+            </node>
+            <node title="App visibility mode (menu)" id="s01-main-visibility-mode" priority="medium" status="pending">
+                <comment>Value: "Dock &amp; Menubar". Chooses how the app appears in macOS UI.</comment>
+            </node>
+            <node title="Save Destination (path picker)" id="s01-main-save-destination" priority="medium" status="pending">
+                <comment>Folder set to "/Users/galahassa/Documents/"; includes a browse button to change location.</comment>
+            </node>
+            <node title="Show Save Confirmation (toggle)" id="s01-main-save-confirmation" priority="medium" status="pending">
+                <comment>On. Shows a confirmation alert when trying to close an unsaved transcription.</comment>
+            </node>
+            <node title="Automatically create .whisper file (toggle)" id="s01-main-auto-whisper" priority="medium" status="pending">
+                <comment>Off. Saves a .whisper file after each transcription.</comment>
+            </node>
+        </node>
+
+        <node title="Full Transcript" id="s01-main-full-transcript-group" priority="medium" status="pending">
+            <node title="Split transcript by sentence (toggle)" id="s01-main-split-by-sentence" priority="medium" status="pending">
+                <comment>Off. Shows the full transcript as separate sentences.</comment>
+            </node>
+        </node>
+
+        <node title="Segments" id="s01-main-segments-group" priority="medium" status="pending">
+            <node title="Show timestamps (toggle)" id="s01-main-show-timestamps" priority="medium" status="pending">
+                <comment>Off. Shows or hides the timestamp for each transcript segment.</comment>
+            </node>
+        </node>
+
+        <node title="Video Files" id="s01-main-video-files-group" priority="medium" status="pending">
+            <node title="Save video to whisper file (toggle)" id="s01-main-save-video" priority="medium" status="pending">
+                <comment>On. Determines whether to save the source video track with the .whisper file.</comment>
+            </node>
+            <node title="Default video player position (menu)" id="s01-main-video-player-position" priority="medium" status="pending">
+                <comment>Value: "Floating". Sets default placement for the video player.</comment>
+            </node>
+        </node>
+
+        <node title="System Integration" id="s01-main-system-group" priority="medium" status="pending">
+            <node title="Launch at Login (toggle)" id="s01-main-launch-at-login" priority="medium" status="pending">
+                <comment>Off. Starts the app automatically at user login.</comment>
+            </node>
+        </node>
+
+        <node title="Reset Controls" id="s01-main-reset-group" priority="medium" status="pending">
+            <node title="Reset Recently Used Languages (button)" id="s01-main-reset-languages" priority="medium" status="pending">
+                <comment>Disabled. Clears the recent languages list.</comment>
+            </node>
+            <node title="Reset Recently Used Applications (button)" id="s01-main-reset-apps" priority="medium" status="pending">
+                <comment>Disabled. Clears the recent applications list.</comment>
+            </node>
+        </node>
+    </node>
+
+    <node title="Dialogs / Popovers" id="s01-dialogs" priority="medium" status="pending">
+        <node title="Visibility Mode Options" id="s01-dialogs-visibility-options" priority="medium" status="pending">
+            <comment>Dropdown/popover listing available visibility modes; opens from the App visibility mode control. [Inferred]</comment>
+        </node>
+        <node title="Video Player Position Options" id="s01-dialogs-video-position-options" priority="medium" status="pending">
+            <comment>Dropdown/popover with position choices for the video player. [Inferred]</comment>
+        </node>
+        <node title="Save Destination Picker" id="s01-dialogs-save-picker" priority="medium" status="pending">
+            <comment>System folder picker invoked by the Save Destination browse button. [Inferred]</comment>
+        </node>
+    </node>
+
+    <node title="Status &amp; Progress" id="s01-status" priority="medium" status="pending">
+        <comment>No progress indicators present on this screen.</comment>
+    </node>
+
+    <node title="Contextual Help / Shortcuts" id="s01-help" priority="medium" status="pending">
+        <comment>No inline help or shortcuts shown on this screen.</comment>
+    </node>
+
+    <node title="Menus" id="s01-menus" priority="medium" status="pending">
+        <comment>Application menus not visible in this screenshot. [Inferred]</comment>
+    </node>
+
+    <node title="Menu Bar Extras / Status Icons" id="s01-menubar-extras" priority="medium" status="pending">
+        <comment>No menu bar extras visible in this screenshot. [Inferred]</comment>
+    </node>
+</node>
+
+
+</project_plan>

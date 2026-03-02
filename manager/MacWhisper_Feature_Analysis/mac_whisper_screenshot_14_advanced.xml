@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project_plan>
+<node title="Screenshot 14 — Advanced" id="s14-root" priority="medium" status="pending">
+    <node title="Top Bar / Toolbar" id="s14-topbar" priority="medium" status="pending">
+        <node title="Window Controls" id="s14-topbar-window-controls" priority="medium" status="pending">
+            <comment>Standard macOS close, minimize, zoom buttons at top-left of the window. [Inferred]</comment>
+        </node>
+    </node>
+
+    <node title="Sidebars / Panels" id="s14-panels" priority="medium" status="pending">
+        <comment>No sidebars visible on this screen.</comment>
+    </node>
+
+    <node title="Main Workspace" id="s14-main" priority="medium" status="pending">
+        <node title="Header" id="s14-header" priority="medium" status="pending">
+            <node title="Advanced Title" id="s14-header-title" priority="medium" status="pending">
+                <comment>Page heading at the top-left.</comment>
+            </node>
+        </node>
+
+        <node title="Audio Preprocessing" id="s14-audio-pre" priority="medium" status="pending">
+            <node title="Downmix audio to mono before transcription (toggle)" id="s14-pre-downmix-mono" priority="medium" status="pending">
+                <comment>On. Fixes multi‑channel files that have only one channel containing audio.</comment>
+            </node>
+        </node>
+
+        <node title="Notifications" id="s14-notifications" priority="medium" status="pending">
+            <node title="Always send 'Transcription Finished' notifications (toggle)" id="s14-notif-always-send" priority="medium" status="pending">
+                <comment>Off. Sends notifications even if transcription took less than the minimum duration.</comment>
+            </node>
+            <node title="Minimum transcription duration to send notification (menu)" id="s14-notif-min-duration" priority="medium" status="pending">
+                <comment>Value: 10 seconds. Dropdown to choose threshold for notifications.</comment>
+            </node>
+        </node>
+
+        <node title="Whisper Settings" id="s14-whisper-settings" priority="medium" status="pending">
+            <node title="Always translate transcript into English (toggle)" id="s14-whisper-translate-en" priority="medium" status="pending">
+                <comment>Off. Automatically translate outputs in other languages into English; quality may vary per transcript.</comment>
+            </node>
+            <node title="Automatically combine segments into sentences (toggle) [Pro]" id="s14-whisper-combine-sentences" priority="medium" status="pending">
+                <comment>Off. Pro-gated option to merge segments into sentence units.</comment>
+            </node>
+            <node title="Remove duplicated segments (toggle)" id="s14-whisper-remove-duplicates" priority="medium" status="pending">
+                <comment>On. Helps avoid duplicate segments when audio quality is poor or volume is low.</comment>
+            </node>
+            <node title="Temperature increments (slider)" id="s14-whisper-temp-increments" priority="medium" status="pending">
+                <comment>Slider range 0.0–1.0; increments by 0.2. Lower values produce more deterministic results.</comment>
+            </node>
+            <node title="Auto Unload Local Model (menu)" id="s14-whisper-auto-unload" priority="medium" status="pending">
+                <comment>Value: Never. Controls how long a model stays in memory after use.</comment>
+            </node>
+        </node>
+
+        <node title="Model‑specific" id="s14-model-specific" priority="medium" status="pending">
+            <node title="Whisper C++ (row)" id="s14-model-whisper-cpp" priority="medium" status="pending">
+                <comment>Navigates to engine‑specific settings. Chevron indicates a detail page.</comment>
+            </node>
+            <node title="WhisperKit (row)" id="s14-model-whisperkit" priority="medium" status="pending">
+                <comment>Navigates to engine‑specific settings. Chevron indicates a detail page.</comment>
+            </node>
+        </node>
+    </node>
+
+    <node title="Dialogs / Popovers" id="s14-dialogs" priority="medium" status="pending">
+        <node title="Minimum Duration Options" id="s14-dialogs-min-duration" priority="medium" status="pending">
+            <comment>Dropdown from the duration control with selectable thresholds (e.g., 5s, 10s, 30s). [Inferred]</comment>
+        </node>
+        <node title="Auto Unload Options" id="s14-dialogs-auto-unload-options" priority="medium" status="pending">
+            <comment>Dropdown for choosing retention period (e.g., Never, Short, Long). [Inferred]</comment>
+        </node>
+        <node title="Model‑specific Panels" id="s14-dialogs-model-specific" priority="medium" status="pending">
+            <comment>Detail screens for Whisper C++ and WhisperKit settings. [Inferred]</comment>
+        </node>
+        <node title="Pro Upgrade Prompt" id="s14-dialogs-pro-upgrade" priority="medium" status="pending">
+            <comment>Shown if enabling "Automatically combine segments into sentences" on Free edition. [Pro] [Inferred]</comment>
+        </node>
+    </node>
+
+    <node title="Status &amp; Progress" id="s14-status" priority="medium" status="pending">
+        <comment>No progress indicators present on this screen.</comment>
+    </node>
+
+    <node title="Contextual Help / Shortcuts" id="s14-help" priority="medium" status="pending">
+        <comment>Inline helper texts explain notification behavior, duplication removal, temperature increments, and memory usage.</comment>
+    </node>
+
+    <node title="Menus" id="s14-menus" priority="medium" status="pending">
+        <comment>Application menus not visible in this screenshot. [Inferred]</comment>
+    </node>
+
+    <node title="Menu Bar Extras / Status Icons" id="s14-menubar-extras" priority="medium" status="pending">
+        <comment>No menu bar extras visible in this screenshot. [Inferred]</comment>
+    </node>
+</node>
+
+
+</project_plan>

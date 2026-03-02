@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project_plan>
+<node title="Screenshot 03 — Microphone" id="s03-root" priority="medium" status="pending">
+    <node title="Top Bar / Toolbar" id="s03-topbar" priority="medium" status="pending">
+        <node title="Window Controls" id="s03-topbar-window-controls" priority="medium" status="pending">
+            <comment>Standard macOS close, minimize, zoom buttons at top-left of the window. [Inferred]</comment>
+        </node>
+    </node>
+
+    <node title="Sidebars / Panels" id="s03-panels" priority="medium" status="pending">
+        <comment>No sidebars visible on this screen.</comment>
+    </node>
+
+    <node title="Main Workspace" id="s03-main" priority="medium" status="pending">
+        <node title="Header" id="s03-main-header" priority="medium" status="pending">
+            <node title="Microphone Title" id="s03-main-header-title" priority="medium" status="pending">
+                <comment>Section header at the top of the page.</comment>
+            </node>
+        </node>
+
+        <node title="Mode &amp; View Controls" id="s03-main-mode-controls" priority="medium" status="pending">
+            <node title="Microphone Mode (label)" id="s03-main-mode-label" priority="medium" status="pending">
+                <comment>Left-aligned label for the current microphone configuration view.</comment>
+            </node>
+            <node title="Priority List (menu)" id="s03-main-priority-list-menu" priority="medium" status="pending">
+                <comment>Right-aligned control with a chevron; indicates the selected mode is "Priority List"; opens options when clicked. [Inferred]</comment>
+            </node>
+            <node title="Helper Text" id="s03-main-mode-helper" priority="medium" status="pending">
+                <comment>"Choose the microphone priority order" explanatory text below the controls.</comment>
+            </node>
+        </node>
+
+        <node title="Microphone Priority List" id="s03-main-device-list" priority="medium" status="pending">
+            <node title="G733 Gaming Headset" id="s03-device-g733" priority="medium" status="pending">
+                <comment>Row shows microphone icon, device name, status "Active", and a drag handle for reordering.</comment>
+            </node>
+            <node title="HackerXY Microphone" id="s03-device-hackerxy" priority="medium" status="pending">
+                <comment>Row shows microphone icon, device name, available (no explicit status shown), with drag handle.</comment>
+            </node>
+            <node title="MacBook Pro Microphone (Unavailable)" id="s03-device-macbook-pro" priority="medium" status="pending">
+                <comment>Row appears dimmed with a laptop icon and "Unavailable" note; includes drag handle but item is inactive.</comment>
+            </node>
+            <node title="Drag Instructions" id="s03-device-drag-instructions" priority="medium" status="pending">
+                <comment>Footer guidance: drag microphones to set order; first available is used; falls back to system default if none available.</comment>
+            </node>
+        </node>
+
+        <node title="Actions" id="s03-main-actions" priority="medium" status="pending">
+            <node title="Reset Priority List (button)" id="s03-action-reset-priority" priority="medium" status="pending">
+                <comment>Resets the microphone order to default.</comment>
+            </node>
+        </node>
+    </node>
+
+    <node title="Dialogs / Popovers" id="s03-dialogs" priority="medium" status="pending">
+        <node title="Priority List Options" id="s03-dialogs-priority-options" priority="medium" status="pending">
+            <comment>Dropdown/popover opened from the Priority List control; may include alternative modes (e.g., Ask Each Time). [Inferred]</comment>
+        </node>
+        <node title="Device Row Context" id="s03-dialogs-device-context" priority="medium" status="pending">
+            <comment>Possible context menu for a device row (enable/disable, test input). [Inferred]</comment>
+        </node>
+    </node>
+
+    <node title="Status &amp; Progress" id="s03-status" priority="medium" status="pending">
+        <comment>No progress indicators present on this screen.</comment>
+    </node>
+
+    <node title="Contextual Help / Shortcuts" id="s03-help" priority="medium" status="pending">
+        <comment>On-screen helper text explains ordering behavior; no shortcuts shown.</comment>
+    </node>
+
+    <node title="Menus" id="s03-menus" priority="medium" status="pending">
+        <comment>Application menus not visible in this screenshot. [Inferred]</comment>
+    </node>
+
+    <node title="Menu Bar Extras / Status Icons" id="s03-menubar-extras" priority="medium" status="pending">
+        <comment>No menu bar extras visible in this screenshot. [Inferred]</comment>
+    </node>
+</node>
+
+
+</project_plan>

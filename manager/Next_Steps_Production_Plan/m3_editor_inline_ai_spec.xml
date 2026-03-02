@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project_plan>
+    <node title="M3 — Editor Inline AI Actions" priority="medium" status="in-progress" id="spec-m3-editor">
+        <comment>Inline AI edit tools: rewrite, translate, timestamp alignment, filler removal.</comment>
+    </node>
+</project_plan>

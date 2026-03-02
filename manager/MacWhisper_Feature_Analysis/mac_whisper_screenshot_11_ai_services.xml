@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project_plan>
+<node title="Screenshot 11 — AI Services" id="s11-root" priority="medium" status="pending">
+    <node title="Top Bar / Toolbar" id="s11-topbar" priority="medium" status="pending">
+        <node title="Window Controls" id="s11-topbar-window-controls" priority="medium" status="pending">
+            <comment>Standard macOS close, minimize, zoom buttons at top-left of the window. [Inferred]</comment>
+        </node>
+    </node>
+
+    <node title="Sidebars / Panels" id="s11-panels" priority="medium" status="pending">
+        <comment>No sidebars visible on this screen.</comment>
+    </node>
+
+    <node title="Main Workspace" id="s11-main" priority="medium" status="pending">
+        <node title="Header" id="s11-header" priority="medium" status="pending">
+            <node title="AI Services Title" id="s11-header-title" priority="medium" status="pending">
+                <comment>Large heading centered: "AI Services" with sparkle icon.</comment>
+            </node>
+            <node title="Subtitle" id="s11-header-subtitle" priority="medium" status="pending">
+                <comment>"Supercharge your transcriptions with AI. Summarize, refine, or customize your transcriptions with powerful prompts."</comment>
+            </node>
+        </node>
+
+        <node title="Add a provider" id="s11-providers" priority="medium" status="pending">
+            <node title="Google (button)" id="s11-prov-google" priority="medium" status="pending">
+                <comment>Provider tile with Google icon and a plus button to add.</comment>
+            </node>
+            <node title="LMStudio (button)" id="s11-prov-lmstudio" priority="medium" status="pending">
+                <comment>Provider tile with LMStudio icon and a plus button to add.</comment>
+            </node>
+            <node title="Ollama (button)" id="s11-prov-ollama" priority="medium" status="pending">
+                <comment>Provider tile with Ollama icon and a plus button to add.</comment>
+            </node>
+            <node title="OpenAI (button)" id="s11-prov-openai" priority="medium" status="pending">
+                <comment>Provider tile with OpenAI icon and a plus button to add.</comment>
+            </node>
+            <node title="OpenRouter (button)" id="s11-prov-openrouter" priority="medium" status="pending">
+                <comment>Provider tile with OpenRouter icon and a plus button to add.</comment>
+            </node>
+            <node title="Anthropic (button)" id="s11-prov-anthropic" priority="medium" status="pending">
+                <comment>Provider tile with Anthropic icon and a plus button to add.</comment>
+            </node>
+            <node title="Azure (button)" id="s11-prov-azure" priority="medium" status="pending">
+                <comment>Provider tile with Azure icon and a plus button to add.</comment>
+            </node>
+            <node title="xAI (button)" id="s11-prov-xai" priority="medium" status="pending">
+                <comment>Provider tile with xAI icon and a plus button to add.</comment>
+            </node>
+            <node title="Custom (button)" id="s11-prov-custom" priority="medium" status="pending">
+                <comment>Provider tile labeled Custom with a plus button to add.</comment>
+            </node>
+        </node>
+    </node>
+
+    <node title="Dialogs / Popovers" id="s11-dialogs" priority="medium" status="pending">
+        <node title="Provider Configuration" id="s11-dialogs-config" priority="medium" status="pending">
+            <comment>Setup dialog after clicking a provider tile (e.g., enter API key, choose model, or set endpoint). [Inferred]</comment>
+        </node>
+        <node title="Custom Provider Settings" id="s11-dialogs-custom" priority="medium" status="pending">
+            <comment>Form to specify custom base URL, headers, and model identifiers. [Inferred]</comment>
+        </node>
+    </node>
+
+    <node title="Status &amp; Progress" id="s11-status" priority="medium" status="pending">
+        <comment>No progress indicators present on this screen.</comment>
+    </node>
+
+    <node title="Contextual Help / Shortcuts" id="s11-help" priority="medium" status="pending">
+        <comment>Subtitle provides guidance on how AI services enhance transcripts; no shortcuts shown.</comment>
+    </node>
+
+    <node title="Menus" id="s11-menus" priority="medium" status="pending">
+        <comment>Application menus not visible in this screenshot. [Inferred]</comment>
+    </node>
+
+    <node title="Menu Bar Extras / Status Icons" id="s11-menubar-extras" priority="medium" status="pending">
+        <comment>No menu bar extras visible in this screenshot. [Inferred]</comment>
+    </node>
+</node>
+
+
+</project_plan>

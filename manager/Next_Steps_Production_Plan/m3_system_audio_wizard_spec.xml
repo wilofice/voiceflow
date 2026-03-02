@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project_plan>
+  <node title="M3 — System Audio Capture Wizard" id="spec-m3-audio" priority="medium" status="pending">
+    <comment>Guided setup for virtual audio device, permissions, and per-app capture.</comment>
+  </node>
+</project_plan>

@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project_plan>
+    <node title="UI Mockup Output Formats — Recommendation" priority="medium" status="pending" id="fmt-root">
+        <node title="Best Overall (Shareable + Importable): SVG + Design Tokens (JSON)" priority="medium" status="pending" id="fmt-svg-tokens">
+            <comment>Produce an .svg mock (screens/controls) plus a tokens.json (colors, typography,
+      spacing, radii). Pros: pixel_precise, scalable, editable, diff_friendly, imports into
+      Figma/Sketch, easy to theme via tokens. Cons: no component semantics unless annotated
+      (ids/classes).</comment>
+        </node>
+        <node title="Dev_First Hi_Fi: React + Tailwind (or HTML + CSS)" priority="medium" status="pending" id="fmt-react-tailwind">
+            <comment>Generate interactive layouts in React (or static HTML). Pros: runs in browser, easy
+      stakeholder review, fast iteration, direct handoff to engineers, supports Storybook. Cons:
+      design tools don_t round_trip perfectly; requires basic web hosting to preview.</comment>
+        </node>
+        <node title="macOS_Native Preview: SwiftUI View (Xcode Previews)" priority="medium" status="pending" id="fmt-swiftui">
+            <comment>Emit SwiftUI code for windows, sidebars, toolbars, lists, forms. Pros: instant native
+      preview, realistic platform widgets, great for a MacWhisper_like app. Cons: designers outside
+      Xcode can_t edit; visual tweaks require dev help.</comment>
+        </node>
+        <node title="Design_Tool Generation: Figma Plugin/Widget Script" priority="medium" status="pending" id="fmt-figma-plugin">
+            <comment>Output a small Figma Plugin/Widget (TS/JS) that constructs frames, auto_layout, and
+      components using tokens. Pros: lands directly in Figma for designers; maintains constraints.
+      Cons: needs Figma runtime to execute; slightly higher setup cost.</comment>
+        </node>
+        <node title="Fastest Visual Only: PNG/JPEG (or PDF)" priority="medium" status="pending" id="fmt-image">
+            <comment>High_fidelity images for quick reviews. Pros: trivial to share. Cons: not editable, no
+      layers, poor handoff to build.</comment>
+        </node>
+        <node title="Decision by Goal" priority="medium" status="pending" id="fmt-decision">
+            <node title="Stakeholder Review (today)" priority="medium" status="pending" id="dec-stakeholders">
+                <comment>SVG + PNG preview; attach tokens.json for theming.</comment>
+            </node>
+            <node title="Designer Iteration (Figma_centric)" priority="medium" status="pending" id="dec-figma">
+                <comment>Figma plugin/script + tokens.json; optionally import SVGs as starting points.</comment>
+            </node>
+            <node title="Engineer Handoff (build next sprint)" priority="medium" status="pending" id="dec-engineering">
+                <comment>React + Tailwind (or SwiftUI for macOS) with shared tokens; add Storybook for
+        components.</comment>
+            </node>
+            <node title="Public Concept Teaser" priority="medium" status="pending" id="dec-marketing">
+                <comment>PNG/PDF exported from the React/SwiftUI render for consistency.</comment>
+            </node>
+        </node>
+        <node title="Minimum LLM Output Specs (per format)" priority="medium" status="pending" id="fmt-specs">
+            <node title="SVG" priority="medium" status="pending" id="spec-svg">
+                <comment>One file per screen; group layers with ids; include aria_labels; reference tokens via
+        data_ attributes.</comment>
+            </node>
+            <node title="Tokens JSON" priority="medium" status="pending" id="spec-tokens">
+                <comment>Style Dictionary schema: color.brand.primary, font.size.sm, space.4, radius.md,
+        shadow.lg, etc.</comment>
+            </node>
+            <node title="React/HTML" priority="medium" status="pending" id="spec-react">
+                <comment>Componentized layout, Tailwind classes only (no custom CSS), responsive container,
+        aria roles; optional Storybook CSF stories.</comment>
+            </node>
+            <node title="SwiftUI" priority="medium" status="pending" id="spec-swiftui">
+                <comment>Single file per screen with PreviewProvider; uses @Environment(.colorScheme);
+        constants pulled from tokens.</comment>
+            </node>
+            <node title="Figma Plugin" priority="medium" status="pending" id="spec-figma">
+                <comment>TS file that reads tokens.json, creates Frame nodes with AutoLayout, Text styles,
+        Color styles, ComponentSets for controls.</comment>
+            </node>
+        </node>
+        <node title="Recommended Bundle Structure" priority="medium" status="pending" id="fmt-bundle">
+            <comment>/mockups/{screen}.svg · /web/{screen}.tsx · /ios/{screen}.swift · /design/tokens.json ·
+      /storybook/* · /exports/{screen}.png</comment>
+        </node>
+        <node title="Quick Recommendation (for your project)" priority="medium" status="pending" id="fmt-reco">
+            <comment>Use SwiftUI for macOS previews + tokens.json for theme, and export parallel React +
+      Tailwind for web/shareable demos. Provide SVG snapshots for Figma import when needed.</comment>
+        </node>
+    </node>
+</project_plan>

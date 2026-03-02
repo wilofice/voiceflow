@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project_plan>
+<node title="Screenshot 06 — Translation" id="s06-root" priority="medium" status="pending">
+    <node title="Top Bar / Toolbar" id="s06-topbar" priority="medium" status="pending">
+        <node title="Window Controls" id="s06-topbar-window-controls" priority="medium" status="pending">
+            <comment>Standard macOS close, minimize, zoom buttons at top-left of the window. [Inferred]</comment>
+        </node>
+    </node>
+
+    <node title="Sidebars / Panels" id="s06-panels" priority="medium" status="pending">
+        <comment>No sidebars visible on this screen.</comment>
+    </node>
+
+    <node title="Main Workspace" id="s06-main" priority="medium" status="pending">
+        <node title="Header" id="s06-main-header" priority="medium" status="pending">
+            <node title="Translation Title" id="s06-main-title" priority="medium" status="pending">
+                <comment>Page heading at the top-left.</comment>
+            </node>
+        </node>
+
+        <node title="Translation Provider" id="s06-provider" priority="medium" status="pending">
+            <node title="Provider (menu)" id="s06-provider-menu" priority="medium" status="pending">
+                <comment>Current value: "Apple". Options include Apple and DeepL.</comment>
+            </node>
+            <node title="Provider Helper Text" id="s06-provider-help" priority="medium" status="pending">
+                <comment>You can translate transcripts locally with the built-in translation feature in macOS Sequoia. Ensure languages to translate between are downloaded.</comment>
+            </node>
+        </node>
+
+        <node title="Translation Features" id="s06-features" priority="medium" status="pending">
+            <node title="Show Translations Side by Side (toggle)" id="s06-feature-side-by-side" priority="medium" status="pending">
+                <comment>Off. Displays original and translated transcripts simultaneously when enabled.</comment>
+            </node>
+            <node title="Translation Mode (menu)" id="s06-feature-mode" priority="medium" status="pending">
+                <comment>Current value: "Transcript And Segments". Chooses whether to translate the full transcript, segments, or both.</comment>
+            </node>
+            <node title="Mode Helper Text" id="s06-feature-mode-help" priority="medium" status="pending">
+                <comment>Always translates the full transcript (with context from previous sentences) and the individual segments; allows exporting translations in all modes.</comment>
+            </node>
+        </node>
+    </node>
+
+    <node title="Dialogs / Popovers" id="s06-dialogs" priority="medium" status="pending">
+        <node title="Provider Options" id="s06-dialogs-provider-options" priority="medium" status="pending">
+            <comment>Dropdown/popover opened from Provider menu with options Apple and DeepL. [Inferred]</comment>
+        </node>
+        <node title="Translation Mode Options" id="s06-dialogs-mode-options" priority="medium" status="pending">
+            <comment>Dropdown/popover with available translation modes. [Inferred]</comment>
+        </node>
+    </node>
+
+    <node title="Status &amp; Progress" id="s06-status" priority="medium" status="pending">
+        <comment>No progress indicators present on this screen.</comment>
+    </node>
+
+    <node title="Contextual Help / Shortcuts" id="s06-help" priority="medium" status="pending">
+        <comment>Inline helper texts explain provider usage and translation coverage.</comment>
+    </node>
+
+    <node title="Menus" id="s06-menus" priority="medium" status="pending">
+        <comment>Application menus not visible in this screenshot. [Inferred]</comment>
+    </node>
+
+    <node title="Menu Bar Extras / Status Icons" id="s06-menubar-extras" priority="medium" status="pending">
+        <comment>No menu bar extras visible in this screenshot. [Inferred]</comment>
+    </node>
+</node>
+
+
+</project_plan>

@@ -1,0 +1,363 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project_plan>
+    <node title="URL Ingest Feature Implementation Plan" priority="critical" status="active" id="url-ingest-root-001">
+        <comment>Implementation plan for feat_url_ingest - URL & Streaming Ingest feature from VoiceFlowPro spec v2.1. This is the most critical feature for immediate user value as it enables users to transcribe YouTube videos, podcasts, and other online content directly.</comment>
+        
+        <node title="1. Architecture & Design" priority="high" status="pending" id="url-ingest-arch-001">
+            <comment>Define the technical architecture for URL ingest feature, ensuring alignment with desktop app architecture and crossfade-ui components.</comment>
+            
+            <node title="1.1 State Management Setup" priority="high" status="pending" id="url-ingest-state-001">
+                <comment>Implement state management using Zustand for lightweight, performant state handling in Electron app.</comment>
+                <code language="typescript">
+// stores/urlIngestStore.ts
+interface URLIngestState {
+  url: string;
+  status: 'idle' | 'validating' | 'downloading' | 'transcribing' | 'complete' | 'error';
+  progress: number;
+  provider: 'youtube' | 'vimeo' | 'podcast' | 'direct' | null;
+  metadata: {
+    title?: string;
+    duration?: number;
+    thumbnail?: string;
+    author?: string;
+  };
+  error: string | null;
+  downloadPath: string | null;
+}
+
+const useURLIngestStore = create<URLIngestState>((set) => ({
+  url: '',
+  status: 'idle',
+  progress: 0,
+  provider: null,
+  metadata: {},
+  error: null,
+  downloadPath: null,
+  // Actions
+  setURL: (url) => set({ url }),
+  updateStatus: (status) => set({ status }),
+  updateProgress: (progress) => set({ progress }),
+  reset: () => set(initialState)
+}));
+                </code>
+            </node>
+            
+            <node title="1.2 IPC Communication Layer" priority="high" status="pending" id="url-ingest-ipc-001">
+                <comment>Define IPC handlers for URL ingest operations between main and renderer processes.</comment>
+                <code language="typescript">
+// main/ipc/urlIngestHandlers.ts
+ipcMain.handle('url-ingest:validate', async (event, url) => {
+  const provider = detectProvider(url);
+  const isValid = await validateURL(url, provider);
+  return { valid: isValid, provider };
+});
+
+ipcMain.handle('url-ingest:download', async (event, url, options) => {
+  const downloader = new URLDownloader(url, options);
+  
+  downloader.on('progress', (progress) => {
+    event.sender.send('url-ingest:progress', progress);
+  });
+  
+  downloader.on('metadata', (metadata) => {
+    event.sender.send('url-ingest:metadata', metadata);
+  });
+  
+  return downloader.start();
+});
+                </code>
+            </node>
+            
+            <node title="1.3 Component Architecture" priority="high" status="pending" id="url-ingest-components-001">
+                <comment>Map crossfade-ui components to URL ingest UI requirements.</comment>
+                <code language="typescript">
+// Components mapping from crossfade-ui:
+// - Input component for URL entry
+// - Button for submit action
+// - Progress component for download/transcribe progress
+// - Card for metadata display
+// - Alert for error messages
+// - Badge for provider identification
+                </code>
+            </node>
+        </node>
+        
+        <node title="2. Core Implementation" priority="critical" status="pending" id="url-ingest-core-001">
+            <comment>Implement the core URL ingest functionality with provider detection and download capabilities.</comment>
+            
+            <node title="2.1 URL Validator Service" priority="high" status="pending" id="url-validator-001">
+                <comment>Service to validate URLs and detect content providers.</comment>
+                <code language="typescript">
+// services/urlValidatorService.ts
+export class URLValidatorService {
+  private readonly patterns = {
+    youtube: /^(https?:\/\/)?(www\.)?(youtube\.com\/(watch\?v=|embed\/)|youtu\.be\/)[\w-]+/,
+    vimeo: /^(https?:\/\/)?(www\.)?vimeo\.com\/\d+/,
+    podcast: /\.(mp3|m4a|aac)$/i,
+    direct: /^https?:\/\/.+\.(mp4|webm|mov|avi|wav|flac)$/i
+  };
+  
+  detectProvider(url: string): Provider | null {
+    for (const [provider, pattern] of Object.entries(this.patterns)) {
+      if (pattern.test(url)) return provider as Provider;
+    }
+    return null;
+  }
+  
+  async validateURL(url: string): Promise<ValidationResult> {
+    const provider = this.detectProvider(url);
+    if (!provider) return { valid: false, error: 'Unsupported URL format' };
+    
+    // Provider-specific validation
+    switch(provider) {
+      case 'youtube':
+        return this.validateYouTube(url);
+      case 'vimeo':
+        return this.validateVimeo(url);
+      default:
+        return this.validateDirect(url);
+    }
+  }
+}
+                </code>
+            </node>
+            
+            <node title="2.2 Download Manager" priority="critical" status="pending" id="download-manager-001">
+                <comment>Implement download manager with yt-dlp integration for YouTube/Vimeo and direct download for other sources.</comment>
+                <code language="typescript">
+// services/downloadManager.ts
+export class DownloadManager extends EventEmitter {
+  private ytDlpPath: string;
+  private downloadQueue: DownloadJob[] = [];
+  
+  constructor() {
+    super();
+    this.ytDlpPath = this.ensureYtDlp();
+  }
+  
+  async downloadYouTube(url: string, outputPath: string): Promise<string> {
+    const args = [
+      url,
+      '-x', // Extract audio
+      '--audio-format', 'mp3',
+      '--audio-quality', '0',
+      '-o', outputPath,
+      '--cookies-from-browser', 'chrome', // Support protected content
+      '--no-playlist'
+    ];
+    
+    const process = spawn(this.ytDlpPath, args);
+    
+    process.stdout.on('data', (data) => {
+      const progress = this.parseProgress(data.toString());
+      if (progress) this.emit('progress', progress);
+    });
+    
+    return new Promise((resolve, reject) => {
+      process.on('exit', (code) => {
+        if (code === 0) resolve(outputPath);
+        else reject(new Error(`yt-dlp exited with code ${code}`));
+      });
+    });
+  }
+}
+                </code>
+            </node>
+            
+            <node title="2.3 Language Detection" priority="medium" status="pending" id="language-detection-001">
+                <comment>Auto-detect language from audio sample before full transcription.</comment>
+                <code language="typescript">
+// services/languageDetector.ts
+export class LanguageDetector {
+  async detectFromSample(audioPath: string): Promise<string> {
+    // Extract 30-second sample
+    const samplePath = await this.extractSample(audioPath, 30);
+    
+    // Use whisper for language detection
+    const result = await whisperService.detectLanguage(samplePath);
+    
+    return result.language || 'auto';
+  }
+}
+                </code>
+            </node>
+        </node>
+        
+        <node title="3. UI Implementation" priority="high" status="pending" id="url-ingest-ui-001">
+            <comment>Build the UI components using crossfade-ui library components.</comment>
+            
+            <node title="3.1 URL Input Component" priority="high" status="pending" id="url-input-component-001">
+                <comment>Main URL input field with paste detection and validation feedback.</comment>
+                <code language="tsx">
+// components/URLIngest.tsx
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Alert } from '@/components/ui/alert';
+import { Progress } from '@/components/ui/progress';
+import { Card } from '@/components/ui/card';
+
+export function URLIngest() {
+  const { url, status, progress, provider, error } = useURLIngestStore();
+  
+  // Auto-detect paste
+  useEffect(() => {
+    const handlePaste = (e: ClipboardEvent) => {
+      const text = e.clipboardData?.getData('text');
+      if (text && isURL(text)) {
+        useURLIngestStore.setState({ url: text });
+        validateURL(text);
+      }
+    };
+    
+    document.addEventListener('paste', handlePaste);
+    return () => document.removeEventListener('paste', handlePaste);
+  }, []);
+  
+  return (
+    <Card className="p-6">
+      <div className="space-y-4">
+        <div className="flex gap-2">
+          <Input
+            placeholder="Paste YouTube, Vimeo, or podcast URL..."
+            value={url}
+            onChange={(e) => setURL(e.target.value)}
+            className="flex-1"
+          />
+          <Button 
+            onClick={handleDownload}
+            disabled={status !== 'idle'}
+          >
+            {status === 'idle' ? 'Download & Transcribe' : status}
+          </Button>
+        </div>
+        
+        {provider && (
+          <Badge variant="outline">{provider}</Badge>
+        )}
+        
+        {status === 'downloading' && (
+          <Progress value={progress} />
+        )}
+        
+        {error && (
+          <Alert variant="destructive">{error}</Alert>
+        )}
+      </div>
+    </Card>
+  );
+}
+                </code>
+            </node>
+            
+            <node title="3.2 Progress Display" priority="medium" status="pending" id="progress-display-001">
+                <comment>Show download and transcription progress with ETA.</comment>
+            </node>
+            
+            <node title="3.3 Metadata Preview" priority="low" status="pending" id="metadata-preview-001">
+                <comment>Display video/podcast metadata after successful validation.</comment>
+            </node>
+        </node>
+        
+        <node title="4. Integration & Testing" priority="high" status="pending" id="url-ingest-integration-001">
+            <comment>Integrate URL ingest with existing desktop app and test all providers.</comment>
+            
+            <node title="4.1 Desktop App Integration" priority="critical" status="pending" id="desktop-integration-001">
+                <comment>Connect URL ingest to main window and existing transcription pipeline.</comment>
+                <code language="typescript">
+// main/index.ts additions
+import { URLIngestService } from './services/urlIngestService';
+import { setupURLIngestHandlers } from './ipc/urlIngestHandlers';
+
+// In app initialization
+const urlIngestService = new URLIngestService(whisperService);
+setupURLIngestHandlers(urlIngestService);
+                </code>
+            </node>
+            
+            <node title="4.2 Provider Testing" priority="high" status="pending" id="provider-testing-001">
+                <comment>Test each supported provider with various URL formats.</comment>
+                <code language="typescript">
+// test/urlIngest.test.ts
+describe('URL Ingest', () => {
+  test('YouTube URL validation and download', async () => {
+    const url = 'https://www.youtube.com/watch?v=dQw4w9WgXcQ';
+    const result = await urlIngestService.process(url);
+    expect(result.success).toBe(true);
+    expect(result.audioPath).toBeDefined();
+  });
+  
+  test('Protected content with cookies', async () => {
+    const url = 'https://vimeo.com/protected/123456';
+    const result = await urlIngestService.process(url, {
+      cookiesPath: './cookies.json'
+    });
+    expect(result.success).toBe(true);
+  });
+});
+                </code>
+            </node>
+            
+            <node title="4.3 Error Handling" priority="medium" status="pending" id="error-handling-001">
+                <comment>Implement comprehensive error handling with retry logic.</comment>
+            </node>
+        </node>
+        
+        <node title="5. Dependencies & Setup" priority="critical" status="pending" id="dependencies-001">
+            <comment>Install and configure required dependencies.</comment>
+            
+            <node title="5.1 npm Dependencies" priority="high" status="pending" id="npm-deps-001">
+                <comment>Required npm packages for URL ingest functionality.</comment>
+                <code language="bash">
+# State management
+npm install zustand
+
+# URL validation
+npm install valid-url
+
+# Download utilities  
+npm install node-downloader-helper
+
+# Video/audio processing
+npm install fluent-ffmpeg
+
+# YouTube/Vimeo support (will use yt-dlp binary)
+                </code>
+            </node>
+            
+            <node title="5.2 Binary Dependencies" priority="high" status="pending" id="binary-deps-001">
+                <comment>External binaries required for media download and processing.</comment>
+                <code language="bash">
+# yt-dlp for YouTube/Vimeo download
+# Will be downloaded automatically on first run
+# Stored in userData/binaries/
+
+# ffmpeg for audio extraction (already included for whisper)
+                </code>
+            </node>
+        </node>
+        
+        <node title="6. Success Metrics" priority="medium" status="pending" id="success-metrics-001">
+            <comment>Define and track success metrics for URL ingest feature.</comment>
+            
+            <node title="6.1 Performance Targets" priority="medium" status="pending" id="perf-targets-001">
+                <comment>
+- URL validation: < 500ms
+- Download start: < 2 seconds
+- 10-minute YouTube video: < 30 seconds download
+- Language detection: < 5 seconds
+- First transcription word: < 10 seconds after download
+                </comment>
+            </node>
+            
+            <node title="6.2 User Experience Goals" priority="medium" status="pending" id="ux-goals-001">
+                <comment>
+- Auto-paste detection success rate: > 95%
+- Provider detection accuracy: > 99%
+- Download success rate: > 90%
+- Cookie import success: > 80% for protected content
+                </comment>
+            </node>
+        </node>
+    </node>
+</project_plan>

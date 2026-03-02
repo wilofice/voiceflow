@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project_plan>
+  <node title="M3 — Integrations: Notion, Obsidian, Slack" id="spec-m3-integrations" priority="medium" status="pending">
+    <comment>One-click connectors for common knowledge and communication tools with background jobs.</comment>
+  </node>
+</project_plan>

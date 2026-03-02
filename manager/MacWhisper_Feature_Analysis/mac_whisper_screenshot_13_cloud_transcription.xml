@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project_plan>
+<node title="Screenshot 13 — Cloud Transcription" id="s13-root" priority="medium" status="pending">
+    <node title="Top Bar / Toolbar" id="s13-topbar" priority="medium" status="pending">
+        <node title="Window Controls" id="s13-topbar-window-controls" priority="medium" status="pending">
+            <comment>Standard macOS close, minimize, zoom buttons at top-left of the window. [Inferred]</comment>
+        </node>
+    </node>
+
+    <node title="Sidebars / Panels" id="s13-panels" priority="medium" status="pending">
+        <comment>No sidebars visible on this screen.</comment>
+    </node>
+
+    <node title="Main Workspace" id="s13-main" priority="medium" status="pending">
+        <node title="Header" id="s13-header" priority="medium" status="pending">
+            <node title="Cloud Transcription Title" id="s13-header-title" priority="medium" status="pending">
+                <comment>Centered heading: "Cloud Transcription" with cloud icon above.</comment>
+            </node>
+            <node title="Subtitle" id="s13-header-subtitle" priority="medium" status="pending">
+                <comment>"Add a provider to enable transcription in the cloud."</comment>
+            </node>
+        </node>
+
+        <node title="Add a provider" id="s13-providers" priority="medium" status="pending">
+            <node title="OpenAI (button)" id="s13-prov-openai" priority="medium" status="pending">
+                <comment>Provider tile with OpenAI icon and a plus button to add.</comment>
+            </node>
+            <node title="ElevenLabs (button)" id="s13-prov-elevenlabs" priority="medium" status="pending">
+                <comment>Provider tile with ElevenLabs icon and a plus button to add.</comment>
+            </node>
+            <node title="Custom (button)" id="s13-prov-custom" priority="medium" status="pending">
+                <comment>Provider tile labeled Custom with a plus button to add.</comment>
+            </node>
+        </node>
+    </node>
+
+    <node title="Dialogs / Popovers" id="s13-dialogs" priority="medium" status="pending">
+        <node title="Provider Configuration" id="s13-dialogs-config" priority="medium" status="pending">
+            <comment>Setup dialog shown after selecting a provider (API key, region/model selection, usage limits). [Inferred]</comment>
+        </node>
+        <node title="Custom Provider Settings" id="s13-dialogs-custom" priority="medium" status="pending">
+            <comment>Form to specify custom endpoint/base URL and authentication. [Inferred]</comment>
+        </node>
+    </node>
+
+    <node title="Status &amp; Progress" id="s13-status" priority="medium" status="pending">
+        <comment>No progress indicators present on this screen.</comment>
+    </node>
+
+    <node title="Contextual Help / Shortcuts" id="s13-help" priority="medium" status="pending">
+        <comment>Subtitle provides brief guidance; no shortcuts shown.</comment>
+    </node>
+
+    <node title="Menus" id="s13-menus" priority="medium" status="pending">
+        <comment>Application menus not visible in this screenshot. [Inferred]</comment>
+    </node>
+
+    <node title="Menu Bar Extras / Status Icons" id="s13-menubar-extras" priority="medium" status="pending">
+        <comment>No menu bar extras visible in this screenshot. [Inferred]</comment>
+    </node>
+</node>
+
+
+</project_plan>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project_plan>
+  <node title="M1 — One‑Click Summary + Chapters" id="spec-m1-recipe" priority="high" status="pending">
+    <comment>Transcribe then generate TL;DR, chapters with timestamps, and action items with editable prompts.</comment>
+    <node title="Scope" id="spec-m1-recipe-scope" priority="high" status="pending">
+      <comment>- Add Recipes pane with default template.
+- Variables: language, audience, tone, length.
+- Store per-project recipe.</comment>
+    </node>
+    <node title="UX" id="spec-m1-recipe-ux" priority="high" status="pending">
+      <comment>- Single button in transcript view.
+- Shows cost/time estimate.
+- Inserts sections inline with quick edit.</comment>
+    </node>
+    <node title="Acceptance Criteria" id="spec-m1-recipe-acc" priority="high" status="pending">
+      <comment>- Generates 3 sections in under 20s for a 10-min file on M-series.
+- Exports include sections when enabled.
+- Prompt is editable and saved.</comment>
+    </node>
+  </node>
+</project_plan>

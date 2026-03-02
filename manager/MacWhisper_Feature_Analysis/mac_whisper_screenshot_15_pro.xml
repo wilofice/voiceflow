@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project_plan>
+<node title="Screenshot 15 — Pro" id="s15-root" priority="medium" status="pending">
+    <node title="Top Bar / Toolbar" id="s15-topbar" priority="medium" status="pending">
+        <node title="Window Controls" id="s15-topbar-window-controls" priority="medium" status="pending">
+            <comment>Standard macOS close, minimize, zoom buttons at top-left of the window. [Inferred]</comment>
+        </node>
+    </node>
+
+    <node title="Sidebars / Panels" id="s15-panels" priority="medium" status="pending">
+        <comment>No sidebars visible on this screen.</comment>
+    </node>
+
+    <node title="Main Workspace" id="s15-main" priority="medium" status="pending">
+        <node title="Header" id="s15-header" priority="medium" status="pending">
+            <node title="Hero Banner" id="s15-hero" priority="medium" status="pending">
+                <comment>Title: "Whisper Transcription Pro"; Subtitle: "Upgrade to Pro to unlock all features" displayed in a blue banner.</comment>
+            </node>
+        </node>
+
+        <node title="Plans" id="s15-plans" priority="medium" status="pending">
+            <node title="Week Subscription" id="s15-plan-week" priority="medium" status="pending">
+                <comment>Price: 6,99 €; Note: "Unlock all features for a week"; CTA button: "Subscribe".</comment>
+            </node>
+            <node title="Month Subscription" id="s15-plan-month" priority="medium" status="pending">
+                <comment>Price: 8,99 €; Note: "Higher Quality Transcriptions and Features"; CTA button: "Subscribe".</comment>
+            </node>
+            <node title="Year Subscription" id="s15-plan-year" priority="medium" status="pending">
+                <comment>Price: 34,99 €; Note: "Higher Quality Transcriptions and Features"; CTA button: "Subscribe".</comment>
+            </node>
+            <node title="Lifetime Purchase" id="s15-plan-lifetime" priority="medium" status="pending">
+                <comment>Price: 59,99 €; Note: "One-time"; CTA button: "Purchase".</comment>
+            </node>
+        </node>
+    </node>
+
+    <node title="Dialogs / Popovers" id="s15-dialogs" priority="medium" status="pending">
+        <node title="Subscribe Flow" id="s15-dialogs-subscribe" priority="medium" status="pending">
+            <comment>Checkout dialog for Week/Month/Year subscriptions (payment, confirmation). [Inferred]</comment>
+        </node>
+        <node title="Purchase Flow" id="s15-dialogs-purchase" priority="medium" status="pending">
+            <comment>Checkout dialog for Lifetime Purchase (one-time payment, confirmation). [Inferred]</comment>
+        </node>
+        <node title="Restore Purchases" id="s15-dialogs-restore" priority="medium" status="pending">
+            <comment>Possible action to restore existing Pro entitlements. [Inferred]</comment>
+        </node>
+    </node>
+
+    <node title="Status &amp; Progress" id="s15-status" priority="medium" status="pending">
+        <comment>No progress indicators present on this screen.</comment>
+    </node>
+
+    <node title="Contextual Help / Shortcuts" id="s15-help" priority="medium" status="pending">
+        <comment>Hero subtitle communicates purpose of Pro upgrade; no shortcuts shown.</comment>
+    </node>
+
+    <node title="Menus" id="s15-menus" priority="medium" status="pending">
+        <comment>Application menus not visible in this screenshot. [Inferred]</comment>
+    </node>
+
+    <node title="Menu Bar Extras / Status Icons" id="s15-menubar-extras" priority="medium" status="pending">
+        <comment>No menu bar extras visible in this screenshot. [Inferred]</comment>
+    </node>
+</node>
+
+
+</project_plan>

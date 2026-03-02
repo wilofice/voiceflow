@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project_plan>
+  <node title="M1 — Batch Turbo (Parallel + Resume)" id="spec-m1-batch" priority="high" status="pending">
+    <comment>Parallelize batch jobs, track per-file status, and support resumable queues.</comment>
+    <node title="Scope" id="spec-m1-batch-scope" priority="high" status="pending">
+      <comment>- N-concurrency based on cores.
+- Persistent queue with retry/backoff.
+- Per-file ETA and error messages.</comment>
+    </node>
+    <node title="UX" id="spec-m1-batch-ux" priority="high" status="pending">
+      <comment>- Batch dashboard with progress bars.
+- Retry failed items individually.
+- Save/restore batch sessions.</comment>
+    </node>
+    <node title="Acceptance Criteria" id="spec-m1-batch-acc" priority="high" status="pending">
+      <comment>- Resume after crash without data loss.
+- 20%+ throughput vs sequential.
+- No global abort on single failure.</comment>
+    </node>
+  </node>
+</project_plan>

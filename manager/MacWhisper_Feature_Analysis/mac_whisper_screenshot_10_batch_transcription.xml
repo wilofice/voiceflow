@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project_plan>
+<node title="Screenshot 10 — Batch Transcription" id="s10-root" priority="medium" status="pending">
+    <node title="Top Bar / Toolbar" id="s10-topbar" priority="medium" status="pending">
+        <node title="Window Controls" id="s10-topbar-window-controls" priority="medium" status="pending">
+            <comment>Standard macOS close, minimize, zoom buttons at top-left of the window. [Inferred]</comment>
+        </node>
+    </node>
+
+    <node title="Sidebars / Panels" id="s10-panels" priority="medium" status="pending">
+        <comment>No sidebars visible on this screen.</comment>
+    </node>
+
+    <node title="Main Workspace" id="s10-main" priority="medium" status="pending">
+        <node title="Header" id="s10-header" priority="medium" status="pending">
+            <node title="Batch Transcription Title" id="s10-header-title" priority="medium" status="pending">
+                <comment>Page heading at the top-left.</comment>
+            </node>
+            <node title="Add Format (button)" id="s10-header-add-format" priority="medium" status="pending">
+                <comment>Top-right "+ Add Format" button to create additional export configurations.</comment>
+            </node>
+        </node>
+
+        <node title="Format Card — Transcript (txt)" id="s10-card-transcript" priority="medium" status="pending">
+            <node title="Delete Format (trash)" id="s10-card-delete" priority="medium" status="pending">
+                <comment>Removes this format configuration.</comment>
+            </node>
+            <node title="Collapse/Expand (chevron)" id="s10-card-collapse" priority="medium" status="pending">
+                <comment>Toggles the visibility of card details.</comment>
+            </node>
+            <node title="Style (menu)" id="s10-card-style" priority="medium" status="pending">
+                <comment>Current value: "Transcript"; selects output style. [Inferred: other styles may be available]</comment>
+            </node>
+            <node title="Format (menu)" id="s10-card-format" priority="medium" status="pending">
+                <comment>Current value: ".txt". Other options visible: .docx [Pro], .html [Pro], .json [Pro].</comment>
+            </node>
+            <node title="Grouping (menu)" id="s10-card-grouping" priority="medium" status="pending">
+                <comment>Current value: "None". Options include: None, By sentences.</comment>
+            </node>
+        </node>
+    </node>
+
+    <node title="Dialogs / Popovers" id="s10-dialogs" priority="medium" status="pending">
+        <node title="Format Options" id="s10-dialogs-format-options" priority="medium" status="pending">
+            <comment>Dropdown with: .txt (selected), .docx [Pro], .html [Pro], .json [Pro].</comment>
+        </node>
+        <node title="Grouping Options" id="s10-dialogs-grouping-options" priority="medium" status="pending">
+            <comment>Dropdown with: None, By sentences.</comment>
+        </node>
+        <node title="Style Options" id="s10-dialogs-style-options" priority="medium" status="pending">
+            <comment>Dropdown listing available styles for the transcript output. [Inferred]</comment>
+        </node>
+        <node title="Delete Format — Confirmation" id="s10-dialogs-delete-confirm" priority="medium" status="pending">
+            <comment>Prompt shown when clicking the trash icon to remove a format. [Inferred]</comment>
+        </node>
+    </node>
+
+    <node title="Status &amp; Progress" id="s10-status" priority="medium" status="pending">
+        <comment>No progress indicators present on this screen.</comment>
+    </node>
+
+    <node title="Contextual Help / Shortcuts" id="s10-help" priority="medium" status="pending">
+        <comment>No inline help or shortcuts shown on this screen.</comment>
+    </node>
+
+    <node title="Menus" id="s10-menus" priority="medium" status="pending">
+        <comment>Application menus not visible in this screenshot. [Inferred]</comment>
+    </node>
+
+    <node title="Menu Bar Extras / Status Icons" id="s10-menubar-extras" priority="medium" status="pending">
+        <comment>No menu bar extras visible in this screenshot. [Inferred]</comment>
+    </node>
+</node>
+
+
+</project_plan>

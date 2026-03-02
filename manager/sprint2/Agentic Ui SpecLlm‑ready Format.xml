@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project_plan>
+    <node title="Agentic UI Spec — LLM‑Ready Format" id="ui-spec-root" priority="medium" status="pending">
+        <node title="Goal and Workflow Fit" id="goal-workflow" priority="medium" status="pending">
+            <comment>Design AI ➜ emits a single machine‑readable UI spec ➜ Coding AI consumes it to generate code, tests, and assets. The spec must be deterministic, diff‑friendly, and easy for LLMs to read and reason about.</comment>
+        </node>
+
+        <node title="Chosen Container Format" id="container-format" priority="medium" status="pending">
+            <comment>JSON (UTF‑8) with a strict JSON Schema. Reason: ubiquitous tooling, low ambiguity for LLMs, native to most agent frameworks, and easy to validate/lint. Design tokens embedded for theming.</comment>
+        </node>
+
+        <node title="Top‑Level Schema Sections" id="schema-sections" priority="medium" status="pending">
+            <node title="meta" id="sec-meta" priority="medium" status="pending">
+                <comment>id, version, created_by, target_platforms (macOS, iOS, Web), default_frameworks (SwiftUI, React+Tailwind), and viewport sizes.</comment>
+            </node>
+            <node title="tokens" id="sec-tokens" priority="medium" status="pending">
+                <comment>Design tokens (color, typography, spacing, radius, shadow, zIndex). Namespaced and referenced by id (e.g., color.surface.default).</comment>
+            </node>
+            <node title="components" id="sec-components" priority="medium" status="pending">
+                <comment>Reusable components with props, variants, states, and accessibility defaults. Example: Button, Sidebar, ToggleRow, ListItem.</comment>
+            </node>
+            <node title="screens" id="sec-screens" priority="medium" status="pending">
+                <comment>Each screen/frame contains a layout tree of nodes. Nodes reference components or primitives and declare constraints/auto‑layout, tokens, bindings, and test‑ids.</comment>
+            </node>
+            <node title="interactions" id="sec-interactions" priority="medium" status="pending">
+                <comment>Event→Intent mapping with optional conditions and side effects. Intents are semantic (e.g., "ExportFile", "ToggleSetting").</comment>
+            </node>
+            <node title="data" id="sec-data" priority="medium" status="pending">
+                <comment>Shapes used by the UI (schemas), sample fixtures, and data bindings (e.g., screen.nodes[].props.binds.modelName → store.models.active.name).</comment>
+            </node>
+            <node title="a11y" id="sec-a11y" priority="medium" status="pending">
+                <comment>Roles, labels, focus order, keyboard shortcuts.</comment>
+            </node>
+            <node title="i18n" id="sec-i18n" priority="medium" status="pending">
+                <comment>Message keys and default strings; locales may be separate files.</comment>
+            </node>
+            <node title="navigation" id="sec-navigation" priority="medium" status="pending">
+                <comment>Graph of routes and transitions (source, action, target).</comment>
+            </node>
+            <node title="acceptance_criteria" id="sec-acceptance" priority="medium" status="pending">
+                <comment>Executable, testable criteria (e.g., "when user clicks Export, save dialog opens"). Used by Coding AI to generate UI tests.</comment>
+            </node>
+            <node title="codegen_hints" id="sec-codegen" priority="medium" status="pending">
+                <comment>Framework‑specific hints (SwiftUI, React+Tailwind) including component mappings and file structure suggestions.</comment>
+            </node>
+            <node title="assets" id="sec-assets" priority="medium" status="pending">
+                <comment>Icon and image descriptors (name, source, license, usage).</comment>
+            </node>
+            <node title="security_privacy" id="sec-privacy" priority="medium" status="pending">
+                <comment>PII handling and consent notes that influence UI toggles/tooltips.</comment>
+            </node>
+        </node>
+
+        <node title="Why JSON (vs. XML/YAML)" id="why-json" priority="medium" status="pending">
+            <comment>JSON minimizes syntax ambiguity for LLMs, avoids indentation pitfalls, streams well, and pairs with JSON Schema for validation. XML is verbose and often over‑nested; YAML is human‑nice but risky for agents (indentation/anchors).</comment>
+        </node>
+
+        <node title="Inter‑Agent Rules" id="inter-agent-rules" priority="medium" status="pending">
+            <comment>1) All entities must have stable ids. 2) Free‑text UX notes live under notes fields; machine fields use enums/ids. 3) Tokens referenced by id, never raw hex. 4) Events use semantic intents. 5) Include test_ids for automation. 6) Version every spec and be backward compatible.</comment>
+        </node>
+
+        <node title="Minimal Example (Mac‑style Settings screen)" id="example" priority="medium" status="pending">
+            <comment>Illustrative subset showing how a Coding AI would render a Preferences ➜ General page similar to MacWhisper.</comment>
+            <code language="json">{
+```
+
+"meta": {"id": "mw\.general.v1", "version": "1.0.0", "target\_platforms": \["macOS"], "default\_frameworks": \["SwiftUI", "React"]},
+"tokens": {
+"color": {"surface": {"default": "#FFFFFF"}, "accent": {"brand": "#3B82F6"}},
+"space": {"xs": 4, "sm": 8, "md": 12, "lg": 16},
+"radius": {"md": 8},
+"font": {"ui": {"size": {"body": 14, "title": 17}}}
+},
+"components": {
+"ToggleRow": {"props": {"label": "string", "value": "boolean", "test\_id": "string"}},
+"PickerRow": {"props": {"label": "string", "value": "string", "options": "string\[]", "test\_id": "string"}},
+"PathRow": {"props": {"label": "string", "path": "string", "actionIntent": "string", "test\_id": "string"}}
+},
+"screens": \[
+{
+"id": "screen.general",
+"title": "General",
+"layout": {
+"type": "VStack",
+"spacing": "tokens.space.lg",
+"children": \[
+{"type": "ToggleRow", "id": "sfx", "props": {"label": "Play sound when finished", "value": false, "test\_id": "toggle.playSound"}},
+{"type": "PickerRow", "id": "visibility", "props": {"label": "App visibility mode", "value": "Dock and Menubar", "options": \["Dock and Menubar", "Menubar Only"]}},
+{"type": "PathRow", "id": "saveDest", "props": {"label": "Save Destination", "path": "\~/Documents", "actionIntent": "ChangeSaveFolder"}},
+{"type": "ToggleRow", "id": "saveConfirm", "props": {"label": "Show Save Confirmation", "value": true}},
+{"type": "ToggleRow", "id": "autoWhisper", "props": {"label": "Automatically create .whisper file", "value": false}}
+]
+}
+}
+],
+"interactions": \[
+{"on": "click", "target\_id": "saveDest", "intent": "ChangeSaveFolder", "effects": \[{"type": "OpenSystemDialog", "dialog": "FolderPicker"}]}
+],
+"a11y": {"screen.general": {"role": "form", "label": "General Preferences"}},
+"acceptance\_criteria": \[
+{"id": "AC1", "when": "User toggles toggle.playSound", "then": "value persists to settings.store.playSound == true"},
+{"id": "AC2", "when": "User activates ChangeSaveFolder", "then": "System dialog opens"}
+],
+"codegen\_hints": {"SwiftUI": {"container": "Form", "component\_map": {"ToggleRow": "Toggle", "PickerRow": "Picker"}}, "React": {"component\_map": {"ToggleRow": "Switch", "PickerRow": "Select"}}}
+
+} 
+```</code>
+        </node>
+
+        <node title="Validation and Linting" id="validation" priority="medium" status="pending">
+            <comment>Provide a JSON Schema that enforces required fields (ids, types, enums). A small CLI (or agent) validates every spec before codegen.</comment>
+        </node>
+
+        <node title="Codegen Targets" id="codegen-targets" priority="medium" status="pending">
+            <comment>Primary: SwiftUI (macOS/iOS) and React+Tailwind (Web). Optional exporters: SVG snapshots for design review, Storybook/PreviewProviders, and unit/UI tests generated from acceptance_criteria.</comment>
+        </node>
+
+        <node title="Next Steps" id="next-steps" priority="medium" status="pending">
+            <comment>1- I can draft the full JSON Schema v1.0, 2- convert one of your captured MacWhisper screens into this spec, and 3- generate SwiftUI + React scaffolds from it.</comment>
+        </node>
+
+
+    </node>
+</project_plan>

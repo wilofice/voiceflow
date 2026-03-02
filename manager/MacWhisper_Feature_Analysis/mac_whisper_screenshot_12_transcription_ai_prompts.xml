@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project_plan>
+<node title="Screenshot 12 — Transcription AI Prompts" id="s12-root" priority="medium" status="pending">
+    <node title="Top Bar / Toolbar" id="s12-topbar" priority="medium" status="pending">
+        <node title="Window Controls" id="s12-topbar-window-controls" priority="medium" status="pending">
+            <comment>Standard macOS close, minimize, zoom buttons at top-left of the window. [Inferred]</comment>
+        </node>
+        <node title="Add Prompt (button)" id="s12-topbar-add-prompt" priority="medium" status="pending">
+            <comment>Top-right + button to create a new transcription AI prompt.</comment>
+        </node>
+    </node>
+
+    <node title="Sidebars / Panels" id="s12-panels" priority="medium" status="pending">
+        <comment>No sidebars visible on this screen.</comment>
+    </node>
+
+    <node title="Main Workspace" id="s12-main" priority="medium" status="pending">
+        <node title="Header" id="s12-header" priority="medium" status="pending">
+            <node title="Transcription AI Prompts Title" id="s12-header-title" priority="medium" status="pending">
+                <comment>Page heading at the top-left.</comment>
+            </node>
+        </node>
+
+        <node title="Prompt List" id="s12-prompt-list" priority="medium" status="pending">
+            <node title="Summarize" id="s12-prompt-summarize" priority="medium" status="pending">
+                <comment>Default prompt row with chevron; opens detailed configuration.</comment>
+            </node>
+            <node title="Bullet Points" id="s12-prompt-bullets" priority="medium" status="pending">
+                <comment>Default prompt row with chevron; opens detailed configuration.</comment>
+            </node>
+            <node title="Improve Grammar &amp; Punctuation" id="s12-prompt-grammar" priority="medium" status="pending">
+                <comment>Default prompt row with chevron; opens detailed configuration.</comment>
+            </node>
+            <node title="Split into paragraphs" id="s12-prompt-paragraphs" priority="medium" status="pending">
+                <comment>Default prompt row with chevron; opens detailed configuration.</comment>
+            </node>
+            <node title="Highlight Key Points" id="s12-prompt-keypoints" priority="medium" status="pending">
+                <comment>Default prompt row with chevron; opens detailed configuration.</comment>
+            </node>
+            <node title="Extract Questions" id="s12-prompt-questions" priority="medium" status="pending">
+                <comment>Default prompt row with chevron; opens detailed configuration.</comment>
+            </node>
+            <node title="Identify Emotions" id="s12-prompt-emotions" priority="medium" status="pending">
+                <comment>Default prompt row with chevron; opens detailed configuration.</comment>
+            </node>
+            <node title="Generate FAQ" id="s12-prompt-faq" priority="medium" status="pending">
+                <comment>Default prompt row with chevron; opens detailed configuration.</comment>
+            </node>
+            <node title="Extract Statistics" id="s12-prompt-statistics" priority="medium" status="pending">
+                <comment>Default prompt row with chevron; opens detailed configuration.</comment>
+            </node>
+            <node title="Paraphrase Content" id="s12-prompt-paraphrase" priority="medium" status="pending">
+                <comment>Default prompt row with chevron; opens detailed configuration.</comment>
+            </node>
+            <node title="Create a mindmap" id="s12-prompt-mindmap" priority="medium" status="pending">
+                <comment>Default prompt row with chevron; opens detailed configuration.</comment>
+            </node>
+        </node>
+
+        <node title="Actions" id="s12-actions" priority="medium" status="pending">
+            <node title="Reset to defaults (button)" id="s12-action-reset-defaults" priority="medium" status="pending">
+                <comment>Bottom-right button to restore the original set of prompts.</comment>
+            </node>
+        </node>
+    </node>
+
+    <node title="Dialogs / Popovers" id="s12-dialogs" priority="medium" status="pending">
+        <node title="Add Prompt Dialog" id="s12-dialogs-add" priority="medium" status="pending">
+            <comment>Form to define a new prompt (name, instructions, output format). [Inferred]</comment>
+        </node>
+        <node title="Prompt Detail Editor" id="s12-dialogs-detail" priority="medium" status="pending">
+            <comment>Detail view for editing a selected prompt and its parameters. [Inferred]</comment>
+        </node>
+        <node title="Reset to defaults — Confirmation" id="s12-dialogs-reset" priority="medium" status="pending">
+            <comment>Confirmation dialog shown before resetting prompts. [Inferred]</comment>
+        </node>
+    </node>
+
+    <node title="Status &amp; Progress" id="s12-status" priority="medium" status="pending">
+        <comment>No progress indicators present on this screen.</comment>
+    </node>
+
+    <node title="Contextual Help / Shortcuts" id="s12-help" priority="medium" status="pending">
+        <comment>No inline help or shortcuts shown on this screen.</comment>
+    </node>
+
+    <node title="Menus" id="s12-menus" priority="medium" status="pending">
+        <comment>Application menus not visible in this screenshot. [Inferred]</comment>
+    </node>
+
+    <node title="Menu Bar Extras / Status Icons" id="s12-menubar-extras" priority="medium" status="pending">
+        <comment>No menu bar extras visible in this screenshot. [Inferred]</comment>
+    </node>
+</node>
+
+
+</project_plan>

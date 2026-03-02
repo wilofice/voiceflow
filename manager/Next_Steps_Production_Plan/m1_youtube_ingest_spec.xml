@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project_plan>
+  <node title="M1 — URL Ingest MVP" id="spec-m1-url" priority="high" status="pending">
+    <comment>Enable robust ingest of YouTube/Vimeo/audio URLs with fallbacks, progress UI, and auto language detection.</comment>
+    <node title="Scope" id="spec-m1-url-scope" priority="high" status="pending">
+      <comment>- Support YouTube, Vimeo, direct MP3/MP4 links.
+- Use yt-dlp with cookies.json optional support; fallback to server fetch for protected content.
+- Auto-detect language using short sample; choose model accordingly.</comment>
+    </node>
+    <node title="UX" id="spec-m1-url-ux" priority="high" status="pending">
+      <comment>- Paste URL in Home screen field.
+- Show validation, resolving, download progress, duration estimate.
+- Clear errors with remediation tips.</comment>
+    </node>
+    <node title="Acceptance Criteria" id="spec-m1-url-acc" priority="high" status="pending">
+      <comment>- 90%+ of common YouTube URLs succeed end-to-end.
+- Graceful error for geo/age restrictions with fallback instructions.
+- Auto language detection selects correct model.</comment>
+    </node>
+  </node>
+</project_plan>

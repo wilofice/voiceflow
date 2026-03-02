@@ -4,7 +4,8 @@ import cors from '@fastify/cors';
 import multipart from '@fastify/multipart';
 import rateLimit from '@fastify/rate-limit';
 import fastifyJwt from '@fastify/jwt';
-import socketio from '@fastify/socketio';
+import socketio from 'socket.io';
+import socketioFastify from 'fastify-socket';
 
 // Routes
 import { authRoutes } from './routes/auth';

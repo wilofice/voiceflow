@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project_plan>
+<node title="Screenshot 20 — Home Dashboard" id="s20-root" priority="medium" status="pending">
+    <node title="Top Bar / Toolbar" id="s20-topbar" priority="medium" status="pending">
+        <node title="Window Controls" id="s20-topbar-window-controls" priority="medium" status="pending">
+            <comment>Standard macOS close, minimize, zoom buttons at top-left of the window. [Inferred]</comment>
+        </node>
+        <node title="Language (menu)" id="s20-topbar-language" priority="medium" status="pending">
+            <comment>Value: "Auto"; opens language selection for transcription. [Inferred]</comment>
+        </node>
+        <node title="Model (menu)" id="s20-topbar-model" priority="medium" status="pending">
+            <comment>Value: "Small"; opens model selector (e.g., Small, Large, etc.). [Inferred]</comment>
+        </node>
+        <node title="Upgrade to Pro (button)" id="s20-topbar-upgrade" priority="medium" status="pending">
+            <comment>Top-right CTA to purchase Pro.</comment>
+        </node>
+        <node title="Settings (gear)" id="s20-topbar-settings" priority="medium" status="pending">
+            <comment>Opens Preferences/Settings. [Inferred]</comment>
+        </node>
+    </node>
+
+    <node title="Sidebars / Panels" id="s20-panels" priority="medium" status="pending">
+        <node title="History Sidebar" id="s20-sidebar-history" priority="medium" status="pending">
+            <node title="Search History (field)" id="s20-history-search" priority="medium" status="pending">
+                <comment>Input to filter items in history.</comment>
+            </node>
+            <node title="Group: Yesterday" id="s20-history-group-yesterday" priority="medium" status="pending">
+                <comment>Contains recent items recorded yesterday.</comment>
+                <node title="New Recording (2025‑09‑08 21:02)" id="s20-history-item-new-recording" priority="medium" status="pending">
+                    <comment>Recent transcript entry with timestamp; selects to open the item. [Inferred: exact date from visible text]</comment>
+                </node>
+            </node>
+        </node>
+    </node>
+
+    <node title="Main Workspace" id="s20-main" priority="medium" status="pending">
+        <node title="Upgrade Banner" id="s20-banner-pro" priority="medium" status="pending">
+            <node title="Headline" id="s20-banner-headline" priority="medium" status="pending">
+                <comment>"Upgrade to Pro" banner promoting Speaker Recognition, AI features, accuracy, batch transcription, system app recording, and more.</comment>
+            </node>
+            <node title="Subscribe for 34,99 €/year (button)" id="s20-banner-subscribe" priority="medium" status="pending">
+                <comment>Primary CTA to purchase a yearly subscription.</comment>
+            </node>
+            <node title="More info (button)" id="s20-banner-more-info" priority="medium" status="pending">
+                <comment>Secondary CTA with details about Pro.</comment>
+            </node>
+            <node title="Dismiss (X)" id="s20-banner-dismiss" priority="medium" status="pending">
+                <comment>Closes the upgrade banner. [Inferred]</comment>
+            </node>
+        </node>
+
+        <node title="URL Import" id="s20-url-import" priority="medium" status="pending">
+            <node title="Enter YouTube, Audio or Video File URL… (field)" id="s20-url-field" priority="medium" status="pending">
+                <comment>Paste a URL to fetch and transcribe content.</comment>
+            </node>
+        </node>
+
+        <node title="Primary Actions" id="s20-actions-primary" priority="medium" status="pending">
+            <node title="Open Files…" id="s20-action-open-files" priority="medium" status="pending">
+                <comment>Opens a file picker to import media.</comment>
+            </node>
+            <node title="New Recording" id="s20-action-new-recording" priority="medium" status="pending">
+                <comment>Starts a new audio recording session.</comment>
+            </node>
+            <node title="Batch Transcription [Pro]" id="s20-action-batch" priority="medium" status="pending">
+                <comment>Processes multiple files in one run. [Pro]</comment>
+            </node>
+            <node title="Record App Audio [Pro]" id="s20-action-record-app" priority="medium" status="pending">
+                <comment>Records system/app audio for transcription. [Pro]</comment>
+            </node>
+            <node title="Transcribe Podcast (Beta)" id="s20-action-podcast" priority="medium" status="pending">
+                <comment>Podcast‑focused transcription workflow. [Beta]</comment>
+            </node>
+            <node title="Global" id="s20-action-global" priority="medium" status="pending">
+                <comment>Opens the Spotlight‑like Global recorder/overlay.</comment>
+            </node>
+            <node title="Cloud Transcription [Pro]" id="s20-action-cloud" priority="medium" status="pending">
+                <comment>Transcribe via cloud providers. [Pro]</comment>
+            </node>
+        </node>
+
+        <node title="Secondary Actions" id="s20-actions-secondary" priority="medium" status="pending">
+            <node title="Manage Models" id="s20-action-manage-models" priority="medium" status="pending">
+                <comment>Opens the Transcription Models manager.</comment>
+            </node>
+            <node title="Support" id="s20-action-support" priority="medium" status="pending">
+                <comment>Links to help/support resources.</comment>
+            </node>
+            <node title="Upgrade to Pro" id="s20-action-upgrade-pro" priority="medium" status="pending">
+                <comment>Opens Pro purchase flow.</comment>
+            </node>
+            <node title="Leave a Review" id="s20-action-review" priority="medium" status="pending">
+                <comment>Opens the app store/review page. [Inferred]</comment>
+            </node>
+            <node title="Download iOS app" id="s20-action-ios" priority="medium" status="pending">
+                <comment>Links to download the iOS companion app.</comment>
+            </node>
+        </node>
+
+        <node title="Drag & Drop Area" id="s20-dnd" priority="medium" status="pending">
+            <node title="Hint Text" id="s20-dnd-hint" priority="medium" status="pending">
+                <comment>"Or Drag & Drop Media Files to Transcribe."</comment>
+            </node>
+            <node title="Supported Formats" id="s20-dnd-formats" priority="medium" status="pending">
+                <comment>MP3, WAV, M4A, M4B, MP4, OGG, AAC, MOV.</comment>
+            </node>
+        </node>
+    </node>
+
+    <node title="Dialogs / Popovers" id="s20-dialogs" priority="medium" status="pending">
+        <node title="Language Options" id="s20-dialogs-language" priority="medium" status="pending">
+            <comment>Dropdown with available transcription languages. [Inferred]</comment>
+        </node>
+        <node title="Model Options" id="s20-dialogs-model" priority="medium" status="pending">
+            <comment>Dropdown to select installed/available models. [Inferred]</comment>
+        </node>
+        <node title="File Picker" id="s20-dialogs-file-picker" priority="medium" status="pending">
+            <comment>System dialog to choose local media files for import. [Inferred]</comment>
+        </node>
+        <node title="Pro Upgrade Flow" id="s20-dialogs-pro-upgrade" priority="medium" status="pending">
+            <comment>Checkout dialogs triggered by Upgrade CTAs. [Inferred]</comment>
+        </node>
+    </node>
+
+    <node title="Status &amp; Progress" id="s20-status" priority="medium" status="pending">
+        <comment>No progress indicators present on this screen.</comment>
+    </node>
+
+    <node title="Contextual Help / Shortcuts" id="s20-help" priority="medium" status="pending">
+        <comment>No inline help or shortcuts shown on this screen.</comment>
+    </node>
+
+    <node title="Menus" id="s20-menus" priority="medium" status="pending">
+        <comment>Application menus not visible in this screenshot. [Inferred]</comment>
+    </node>
+
+    <node title="Menu Bar Extras / Status Icons" id="s20-menubar-extras" priority="medium" status="pending">
+        <comment>No menu bar extras visible in this screenshot. [Inferred]</comment>
+    </node>
+</node>
+
+
+</project_plan>

@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project_plan>
+<node title="Screenshot 17 — Info Sidebar" id="s17-root" priority="medium" status="pending">
+    <node title="Top Bar / Toolbar" id="s17-topbar" priority="medium" status="pending">
+        <node title="Panel Tabs Row" id="s17-topbar-tabs" priority="medium" status="pending">
+            <comment>Icon tabs at top of sidebar; includes List, Translate, Info (selected), Share, and Favorite. [Inferred]</comment>
+        </node>
+    </node>
+
+    <node title="Sidebars / Panels" id="s17-panels" priority="medium" status="pending">
+        <node title="Right Info Panel" id="s17-panel-info" priority="medium" status="pending">
+            <comment>Sidebar showing metadata and actions for the current transcription.</comment>
+        </node>
+    </node>
+
+    <node title="Main Workspace" id="s17-main" priority="medium" status="pending">
+        <node title="Model &amp; Language" id="s17-model-language" priority="medium" status="pending">
+            <node title="Model (menu)" id="s17-model" priority="medium" status="pending">
+                <comment>Value: "Large v3 Turbo".</comment>
+            </node>
+            <node title="Language (menu)" id="s17-language" priority="medium" status="pending">
+                <comment>Value: "English".</comment>
+            </node>
+        </node>
+
+        <node title="Properties" id="s17-properties" priority="medium" status="pending">
+            <node title="Audio Duration" id="s17-prop-duration" priority="medium" status="pending">
+                <comment>0:16</comment>
+            </node>
+            <node title="Created" id="s17-prop-created" priority="medium" status="pending">
+                <comment>Sep 8, 2025 at 21:02</comment>
+            </node>
+            <node title="Updated" id="s17-prop-updated" priority="medium" status="pending">
+                <comment>Sep 8, 2025 at 21:02</comment>
+            </node>
+        </node>
+
+        <node title="Transcription Details" id="s17-details" priority="medium" status="pending">
+            <node title="Transcribe Time" id="s17-detail-time" priority="medium" status="pending">
+                <comment>00:02</comment>
+            </node>
+            <node title="Speed" id="s17-detail-speed" priority="medium" status="pending">
+                <comment>6.9x realtime</comment>
+            </node>
+            <node title="Language" id="s17-detail-language" priority="medium" status="pending">
+                <comment>English</comment>
+            </node>
+            <node title="Model" id="s17-detail-model" priority="medium" status="pending">
+                <comment>Large v3 Turbo</comment>
+            </node>
+            <node title="Engine" id="s17-detail-engine" priority="medium" status="pending">
+                <comment>WhisperKit</comment>
+            </node>
+            <node title="Characters" id="s17-detail-characters" priority="medium" status="pending">
+                <comment>62</comment>
+            </node>
+            <node title="Words" id="s17-detail-words" priority="medium" status="pending">
+                <comment>11</comment>
+            </node>
+        </node>
+
+        <node title="Actions" id="s17-actions" priority="medium" status="pending">
+            <node title="Copy (button)" id="s17-action-copy" priority="medium" status="pending">
+                <comment>Copies the transcript to the clipboard.</comment>
+            </node>
+            <node title="Save audio file (.m4a) (button)" id="s17-action-save-audio" priority="medium" status="pending">
+                <comment>Exports the source audio associated with the transcription.</comment>
+            </node>
+        </node>
+
+        <node title="Transcription Quality Feedback" id="s17-feedback" priority="medium" status="pending">
+            <node title="Accurate (button)" id="s17-feedback-accurate" priority="medium" status="pending">
+                <comment>Thumbs‑up rating for transcription quality.</comment>
+            </node>
+            <node title="Not Accurate (button)" id="s17-feedback-inaccurate" priority="medium" status="pending">
+                <comment>Thumbs‑down rating for transcription quality.</comment>
+            </node>
+        </node>
+    </node>
+
+    <node title="Dialogs / Popovers" id="s17-dialogs" priority="medium" status="pending">
+        <node title="Model Options" id="s17-dialogs-model-options" priority="medium" status="pending">
+            <comment>Dropdown listing available models for selection. [Inferred]</comment>
+        </node>
+        <node title="Language Options" id="s17-dialogs-language-options" priority="medium" status="pending">
+            <comment>Dropdown listing available languages. [Inferred]</comment>
+        </node>
+        <node title="Share Options" id="s17-dialogs-share-options" priority="medium" status="pending">
+            <comment>Menu from Share tab with export/share actions. [Inferred]</comment>
+        </node>
+        <node title="Favorite Toggle" id="s17-dialogs-favorite-toggle" priority="medium" status="pending">
+            <comment>Control to mark/unmark the item as a favorite. [Inferred]</comment>
+        </node>
+    </node>
+
+    <node title="Status &amp; Progress" id="s17-status" priority="medium" status="pending">
+        <comment>No progress indicators present on this screen.</comment>
+    </node>
+
+    <node title="Contextual Help / Shortcuts" id="s17-help" priority="medium" status="pending">
+        <comment>No inline help or shortcuts shown on this screen.</comment>
+    </node>
+
+    <node title="Menus" id="s17-menus" priority="medium" status="pending">
+        <comment>Application menus not visible in this screenshot. [Inferred]</comment>
+    </node>
+
+    <node title="Menu Bar Extras / Status Icons" id="s17-menubar-extras" priority="medium" status="pending">
+        <comment>No menu bar extras visible in this screenshot. [Inferred]</comment>
+    </node>
+</node>
+
+
+</project_plan>
