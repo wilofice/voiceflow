@@ -1,0 +1,1364 @@
+<svg version="1.1" baseProfile="full" width="10880.5" height="1632.0" viewBox="0 0 10880.5 1632" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:ev="http://www.w3.org/2001/xml-events">
+<desc >#.interface: fill=lightblue
+#.enumeration: fill=lightgreen
+#.type: fill=lightgray
+
+[&lt;interface&gt;ProcessingStats|+processingTime?: number;+cost?: number;+qualityScore?: number;+resourceUsage?: { cpuTime?: number; memoryUsed?: number; gpuUsed?: boolean; containerUsed?: string; };+errorCount?: number;+fallbackUsed?: boolean|]
+[&lt;type&gt;Database|+public: { Tables: { User: { Row: { id: string; email: string; name: string; subscriptionTier: SubscriptionTier; createdAt: string; updatedAt: string; deletedAt: string; }; Insert: Omit&lt;{ id: string; ... 5 more ...; deletedAt: string; }, &quot;id&quot; \| ... 1 more ... \| &quot;updatedAt&quot;&gt;; Update: Partial&lt;...&gt;; }; ... 4 more ...; UserPrefe...|]
+[&lt;interface&gt;AuthenticatedRequest|+user: { id: string; email: string; name: string; subscriptionTier: string; }|]
+[FastifyRequest&lt;RouteGeneric,RawServer,RawRequest,SchemaCompiler,TypeProvider,ContextConfig,Logger,RequestType&gt;]&lt;:--[AuthenticatedRequest]
+[FastifyRequest]&lt;:--[AuthenticatedRequest]
+[FastifyRequest]&lt;:--[AuthenticatedRequest]
+[WhisperMonitoring|-static instance: WhisperMonitoring;-healthChecks: Map&lt;string, HealthCheckResult&gt;;-systemMetrics: SystemMetrics;-alerts: Alert\[\];-isMonitoring: boolean;-monitoringInterval: Timeout;-startTime: number;-alertsEnabled: boolean|+static getInstance(): WhisperMonitoring;+startMonitoring(): void;+stopMonitoring(): void;+getOverallHealth(): { status: &quot;healthy&quot; \| &quot;unhealthy&quot; \| &quot;degraded&quot;; uptime: number; services: HealthCheckResult\[\]; systemMetrics: SystemMetrics; activeAlerts: Alert\[\]; };+getServiceHealth(): HealthCheckResult;+getAlerts(): Alert\[\];+resolveAlert(): boolean;+requestMonitoring(): (request: FastifyRequest&lt;RouteGenericInterface, RawServerDefault, IncomingMessage, FastifySchema, FastifyTypeProviderDefault, unknown, FastifyBaseLogger, ResolveFastifyRequestType&lt;...&gt;&gt;, _reply: FastifyReply&lt;...&gt;) =&gt; Promise&lt;...&gt;;+responseMonitoring(): (request: FastifyRequest&lt;RouteGenericInterface, RawServerDefault, IncomingMessage, FastifySchema, FastifyTypeProviderDefault, unknown, FastifyBaseLogger, ResolveFastifyRequestType&lt;...&gt;&gt;, reply: FastifyReply&lt;...&gt;) =&gt; Promise&lt;...&gt;;+errorMonitoring(): (error: any, request: FastifyRequest&lt;RouteGenericInterface, RawServerDefault, IncomingMessage, FastifySchema, FastifyTypeProviderDefault, unknown, FastifyBaseLogger, ResolveFastifyRequestType&lt;...&gt;&gt;, reply: FastifyReply&lt;...&gt;) =&gt; void;-performHealthChecks(): Promise&lt;void&gt;;-checkHybridService(): Promise&lt;void&gt;;-checkLocalWhisperService(): Promise&lt;void&gt;;-checkDockerWhisperService(): Promise&lt;void&gt;;-checkSystemHealth(): Promise&lt;void&gt;;-updateSystemMetrics(): void;-getInitialSystemMetrics(): SystemMetrics;-getCpuUsage(): number;-checkAlerts(): void;-createAlert(): void;-sendExternalAlert(): void;-trackRequest(): void;-trackError(): void]
+[&lt;interface&gt;HealthCheckResult|+service: string;+status: &quot;healthy&quot; \| &quot;unhealthy&quot; \| &quot;degraded&quot; \| &quot;unknown&quot;;+uptime: number;+responseTime?: number;+errorRate?: number;+lastCheck: Date;+details?: any|]
+[&lt;interface&gt;SystemMetrics|+cpu: { usage: number; loadAverage: number\[\]; cores: number; };+memory: { total: number; used: number; free: number; usage: number; processRss: number; processUsage: number; };+disk: { usage?: number; available?: number; };+processes: { whisperLocal?: ProcessInfo; whisperDocker?: ProcessInfo; }|]
+[&lt;interface&gt;ProcessInfo|+pid?: number;+memory: number;+cpu: number;+status: string;+startTime: Date|]
+[&lt;interface&gt;Alert|+id: string;+type: &quot;error&quot; \| &quot;warning&quot; \| &quot;info&quot;;+service: string;+message: string;+timestamp: Date;+resolved?: Date;+severity: &quot;low&quot; \| &quot;medium&quot; \| &quot;high&quot; \| &quot;critical&quot;|]
+[WhisperMonitoring]  -  [WhisperMonitoring]
+[WhisperMonitoring]  -  [SystemMetrics]
+[WhisperMonitoring]  - 0..* [Alert]
+[&lt;interface&gt;AuthenticatedUserRecord|+id: string;+email: string;+name: string;+subscriptionTier: string;+createdAt?: Date;+updatedAt?: Date|]
+[BatchQueue|-activeJobs: Map&lt;string, { concurrency: number; processing: Set&lt;string&gt;; startTime: number; bytesProcessed: number; }&gt;;-itemQueue: Map&lt;string, QueuedItem\[\]&gt;|+startBatchJob(): Promise&lt;void&gt;;+pauseBatchJob(): Promise&lt;void&gt;;+resumeBatchJob(): Promise&lt;void&gt;;+cancelBatchJob(): Promise&lt;void&gt;;-processNextItems(): Promise&lt;void&gt;;-processItem(): Promise&lt;void&gt;;+handleItemCompleted(): Promise&lt;void&gt;;-updateJobProgress(): Promise&lt;BatchJobProgress&gt;;-checkJobCompletion(): Promise&lt;void&gt;;+getBatchJobStatus(): Promise&lt;BatchJobProgress&gt;;+retryItem(): Promise&lt;void&gt;]
+[&lt;interface&gt;BatchJobProgress|+jobId: string;+totalItems: number;+completedItems: number;+failedItems: number;+processingItems: number;+estimatedTimeRemaining?: number;+throughputMbps?: number|]
+[&lt;interface&gt;QueuedItem|+itemId: string;+jobId: string;+fileName: string;+audioPath: string;+startTime: number|]
+[HybridTranscriptionService|-static instance: HybridTranscriptionService;-whisperLocal?: WhisperServerService;-whisperDocker?: WhisperDockerService;-performanceMetrics: Map&lt;TranscriptionMethod, MethodPerformance&gt;;-config: HybridConfig;-lastOpenAiWarning: number|+static getInstance(): HybridTranscriptionService;+transcribe(): Promise&lt;TranscriptionResult&gt;;+getServiceHealth(): Promise&lt;ServiceHealth&gt;;+getLocalService(): WhisperServerService;+getDockerService(): WhisperDockerService;+getPerformanceMetrics(): MethodPerformance\[\];-selectOptimalMethod(): Promise&lt;TranscriptionMethod&gt;;-transcribeWithMethod(): Promise&lt;any&gt;;-transcribeWithOpenAI(): Promise&lt;any&gt;;-getAvailableMethods(): TranscriptionMethod\[\];-getMethodsInOrder(): TranscriptionMethod\[\];-selectForSpeed(): TranscriptionMethod;-selectForAccuracy(): TranscriptionMethod;-selectForCost(): TranscriptionMethod;-selectForPrivacy(): TranscriptionMethod;-selectBalanced(): TranscriptionMethod;-calculateCost(): number;-calculateQualityScore(): number;-getProcessingLocation(): &quot;cloud&quot; \| &quot;local&quot; \| &quot;container&quot;;-recordMethodPerformance(): void;-initializeMetrics(): void;-estimateFileDuration(): number;-getSystemLoad(): number;-pingOpenAI(): Promise&lt;number&gt;]
+[&lt;interface&gt;HybridTranscriptionRequest|+filePath: string;+method: TranscriptionMethod;+options: TranscriptionOptions;+priority?: &quot;speed&quot; \| &quot;accuracy&quot; \| &quot;cost&quot; \| &quot;privacy&quot;;+fallbackEnabled?: boolean;+userId?: string;+metadata?: Record&lt;string, any&gt;|]
+[&lt;interface&gt;TranscriptionOptions|+model?: WhisperModel;+language?: string;+task?: &quot;transcribe&quot; \| &quot;translate&quot;;+wordTimestamps?: boolean;+temperature?: number;+maxTokens?: number;+threads?: number|]
+[&lt;interface&gt;TranscriptionResult|+id: string;+text: string;+segments?: TranscriptionSegment\[\];+language?: string;+duration?: number;+processingTime: number;+method: TranscriptionMethod;+model?: string;+cost?: number;+fallbackUsed?: boolean;+metadata?: TranscriptionMetadata|]
+[&lt;interface&gt;TranscriptionSegment|+id: number;+start: number;+end: number;+text: string;+confidence?: number|]
+[&lt;interface&gt;TranscriptionMetadata|+fileSize: number;+fileDuration?: number;+processingLocation: &quot;cloud&quot; \| &quot;local&quot; \| &quot;container&quot;;+resourceUsage?: ResourceUsage;+qualityScore?: number;+errorCount?: number|]
+[&lt;interface&gt;ResourceUsage|+cpuTime?: number;+memoryUsed?: number;+gpuUsed?: boolean;+containerUsed?: string|]
+[&lt;interface&gt;ServiceHealth|+openai: { available: boolean; responseTime?: number; rateLimit?: number; };+whisperLocal: { available: boolean; binaryExists: boolean; modelsAvailable: string\[\]; systemLoad?: number; };+whisperDocker: { available: boolean; containerRunning: boolean; containerHealth?: string; modelsAvailable: string\[\]; }|]
+[&lt;interface&gt;MethodPerformance|+method: TranscriptionMethod;+averageTime: number;+successRate: number;+costPerMinute: number;+qualityScore: number;+lastUsed: Date;+usageCount: number|]
+[&lt;interface&gt;HybridConfig|+openaiApiKey: string;+openaiEndpoint: string;+enableOpenAI: boolean;+enableWhisperLocal: boolean;+enableWhisperDocker: boolean;+defaultMethod: TranscriptionMethod;+fallbackOrder: TranscriptionMethod\[\];+costOptimization: boolean;+qualityThreshold: number;+maxRetries: number;+localWhisperConfig?: any;+dockerWhisperConfig?: any|]
+[HybridTranscriptionService]  -  [HybridTranscriptionService]
+[HybridTranscriptionService]  -  [WhisperServerService]
+[HybridTranscriptionService]  -  [WhisperDockerService]
+[HybridTranscriptionService]  -  [HybridConfig]
+[HybridTranscriptionRequest]  -  [TranscriptionOptions]
+[TranscriptionResult]  - 0..* [TranscriptionSegment]
+[TranscriptionResult]  -  [TranscriptionMetadata]
+[TranscriptionMetadata]  -  [ResourceUsage]
+[TranscriptionQueue|-queue: Map&lt;string, any&gt;;-processing: Set&lt;string&gt;|+addJob(): Promise&lt;void&gt;;-processNext(): Promise&lt;void&gt;;-processJob(): Promise&lt;void&gt;;+getQueueStatus(): { queued: number; processing: number; jobs: { transcriptId: any; attempts: any; addedAt: any; }\[\]; }]
+[StorageService||+static uploadAudioFile(): Promise&lt;{ path: string; signedUrl: string; }&gt;;+static getFileUrl(): Promise&lt;string&gt;;+static deleteAudioFile(): Promise&lt;void&gt;;+static getUserStorageUsage(): Promise&lt;{ fileCount: number; totalSize: number; }&gt;]
+[TranscriptionService|-static MAX_FILE_SIZE: number;-static SUPPORTED_FORMATS: string\[\]|+static transcribeFile(): Promise&lt;{ transcriptId: string; segments: any\[\]; language: string; duration: number; text: string; resourceUsage: ResourceUsage; model: string; }&gt;;-static processTranscriptionResponse(): Promise&lt;any\[\]&gt;;-static updateTranscriptStatus(): Promise&lt;void&gt;;+static estimateCost(): number;+static validateAudioFile(): { valid: boolean; error?: string; };+static extractMetadata(): Promise&lt;{ duration?: number; bitrate?: number; sampleRate?: number; channels?: number; }&gt;;+static retryTranscription(): Promise&lt;{ message: string; }&gt;]
+[WhisperDockerService|-config: WhisperDockerConfig;-processingJobs: Map&lt;string, ProcessingJob&gt;;-healthStatus: HealthStatus;-startTime: number;-containerUrl: string|-initializeService(): Promise&lt;void&gt;;+transcribeFile(): Promise&lt;TranscriptionResult&gt;;+getHealthStatus(): Promise&lt;HealthStatus&gt;;+startContainer(): Promise&lt;void&gt;;+stopContainer(): Promise&lt;void&gt;;+removeContainer(): Promise&lt;void&gt;;+getJobStatus(): ProcessingJob;+getActiveJobs(): ProcessingJob\[\];-checkDockerAvailability(): Promise&lt;void&gt;;-ensureContainerRunning(): Promise&lt;void&gt;;-createAndRunContainer(): Promise&lt;void&gt;;-waitForContainerReady(): Promise&lt;void&gt;;-getContainerInfo(): Promise&lt;DockerContainerInfo&gt;;-getContainerId(): Promise&lt;string&gt;;-copyFileToContainer(): Promise&lt;string&gt;;-cleanupFile(): Promise&lt;void&gt;;-executeTranscriptionRequest(): Promise&lt;TranscriptionResult&gt;;-execDockerCommand(): Promise&lt;string&gt;;-updateHealthStatus(): Promise&lt;void&gt;]
+[&lt;interface&gt;WhisperDockerOptions|+model?: WhisperModel;+language?: string;+task?: &quot;transcribe&quot; \| &quot;translate&quot;;+threads?: number;+outputFormat?: &quot;txt&quot; \| &quot;vtt&quot; \| &quot;srt&quot; \| &quot;json&quot;;+wordTimestamps?: boolean;+temperature?: number;+maxTokens?: number;+containerName?: string;+timeout?: number|]
+[&lt;interface&gt;TranscriptionResult|+text: string;+segments?: TranscriptionSegment\[\];+language?: string;+duration?: number;+processingTime: number;+model: string;+method: &quot;whisper-server-docker&quot;;+containerId?: string|]
+[&lt;interface&gt;TranscriptionSegment|+id: number;+start: number;+end: number;+text: string;+confidence?: number|]
+[&lt;interface&gt;DockerContainerInfo|+id: string;+name: string;+status: string;+created: string;+ports: string\[\];+image: string|]
+[&lt;interface&gt;HealthStatus|+status: &quot;healthy&quot; \| &quot;unhealthy&quot; \| &quot;starting&quot;;+dockerAvailable: boolean;+containerRunning: boolean;+containerInfo?: DockerContainerInfo;+availableModels: string\[\];+systemInfo: { dockerVersion?: string; containerRuntime?: string; };+uptime: number|]
+[&lt;interface&gt;ProcessingJob|+id: string;+status: &quot;queued&quot; \| &quot;processing&quot; \| &quot;completed&quot; \| &quot;failed&quot;;+progress: number;+startTime: number;+endTime?: number;+error?: string;+result?: TranscriptionResult;+containerId?: string|]
+[&lt;interface&gt;WhisperDockerConfig|+containerImage: string;+containerName: string;+containerPort: number;+hostPort: number;+defaultModel: WhisperModel;+maxConcurrentJobs: number;+timeout: number;+autoStart: boolean;+volumePath: string|]
+[WhisperDockerService]  -  [WhisperDockerConfig]
+[WhisperDockerService]  -  [HealthStatus]
+[TranscriptionResult]  - 0..* [TranscriptionSegment]
+[HealthStatus]  -  [DockerContainerInfo]
+[ProcessingJob]  -  [TranscriptionResult]
+[WhisperServerService|-config: WhisperServerConfig;-processingJobs: Map&lt;string, ProcessingJob&gt;;-healthStatus: HealthStatus;-startTime: number|-initializeService(): Promise&lt;void&gt;;+transcribeFile(): Promise&lt;TranscriptionResult&gt;;+getAvailableModels(): Promise&lt;ModelInfo\[\]&gt;;+getHealthStatus(): Promise&lt;HealthStatus&gt;;+getJobStatus(): ProcessingJob;+getActiveJobs(): ProcessingJob\[\];+cancelJob(): boolean;-buildWhisperCommand(): Promise&lt;string\[\]&gt;;-executeWhisper(): Promise&lt;TranscriptionResult&gt;;-locateWhisperJsonForInput(): Promise&lt;string&gt;;-parseWhisperOutput(): TranscriptionResult;-updateHealthStatus(): Promise&lt;void&gt;;-findWhisperBinary(): string;-getDefaultModelsPath(): string]
+[&lt;interface&gt;WhisperOptions|+model?: WhisperModel;+language?: string;+task?: &quot;transcribe&quot; \| &quot;translate&quot;;+threads?: number;+outputFormat?: &quot;txt&quot; \| &quot;vtt&quot; \| &quot;srt&quot; \| &quot;json&quot;;+wordTimestamps?: boolean;+temperature?: number;+maxTokens?: number;+noSpeech?: number;+logLevel?: number|]
+[&lt;interface&gt;TranscriptionResult|+text: string;+segments?: TranscriptionSegment\[\];+language?: string;+duration?: number;+processingTime: number;+model: string;+method: &quot;whisper-server-local&quot;|]
+[&lt;interface&gt;TranscriptionSegment|+id: number;+start: number;+end: number;+text: string;+confidence?: number;+words?: WordSegment\[\]|]
+[&lt;interface&gt;WordSegment|+word: string;+start: number;+end: number;+confidence: number|]
+[&lt;interface&gt;ModelInfo|+name: string;+size: number;+exists: boolean;+path: string|]
+[&lt;interface&gt;HealthStatus|+status: &quot;healthy&quot; \| &quot;unhealthy&quot; \| &quot;starting&quot;;+whisperBinary: boolean;+modelsDirectory: boolean;+availableModels: string\[\];+systemInfo: { platform: string; arch: string; cpus: number; memory: number; };+uptime: number;+version?: string|]
+[&lt;interface&gt;ProcessingJob|+id: string;+status: &quot;queued&quot; \| &quot;processing&quot; \| &quot;completed&quot; \| &quot;failed&quot;;+progress: number;+startTime: number;+endTime?: number;+error?: string;+result?: TranscriptionResult|]
+[&lt;interface&gt;WhisperServerConfig|+whisperBinaryPath: string;+modelsPath: string;+tempPath: string;+defaultModel: WhisperModel;+maxConcurrentJobs: number;+cleanupTempFiles: boolean;+logLevel: number|]
+[WhisperServerService]  -  [WhisperServerConfig]
+[WhisperServerService]  -  [HealthStatus]
+[TranscriptionResult]  - 0..* [TranscriptionSegment]
+[TranscriptionSegment]  - 0..* [WordSegment]
+[ProcessingJob]  -  [TranscriptionResult]</desc>
+<g stroke-width="1.0" text-align="left" font="12pt Helvetica, Arial, sans-serif" font-size="12pt" font-family="Helvetica" font-weight="normal" font-style="normal">
+<g font-family="Helvetica" font-size="12pt" font-weight="bold" font-style="normal" stroke-width="3.0" stroke-linejoin="round" stroke-linecap="round" stroke="#33322E">
+<g stroke="transparent" fill="transparent">
+<rect x="0.0" y="0.0" height="1632.0" width="10880.5" stroke="none"></rect>
+</g>
+<g transform="translate(8, 8)" fill="#33322E">
+<g transform="translate(20, 20)" fill="#33322E" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal">
+<g stroke-dasharray="6 6">
+<path d="M1252.0 353.3 L1252 668 L1470.4381338742394 846 L1470.4 846.0 " fill="none"></path>
+</g>
+<path d="M1257.3 353.3 L1252.0 353.3 L1246.7 353.3 L1252.0 340.0 Z"></path>
+<g stroke-dasharray="6 6">
+<path d="M1835.4 350.3 L1574.5 668 L1560.0578093306287 846 L1560.1 846.0 " fill="none"></path>
+</g>
+<path d="M1839.5 353.7 L1835.4 350.3 L1831.3 346.9 L1843.9 340.0 Z"></path>
+<g stroke-dasharray="6 6">
+<path d="M1894.1 347.0 L2411.5 668 L1652.5 886.3121353558927 L1652.5 886.3 " fill="none"></path>
+</g>
+<path d="M1896.9 342.5 L1894.1 347.0 L1891.3 351.6 L1882.8 340.0 Z"></path>
+<path d="M4048.0 9.1 L4078 0 L4085.5 0 L4085.5 0 L4093 324 L4093 324 L4085.5 648 L4085.5 648 L4078 648 L4078 648 L4048 638.9328358208955 L4048.0 638.9 " fill="none"></path>
+<path d="M2611.6 648.0 L2587.25 668 L2587.25 749 L2587.3 749.0 " fill="none"></path>
+<text x="4493.5" y="822.0" stroke="none">0..*</text>
+<path d="M4048.0 566.3 L4485.5 668 L4485.5 830 L4485.5 830.0 " fill="none"></path>
+<path d="M7311.5 75.0 L7341.5 49 L7349 49 L7349 49 L7356.5 324 L7356.5 324 L7349 599 L7349 599 L7341.5 599 L7341.5 599 L7311.5 573.0157480314961 L7311.5 573.0 " fill="none"></path>
+<path d="M6763.0 599.0 L6697.5 668 L6697.5 736.5 L6697.5 736.5 " fill="none"></path>
+<path d="M7235.0 599.0 L7288 668 L7288 688 L7288.0 688.0 " fill="none"></path>
+<path d="M7311.5 387.4 L8583.25 668 L8583.25 789.5 L8583.3 789.5 " fill="none"></path>
+<path d="M6320.0 408.5 L6320 668 L6320 830 L6320.0 830.0 " fill="none"></path>
+<text x="10161.5" y="1267.1" stroke="none">0..*</text>
+<path d="M9886.0 939.9 L8551.5 1161 L10153.5 1275.1254047689138 L10153.5 1275.1 " fill="none"></path>
+<path d="M9886.0 947.8 L8908 1161 L8908 1205.5 L8908.0 1205.5 " fill="none"></path>
+<path d="M8908.0 1358.5 L8908 1403 L8908 1439 L8908.0 1439.0 " fill="none"></path>
+<path d="M7076.2 1141.0 L7057.5 1161 L7330.5 1243.4794007490636 L7330.5 1243.5 " fill="none"></path>
+<path d="M7544.5 966.2 L8511.5 1161 L7290.5 1267.021528525296 L7290.5 1267.0 " fill="none"></path>
+<text x="10246.7" y="1205.5" stroke="none">0..*</text>
+<path d="M10129.7 1031.5 L10230 1161 L10238.677685950413 1213.5 L10238.7 1213.5 " fill="none"></path>
+<path d="M7118.0 1383.0 L7118 1403 L7118 1423 L7118.0 1423.0 " fill="none"></path>
+<path d="M9814.5 385.3 L8778.25 668 L9886 884.5856632956574 L9886.0 884.6 " fill="none"></path>
+<path d="M6683.1 1092.5 L6677.5 1161 L6677.5 1197.5 L6677.5 1197.5 " fill="none"></path>
+<path d="M6820.3 1092.5 L6867.5 1161 L6945.5 1198.6766467065868 L6945.5 1198.7 " fill="none"></path>
+<text x="10269.3" y="1205.5" stroke="none">0..*</text>
+<path d="M10148.6 1031.5 L10270 1161 L10261.322314049587 1213.5 L10261.3 1213.5 " fill="none"></path>
+<text x="10215.0" y="1431.0" stroke="none">0..*</text>
+<path d="M10250.0 1350.5 L10250 1403 L10250 1439 L10250.0 1439.0 " fill="none"></path>
+<path d="M10044.4 417.0 L10059 668 L10048.492900608519 797.5 L10048.5 797.5 " fill="none"></path>
+<g data-name="ProcessingStats">
+<g fill="lightblue" stroke="#33322E" data-name="ProcessingStats">
+<rect x="0.0" y="215.0" height="218.0" width="325.0" data-name="ProcessingStats"></rect>
+<path d="M0.0 247.0 L325.0 247.0" fill="none" data-name="ProcessingStats"></path>
+<path d="M0.0 425.0 L325.0 425.0" fill="none" data-name="ProcessingStats"></path>
+</g>
+<g transform="translate(0, 215)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="ProcessingStats" data-compartment="0">
+<g transform="translate(8, 8)" fill="#33322E" text-align="center" data-name="ProcessingStats" data-compartment="0">
+<a id="src/lib/database.types.ts.ProcessingStats" xlink:href="src/lib/database.types.ts"><text x="154.5" y="14.1" stroke="none" text-anchor="middle" data-name="ProcessingStats" data-compartment="0">ProcessingStats</text></a>
+
+</g>
+</g>
+<g transform="translate(0, 247)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="ProcessingStats" data-compartment="1">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="ProcessingStats" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="ProcessingStats" data-compartment="1">+processingTime?: number</text>
+<text x="0.0" y="30.3" stroke="none" data-name="ProcessingStats" data-compartment="1">+cost?: number</text>
+<text x="0.0" y="46.5" stroke="none" data-name="ProcessingStats" data-compartment="1">+qualityScore?: number</text>
+<text x="0.0" y="62.7" stroke="none" data-name="ProcessingStats" data-compartment="1">+resourceUsage?: { cpuTime?: number</text>
+<text x="0.0" y="78.9" stroke="none" data-name="ProcessingStats" data-compartment="1">memoryUsed?: number</text>
+<text x="0.0" y="95.1" stroke="none" data-name="ProcessingStats" data-compartment="1">gpuUsed?: boolean</text>
+<text x="0.0" y="111.3" stroke="none" data-name="ProcessingStats" data-compartment="1">containerUsed?: string</text>
+<text x="0.0" y="127.5" stroke="none" data-name="ProcessingStats" data-compartment="1">}</text>
+<text x="0.0" y="143.7" stroke="none" data-name="ProcessingStats" data-compartment="1">+errorCount?: number</text>
+<text x="0.0" y="159.9" stroke="none" data-name="ProcessingStats" data-compartment="1">+fallbackUsed?: boolean</text>
+
+</g>
+</g>
+<g transform="translate(0, 425)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="ProcessingStats" data-compartment="2">
+<g transform="translate(8, 8)" fill="#33322E" data-name="ProcessingStats" data-compartment="2">
+
+</g>
+</g>
+</g>
+<g data-name="Database">
+<g fill="lightgray" stroke="#33322E" data-name="Database">
+<rect x="365.0" y="166.5" height="315.0" width="349.0" data-name="Database"></rect>
+<path d="M365.0 198.5 L714.0 198.5" fill="none" data-name="Database"></path>
+<path d="M365.0 473.5 L714.0 473.5" fill="none" data-name="Database"></path>
+</g>
+<g transform="translate(365, 166.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="Database" data-compartment="0">
+<g transform="translate(8, 8)" fill="#33322E" text-align="center" data-name="Database" data-compartment="0">
+<a id="src/lib/database.types.ts.Database" xlink:href="src/lib/database.types.ts"><text x="166.5" y="14.1" stroke="none" text-anchor="middle" data-name="Database" data-compartment="0">Database</text></a>
+
+</g>
+</g>
+<g transform="translate(365, 198.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="Database" data-compartment="1">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="Database" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="Database" data-compartment="1">+public: { Tables: { User: { Row: { id: string</text>
+<text x="0.0" y="30.3" stroke="none" data-name="Database" data-compartment="1">email: string</text>
+<text x="0.0" y="46.5" stroke="none" data-name="Database" data-compartment="1">name: string</text>
+<text x="0.0" y="62.7" stroke="none" data-name="Database" data-compartment="1">subscriptionTier: SubscriptionTier</text>
+<text x="0.0" y="78.9" stroke="none" data-name="Database" data-compartment="1">createdAt: string</text>
+<text x="0.0" y="95.1" stroke="none" data-name="Database" data-compartment="1">updatedAt: string</text>
+<text x="0.0" y="111.3" stroke="none" data-name="Database" data-compartment="1">deletedAt: string</text>
+<text x="0.0" y="127.5" stroke="none" data-name="Database" data-compartment="1">}</text>
+<text x="0.0" y="143.7" stroke="none" data-name="Database" data-compartment="1">Insert: Omit&lt;{ id: string</text>
+<text x="0.0" y="159.9" stroke="none" data-name="Database" data-compartment="1">... 5 more ...</text>
+<text x="0.0" y="176.1" stroke="none" data-name="Database" data-compartment="1">deletedAt: string</text>
+<text x="0.0" y="192.3" stroke="none" data-name="Database" data-compartment="1">}, &quot;id&quot; | ... 1 more ... | &quot;updatedAt&quot;&gt;</text>
+<text x="0.0" y="208.5" stroke="none" data-name="Database" data-compartment="1">Update: Partial&lt;...&gt;</text>
+<text x="0.0" y="224.7" stroke="none" data-name="Database" data-compartment="1">}</text>
+<text x="0.0" y="240.9" stroke="none" data-name="Database" data-compartment="1">... 4 more ...</text>
+<text x="0.0" y="257.1" stroke="none" data-name="Database" data-compartment="1">UserPrefe...</text>
+
+</g>
+</g>
+<g transform="translate(365, 473.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="Database" data-compartment="2">
+<g transform="translate(8, 8)" fill="#33322E" data-name="Database" data-compartment="2">
+
+</g>
+</g>
+</g>
+<g data-name="AuthenticatedRequest">
+<g fill="lightblue" stroke="#33322E" data-name="AuthenticatedRequest">
+<rect x="1456.5" y="846.0" height="137.0" width="196.0" data-name="AuthenticatedRequest"></rect>
+<path d="M1456.5 878.0 L1652.5 878.0" fill="none" data-name="AuthenticatedRequest"></path>
+<path d="M1456.5 975.0 L1652.5 975.0" fill="none" data-name="AuthenticatedRequest"></path>
+</g>
+<g transform="translate(1456.5, 846)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="AuthenticatedRequest" data-compartment="0">
+<g transform="translate(8, 8)" fill="#33322E" text-align="center" data-name="AuthenticatedRequest" data-compartment="0">
+<a id="src/middleware/auth.ts.AuthenticatedRequest" xlink:href="src/middleware/auth.ts"><text x="90.0" y="14.1" stroke="none" text-anchor="middle" data-name="AuthenticatedRequest" data-compartment="0">AuthenticatedRequest</text></a>
+
+</g>
+</g>
+<g transform="translate(1456.5, 878)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="AuthenticatedRequest" data-compartment="1">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="AuthenticatedRequest" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="AuthenticatedRequest" data-compartment="1">+user: { id: string</text>
+<text x="0.0" y="30.3" stroke="none" data-name="AuthenticatedRequest" data-compartment="1">email: string</text>
+<text x="0.0" y="46.5" stroke="none" data-name="AuthenticatedRequest" data-compartment="1">name: string</text>
+<text x="0.0" y="62.7" stroke="none" data-name="AuthenticatedRequest" data-compartment="1">subscriptionTier: string</text>
+<text x="0.0" y="78.9" stroke="none" data-name="AuthenticatedRequest" data-compartment="1">}</text>
+
+</g>
+</g>
+<g transform="translate(1456.5, 975)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="AuthenticatedRequest" data-compartment="2">
+<g transform="translate(8, 8)" fill="#33322E" data-name="AuthenticatedRequest" data-compartment="2">
+
+</g>
+</g>
+</g>
+<g data-name="FastifyRequest&lt;RouteGeneric,RawServer,RawRequest,SchemaCompiler,TypeProvider,ContextConfig,Logger,RequestType&gt;">
+<g fill="#eee8d5" stroke="#33322E" data-name="FastifyRequest&lt;RouteGeneric,RawServer,RawRequest,SchemaCompiler,TypeProvider,ContextConfig,Logger,RequestType&gt;">
+<rect x="754.0" y="308.0" height="32.0" width="996.0" data-name="FastifyRequest&lt;RouteGeneric,RawServer,RawRequest,SchemaCompiler,TypeProvider,ContextConfig,Logger,RequestType&gt;"></rect>
+</g>
+<g transform="translate(754, 308)" font-family="Helvetica" font-size="12pt" font-weight="bold" font-style="normal" data-name="FastifyRequest&lt;RouteGeneric,RawServer,RawRequest,SchemaCompiler,TypeProvider,ContextConfig,Logger,RequestType&gt;" data-compartment="0">
+<g transform="translate(8, 8)" fill="#33322E" text-align="center" data-name="FastifyRequest&lt;RouteGeneric,RawServer,RawRequest,SchemaCompiler,TypeProvider,ContextConfig,Logger,RequestType&gt;" data-compartment="0">
+<text x="490.0" y="14.1" stroke="none" text-anchor="middle" data-name="FastifyRequest&lt;RouteGeneric,RawServer,RawRequest,SchemaCompiler,TypeProvider,ContextConfig,Logger,RequestType&gt;" data-compartment="0">FastifyRequest&lt;RouteGeneric,RawServer,RawRequest,SchemaCompiler,TypeProvider,ContextConfig,Logger,RequestType&gt;</text>
+
+</g>
+</g>
+</g>
+<g data-name="FastifyRequest">
+<g fill="#eee8d5" stroke="#33322E" data-name="FastifyRequest">
+<rect x="1790.0" y="308.0" height="32.0" width="134.0" data-name="FastifyRequest"></rect>
+</g>
+<g transform="translate(1790, 308)" font-family="Helvetica" font-size="12pt" font-weight="bold" font-style="normal" data-name="FastifyRequest" data-compartment="0">
+<g transform="translate(8, 8)" fill="#33322E" text-align="center" data-name="FastifyRequest" data-compartment="0">
+<text x="59.0" y="14.1" stroke="none" text-anchor="middle" data-name="FastifyRequest" data-compartment="0">FastifyRequest</text>
+
+</g>
+</g>
+</g>
+<g data-name="WhisperMonitoring">
+<g fill="#eee8d5" stroke="#33322E" data-name="WhisperMonitoring">
+<rect x="1964.0" y="0.0" height="648.0" width="2084.0" data-name="WhisperMonitoring"></rect>
+<path d="M1964.0 32.0 L4048.0 32.0" fill="none" data-name="WhisperMonitoring"></path>
+<path d="M1964.0 178.0 L4048.0 178.0" fill="none" data-name="WhisperMonitoring"></path>
+</g>
+<g transform="translate(1964, 0)" font-family="Helvetica" font-size="12pt" font-weight="bold" font-style="normal" data-name="WhisperMonitoring" data-compartment="0">
+<g transform="translate(8, 8)" fill="#33322E" text-align="center" data-name="WhisperMonitoring" data-compartment="0">
+<a id="src/middleware/whisperMonitoring.ts.WhisperMonitoring" xlink:href="src/middleware/whisperMonitoring.ts"><text x="1034.0" y="14.1" stroke="none" text-anchor="middle" data-name="WhisperMonitoring" data-compartment="0">WhisperMonitoring</text></a>
+
+</g>
+</g>
+<g transform="translate(1964, 32)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="WhisperMonitoring" data-compartment="1">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="WhisperMonitoring" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="WhisperMonitoring" data-compartment="1">-static instance: WhisperMonitoring</text>
+<text x="0.0" y="30.3" stroke="none" data-name="WhisperMonitoring" data-compartment="1">-healthChecks: Map&lt;string, HealthCheckResult&gt;</text>
+<text x="0.0" y="46.5" stroke="none" data-name="WhisperMonitoring" data-compartment="1">-systemMetrics: SystemMetrics</text>
+<text x="0.0" y="62.7" stroke="none" data-name="WhisperMonitoring" data-compartment="1">-alerts: Alert[]</text>
+<text x="0.0" y="78.9" stroke="none" data-name="WhisperMonitoring" data-compartment="1">-isMonitoring: boolean</text>
+<text x="0.0" y="95.1" stroke="none" data-name="WhisperMonitoring" data-compartment="1">-monitoringInterval: Timeout</text>
+<text x="0.0" y="111.3" stroke="none" data-name="WhisperMonitoring" data-compartment="1">-startTime: number</text>
+<text x="0.0" y="127.5" stroke="none" data-name="WhisperMonitoring" data-compartment="1">-alertsEnabled: boolean</text>
+
+</g>
+</g>
+<g transform="translate(1964, 178)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="WhisperMonitoring" data-compartment="2">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="WhisperMonitoring" data-compartment="2">
+<text x="0.0" y="14.1" stroke="none" data-name="WhisperMonitoring" data-compartment="2">+static getInstance(): WhisperMonitoring</text>
+<text x="0.0" y="30.3" stroke="none" data-name="WhisperMonitoring" data-compartment="2">+startMonitoring(): void</text>
+<text x="0.0" y="46.5" stroke="none" data-name="WhisperMonitoring" data-compartment="2">+stopMonitoring(): void</text>
+<text x="0.0" y="62.7" stroke="none" data-name="WhisperMonitoring" data-compartment="2">+getOverallHealth(): { status: &quot;healthy&quot; | &quot;unhealthy&quot; | &quot;degraded&quot;</text>
+<text x="0.0" y="78.9" stroke="none" data-name="WhisperMonitoring" data-compartment="2">uptime: number</text>
+<text x="0.0" y="95.1" stroke="none" data-name="WhisperMonitoring" data-compartment="2">services: HealthCheckResult[]</text>
+<text x="0.0" y="111.3" stroke="none" data-name="WhisperMonitoring" data-compartment="2">systemMetrics: SystemMetrics</text>
+<text x="0.0" y="127.5" stroke="none" data-name="WhisperMonitoring" data-compartment="2">activeAlerts: Alert[]</text>
+<text x="0.0" y="143.7" stroke="none" data-name="WhisperMonitoring" data-compartment="2">}</text>
+<text x="0.0" y="159.9" stroke="none" data-name="WhisperMonitoring" data-compartment="2">+getServiceHealth(): HealthCheckResult</text>
+<text x="0.0" y="176.1" stroke="none" data-name="WhisperMonitoring" data-compartment="2">+getAlerts(): Alert[]</text>
+<text x="0.0" y="192.3" stroke="none" data-name="WhisperMonitoring" data-compartment="2">+resolveAlert(): boolean</text>
+<text x="0.0" y="208.5" stroke="none" data-name="WhisperMonitoring" data-compartment="2">+requestMonitoring(): (request: FastifyRequest&lt;RouteGenericInterface, RawServerDefault, IncomingMessage, FastifySchema, FastifyTypeProviderDefault, unknown, FastifyBaseLogger, ResolveFastifyRequestType&lt;...&gt;&gt;, _reply: FastifyReply&lt;...&gt;) =&gt; Promise&lt;...&gt;</text>
+<text x="0.0" y="224.7" stroke="none" data-name="WhisperMonitoring" data-compartment="2">+responseMonitoring(): (request: FastifyRequest&lt;RouteGenericInterface, RawServerDefault, IncomingMessage, FastifySchema, FastifyTypeProviderDefault, unknown, FastifyBaseLogger, ResolveFastifyRequestType&lt;...&gt;&gt;, reply: FastifyReply&lt;...&gt;) =&gt; Promise&lt;...&gt;</text>
+<text x="0.0" y="240.9" stroke="none" data-name="WhisperMonitoring" data-compartment="2">+errorMonitoring(): (error: any, request: FastifyRequest&lt;RouteGenericInterface, RawServerDefault, IncomingMessage, FastifySchema, FastifyTypeProviderDefault, unknown, FastifyBaseLogger, ResolveFastifyRequestType&lt;...&gt;&gt;, reply: FastifyReply&lt;...&gt;) =&gt; void</text>
+<text x="0.0" y="257.1" stroke="none" data-name="WhisperMonitoring" data-compartment="2">-performHealthChecks(): Promise&lt;void&gt;</text>
+<text x="0.0" y="273.3" stroke="none" data-name="WhisperMonitoring" data-compartment="2">-checkHybridService(): Promise&lt;void&gt;</text>
+<text x="0.0" y="289.5" stroke="none" data-name="WhisperMonitoring" data-compartment="2">-checkLocalWhisperService(): Promise&lt;void&gt;</text>
+<text x="0.0" y="305.7" stroke="none" data-name="WhisperMonitoring" data-compartment="2">-checkDockerWhisperService(): Promise&lt;void&gt;</text>
+<text x="0.0" y="321.9" stroke="none" data-name="WhisperMonitoring" data-compartment="2">-checkSystemHealth(): Promise&lt;void&gt;</text>
+<text x="0.0" y="338.1" stroke="none" data-name="WhisperMonitoring" data-compartment="2">-updateSystemMetrics(): void</text>
+<text x="0.0" y="354.3" stroke="none" data-name="WhisperMonitoring" data-compartment="2">-getInitialSystemMetrics(): SystemMetrics</text>
+<text x="0.0" y="370.5" stroke="none" data-name="WhisperMonitoring" data-compartment="2">-getCpuUsage(): number</text>
+<text x="0.0" y="386.7" stroke="none" data-name="WhisperMonitoring" data-compartment="2">-checkAlerts(): void</text>
+<text x="0.0" y="402.9" stroke="none" data-name="WhisperMonitoring" data-compartment="2">-createAlert(): void</text>
+<text x="0.0" y="419.1" stroke="none" data-name="WhisperMonitoring" data-compartment="2">-sendExternalAlert(): void</text>
+<text x="0.0" y="435.3" stroke="none" data-name="WhisperMonitoring" data-compartment="2">-trackRequest(): void</text>
+<text x="0.0" y="451.5" stroke="none" data-name="WhisperMonitoring" data-compartment="2">-trackError(): void</text>
+
+</g>
+</g>
+</g>
+<g data-name="HealthCheckResult">
+<g fill="lightblue" stroke="#33322E" data-name="HealthCheckResult">
+<rect x="4138.0" y="239.5" height="169.0" width="460.0" data-name="HealthCheckResult"></rect>
+<path d="M4138.0 271.5 L4598.0 271.5" fill="none" data-name="HealthCheckResult"></path>
+<path d="M4138.0 400.5 L4598.0 400.5" fill="none" data-name="HealthCheckResult"></path>
+</g>
+<g transform="translate(4138, 239.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="HealthCheckResult" data-compartment="0">
+<g transform="translate(8, 8)" fill="#33322E" text-align="center" data-name="HealthCheckResult" data-compartment="0">
+<a id="src/middleware/whisperMonitoring.ts.HealthCheckResult" xlink:href="src/middleware/whisperMonitoring.ts"><text x="222.0" y="14.1" stroke="none" text-anchor="middle" data-name="HealthCheckResult" data-compartment="0">HealthCheckResult</text></a>
+
+</g>
+</g>
+<g transform="translate(4138, 271.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="HealthCheckResult" data-compartment="1">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="HealthCheckResult" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="HealthCheckResult" data-compartment="1">+service: string</text>
+<text x="0.0" y="30.3" stroke="none" data-name="HealthCheckResult" data-compartment="1">+status: &quot;healthy&quot; | &quot;unhealthy&quot; | &quot;degraded&quot; | &quot;unknown&quot;</text>
+<text x="0.0" y="46.5" stroke="none" data-name="HealthCheckResult" data-compartment="1">+uptime: number</text>
+<text x="0.0" y="62.7" stroke="none" data-name="HealthCheckResult" data-compartment="1">+responseTime?: number</text>
+<text x="0.0" y="78.9" stroke="none" data-name="HealthCheckResult" data-compartment="1">+errorRate?: number</text>
+<text x="0.0" y="95.1" stroke="none" data-name="HealthCheckResult" data-compartment="1">+lastCheck: Date</text>
+<text x="0.0" y="111.3" stroke="none" data-name="HealthCheckResult" data-compartment="1">+details?: any</text>
+
+</g>
+</g>
+<g transform="translate(4138, 400.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="HealthCheckResult" data-compartment="2">
+<g transform="translate(8, 8)" fill="#33322E" data-name="HealthCheckResult" data-compartment="2">
+
+</g>
+</g>
+</g>
+<g data-name="SystemMetrics">
+<g fill="lightblue" stroke="#33322E" data-name="SystemMetrics">
+<rect x="2413.8" y="749.0" height="331.0" width="347.0" data-name="SystemMetrics"></rect>
+<path d="M2413.8 781.0 L2760.8 781.0" fill="none" data-name="SystemMetrics"></path>
+<path d="M2413.8 1072.0 L2760.8 1072.0" fill="none" data-name="SystemMetrics"></path>
+</g>
+<g transform="translate(2413.75, 749)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="SystemMetrics" data-compartment="0">
+<g transform="translate(8, 8)" fill="#33322E" text-align="center" data-name="SystemMetrics" data-compartment="0">
+<a id="src/middleware/whisperMonitoring.ts.SystemMetrics" xlink:href="src/middleware/whisperMonitoring.ts"><text x="165.5" y="14.1" stroke="none" text-anchor="middle" data-name="SystemMetrics" data-compartment="0">SystemMetrics</text></a>
+
+</g>
+</g>
+<g transform="translate(2413.75, 781)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="SystemMetrics" data-compartment="1">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="SystemMetrics" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="SystemMetrics" data-compartment="1">+cpu: { usage: number</text>
+<text x="0.0" y="30.3" stroke="none" data-name="SystemMetrics" data-compartment="1">loadAverage: number[]</text>
+<text x="0.0" y="46.5" stroke="none" data-name="SystemMetrics" data-compartment="1">cores: number</text>
+<text x="0.0" y="62.7" stroke="none" data-name="SystemMetrics" data-compartment="1">}</text>
+<text x="0.0" y="78.9" stroke="none" data-name="SystemMetrics" data-compartment="1">+memory: { total: number</text>
+<text x="0.0" y="95.1" stroke="none" data-name="SystemMetrics" data-compartment="1">used: number</text>
+<text x="0.0" y="111.3" stroke="none" data-name="SystemMetrics" data-compartment="1">free: number</text>
+<text x="0.0" y="127.5" stroke="none" data-name="SystemMetrics" data-compartment="1">usage: number</text>
+<text x="0.0" y="143.7" stroke="none" data-name="SystemMetrics" data-compartment="1">processRss: number</text>
+<text x="0.0" y="159.9" stroke="none" data-name="SystemMetrics" data-compartment="1">processUsage: number</text>
+<text x="0.0" y="176.1" stroke="none" data-name="SystemMetrics" data-compartment="1">}</text>
+<text x="0.0" y="192.3" stroke="none" data-name="SystemMetrics" data-compartment="1">+disk: { usage?: number</text>
+<text x="0.0" y="208.5" stroke="none" data-name="SystemMetrics" data-compartment="1">available?: number</text>
+<text x="0.0" y="224.7" stroke="none" data-name="SystemMetrics" data-compartment="1">}</text>
+<text x="0.0" y="240.9" stroke="none" data-name="SystemMetrics" data-compartment="1">+processes: { whisperLocal?: ProcessInfo</text>
+<text x="0.0" y="257.1" stroke="none" data-name="SystemMetrics" data-compartment="1">whisperDocker?: ProcessInfo</text>
+<text x="0.0" y="273.3" stroke="none" data-name="SystemMetrics" data-compartment="1">}</text>
+
+</g>
+</g>
+<g transform="translate(2413.75, 1072)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="SystemMetrics" data-compartment="2">
+<g transform="translate(8, 8)" fill="#33322E" data-name="SystemMetrics" data-compartment="2">
+
+</g>
+</g>
+</g>
+<g data-name="ProcessInfo">
+<g fill="lightblue" stroke="#33322E" data-name="ProcessInfo">
+<rect x="4638.0" y="255.5" height="137.0" width="159.0" data-name="ProcessInfo"></rect>
+<path d="M4638.0 287.5 L4797.0 287.5" fill="none" data-name="ProcessInfo"></path>
+<path d="M4638.0 384.5 L4797.0 384.5" fill="none" data-name="ProcessInfo"></path>
+</g>
+<g transform="translate(4638, 255.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="ProcessInfo" data-compartment="0">
+<g transform="translate(8, 8)" fill="#33322E" text-align="center" data-name="ProcessInfo" data-compartment="0">
+<a id="src/middleware/whisperMonitoring.ts.ProcessInfo" xlink:href="src/middleware/whisperMonitoring.ts"><text x="71.5" y="14.1" stroke="none" text-anchor="middle" data-name="ProcessInfo" data-compartment="0">ProcessInfo</text></a>
+
+</g>
+</g>
+<g transform="translate(4638, 287.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="ProcessInfo" data-compartment="1">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="ProcessInfo" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="ProcessInfo" data-compartment="1">+pid?: number</text>
+<text x="0.0" y="30.3" stroke="none" data-name="ProcessInfo" data-compartment="1">+memory: number</text>
+<text x="0.0" y="46.5" stroke="none" data-name="ProcessInfo" data-compartment="1">+cpu: number</text>
+<text x="0.0" y="62.7" stroke="none" data-name="ProcessInfo" data-compartment="1">+status: string</text>
+<text x="0.0" y="78.9" stroke="none" data-name="ProcessInfo" data-compartment="1">+startTime: Date</text>
+
+</g>
+</g>
+<g transform="translate(4638, 384.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="ProcessInfo" data-compartment="2">
+<g transform="translate(8, 8)" fill="#33322E" data-name="ProcessInfo" data-compartment="2">
+
+</g>
+</g>
+</g>
+<g data-name="Alert">
+<g fill="lightblue" stroke="#33322E" data-name="Alert">
+<rect x="4303.5" y="830.0" height="169.0" width="364.0" data-name="Alert"></rect>
+<path d="M4303.5 862.0 L4667.5 862.0" fill="none" data-name="Alert"></path>
+<path d="M4303.5 991.0 L4667.5 991.0" fill="none" data-name="Alert"></path>
+</g>
+<g transform="translate(4303.5, 830)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="Alert" data-compartment="0">
+<g transform="translate(8, 8)" fill="#33322E" text-align="center" data-name="Alert" data-compartment="0">
+<a id="src/middleware/whisperMonitoring.ts.Alert" xlink:href="src/middleware/whisperMonitoring.ts"><text x="174.0" y="14.1" stroke="none" text-anchor="middle" data-name="Alert" data-compartment="0">Alert</text></a>
+
+</g>
+</g>
+<g transform="translate(4303.5, 862)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="Alert" data-compartment="1">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="Alert" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="Alert" data-compartment="1">+id: string</text>
+<text x="0.0" y="30.3" stroke="none" data-name="Alert" data-compartment="1">+type: &quot;error&quot; | &quot;warning&quot; | &quot;info&quot;</text>
+<text x="0.0" y="46.5" stroke="none" data-name="Alert" data-compartment="1">+service: string</text>
+<text x="0.0" y="62.7" stroke="none" data-name="Alert" data-compartment="1">+message: string</text>
+<text x="0.0" y="78.9" stroke="none" data-name="Alert" data-compartment="1">+timestamp: Date</text>
+<text x="0.0" y="95.1" stroke="none" data-name="Alert" data-compartment="1">+resolved?: Date</text>
+<text x="0.0" y="111.3" stroke="none" data-name="Alert" data-compartment="1">+severity: &quot;low&quot; | &quot;medium&quot; | &quot;high&quot; | &quot;critical&quot;</text>
+
+</g>
+</g>
+<g transform="translate(4303.5, 991)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="Alert" data-compartment="2">
+<g transform="translate(8, 8)" fill="#33322E" data-name="Alert" data-compartment="2">
+
+</g>
+</g>
+</g>
+<g data-name="AuthenticatedUserRecord">
+<g fill="lightblue" stroke="#33322E" data-name="AuthenticatedUserRecord">
+<rect x="4837.0" y="247.5" height="153.0" width="219.0" data-name="AuthenticatedUserRecord"></rect>
+<path d="M4837.0 279.5 L5056.0 279.5" fill="none" data-name="AuthenticatedUserRecord"></path>
+<path d="M4837.0 392.5 L5056.0 392.5" fill="none" data-name="AuthenticatedUserRecord"></path>
+</g>
+<g transform="translate(4837, 247.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="AuthenticatedUserRecord" data-compartment="0">
+<g transform="translate(8, 8)" fill="#33322E" text-align="center" data-name="AuthenticatedUserRecord" data-compartment="0">
+<a id="src/routes/auth.ts.AuthenticatedUserRecord" xlink:href="src/routes/auth.ts"><text x="101.5" y="14.1" stroke="none" text-anchor="middle" data-name="AuthenticatedUserRecord" data-compartment="0">AuthenticatedUserRecord</text></a>
+
+</g>
+</g>
+<g transform="translate(4837, 279.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="AuthenticatedUserRecord" data-compartment="1">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="AuthenticatedUserRecord" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="AuthenticatedUserRecord" data-compartment="1">+id: string</text>
+<text x="0.0" y="30.3" stroke="none" data-name="AuthenticatedUserRecord" data-compartment="1">+email: string</text>
+<text x="0.0" y="46.5" stroke="none" data-name="AuthenticatedUserRecord" data-compartment="1">+name: string</text>
+<text x="0.0" y="62.7" stroke="none" data-name="AuthenticatedUserRecord" data-compartment="1">+subscriptionTier: string</text>
+<text x="0.0" y="78.9" stroke="none" data-name="AuthenticatedUserRecord" data-compartment="1">+createdAt?: Date</text>
+<text x="0.0" y="95.1" stroke="none" data-name="AuthenticatedUserRecord" data-compartment="1">+updatedAt?: Date</text>
+
+</g>
+</g>
+<g transform="translate(4837, 392.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="AuthenticatedUserRecord" data-compartment="2">
+<g transform="translate(8, 8)" fill="#33322E" data-name="AuthenticatedUserRecord" data-compartment="2">
+
+</g>
+</g>
+</g>
+<g data-name="BatchQueue">
+<g fill="#eee8d5" stroke="#33322E" data-name="BatchQueue">
+<rect x="5096.0" y="154.5" height="339.0" width="428.0" data-name="BatchQueue"></rect>
+<path d="M5096.0 186.5 L5524.0 186.5" fill="none" data-name="BatchQueue"></path>
+<path d="M5096.0 299.5 L5524.0 299.5" fill="none" data-name="BatchQueue"></path>
+</g>
+<g transform="translate(5096, 154.5)" font-family="Helvetica" font-size="12pt" font-weight="bold" font-style="normal" data-name="BatchQueue" data-compartment="0">
+<g transform="translate(8, 8)" fill="#33322E" text-align="center" data-name="BatchQueue" data-compartment="0">
+<a id="src/services/batchQueue.ts.BatchQueue" xlink:href="src/services/batchQueue.ts"><text x="206.0" y="14.1" stroke="none" text-anchor="middle" data-name="BatchQueue" data-compartment="0">BatchQueue</text></a>
+
+</g>
+</g>
+<g transform="translate(5096, 186.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="BatchQueue" data-compartment="1">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="BatchQueue" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="BatchQueue" data-compartment="1">-activeJobs: Map&lt;string, { concurrency: number</text>
+<text x="0.0" y="30.3" stroke="none" data-name="BatchQueue" data-compartment="1">processing: Set&lt;string&gt;</text>
+<text x="0.0" y="46.5" stroke="none" data-name="BatchQueue" data-compartment="1">startTime: number</text>
+<text x="0.0" y="62.7" stroke="none" data-name="BatchQueue" data-compartment="1">bytesProcessed: number</text>
+<text x="0.0" y="78.9" stroke="none" data-name="BatchQueue" data-compartment="1">}&gt;</text>
+<text x="0.0" y="95.1" stroke="none" data-name="BatchQueue" data-compartment="1">-itemQueue: Map&lt;string, QueuedItem[]&gt;</text>
+
+</g>
+</g>
+<g transform="translate(5096, 299.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="BatchQueue" data-compartment="2">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="BatchQueue" data-compartment="2">
+<text x="0.0" y="14.1" stroke="none" data-name="BatchQueue" data-compartment="2">+startBatchJob(): Promise&lt;void&gt;</text>
+<text x="0.0" y="30.3" stroke="none" data-name="BatchQueue" data-compartment="2">+pauseBatchJob(): Promise&lt;void&gt;</text>
+<text x="0.0" y="46.5" stroke="none" data-name="BatchQueue" data-compartment="2">+resumeBatchJob(): Promise&lt;void&gt;</text>
+<text x="0.0" y="62.7" stroke="none" data-name="BatchQueue" data-compartment="2">+cancelBatchJob(): Promise&lt;void&gt;</text>
+<text x="0.0" y="78.9" stroke="none" data-name="BatchQueue" data-compartment="2">-processNextItems(): Promise&lt;void&gt;</text>
+<text x="0.0" y="95.1" stroke="none" data-name="BatchQueue" data-compartment="2">-processItem(): Promise&lt;void&gt;</text>
+<text x="0.0" y="111.3" stroke="none" data-name="BatchQueue" data-compartment="2">+handleItemCompleted(): Promise&lt;void&gt;</text>
+<text x="0.0" y="127.5" stroke="none" data-name="BatchQueue" data-compartment="2">-updateJobProgress(): Promise&lt;BatchJobProgress&gt;</text>
+<text x="0.0" y="143.7" stroke="none" data-name="BatchQueue" data-compartment="2">-checkJobCompletion(): Promise&lt;void&gt;</text>
+<text x="0.0" y="159.9" stroke="none" data-name="BatchQueue" data-compartment="2">+getBatchJobStatus(): Promise&lt;BatchJobProgress&gt;</text>
+<text x="0.0" y="176.1" stroke="none" data-name="BatchQueue" data-compartment="2">+retryItem(): Promise&lt;void&gt;</text>
+
+</g>
+</g>
+</g>
+<g data-name="BatchJobProgress">
+<g fill="lightblue" stroke="#33322E" data-name="BatchJobProgress">
+<rect x="5564.0" y="239.5" height="169.0" width="305.0" data-name="BatchJobProgress"></rect>
+<path d="M5564.0 271.5 L5869.0 271.5" fill="none" data-name="BatchJobProgress"></path>
+<path d="M5564.0 400.5 L5869.0 400.5" fill="none" data-name="BatchJobProgress"></path>
+</g>
+<g transform="translate(5564, 239.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="BatchJobProgress" data-compartment="0">
+<g transform="translate(8, 8)" fill="#33322E" text-align="center" data-name="BatchJobProgress" data-compartment="0">
+<a id="src/services/batchQueue.ts.BatchJobProgress" xlink:href="src/services/batchQueue.ts"><text x="144.5" y="14.1" stroke="none" text-anchor="middle" data-name="BatchJobProgress" data-compartment="0">BatchJobProgress</text></a>
+
+</g>
+</g>
+<g transform="translate(5564, 271.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="BatchJobProgress" data-compartment="1">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="BatchJobProgress" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="BatchJobProgress" data-compartment="1">+jobId: string</text>
+<text x="0.0" y="30.3" stroke="none" data-name="BatchJobProgress" data-compartment="1">+totalItems: number</text>
+<text x="0.0" y="46.5" stroke="none" data-name="BatchJobProgress" data-compartment="1">+completedItems: number</text>
+<text x="0.0" y="62.7" stroke="none" data-name="BatchJobProgress" data-compartment="1">+failedItems: number</text>
+<text x="0.0" y="78.9" stroke="none" data-name="BatchJobProgress" data-compartment="1">+processingItems: number</text>
+<text x="0.0" y="95.1" stroke="none" data-name="BatchJobProgress" data-compartment="1">+estimatedTimeRemaining?: number</text>
+<text x="0.0" y="111.3" stroke="none" data-name="BatchJobProgress" data-compartment="1">+throughputMbps?: number</text>
+
+</g>
+</g>
+<g transform="translate(5564, 400.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="BatchJobProgress" data-compartment="2">
+<g transform="translate(8, 8)" fill="#33322E" data-name="BatchJobProgress" data-compartment="2">
+
+</g>
+</g>
+</g>
+<g data-name="QueuedItem">
+<g fill="lightblue" stroke="#33322E" data-name="QueuedItem">
+<rect x="5909.0" y="255.5" height="137.0" width="169.0" data-name="QueuedItem"></rect>
+<path d="M5909.0 287.5 L6078.0 287.5" fill="none" data-name="QueuedItem"></path>
+<path d="M5909.0 384.5 L6078.0 384.5" fill="none" data-name="QueuedItem"></path>
+</g>
+<g transform="translate(5909, 255.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="QueuedItem" data-compartment="0">
+<g transform="translate(8, 8)" fill="#33322E" text-align="center" data-name="QueuedItem" data-compartment="0">
+<a id="src/services/batchQueue.ts.QueuedItem" xlink:href="src/services/batchQueue.ts"><text x="76.5" y="14.1" stroke="none" text-anchor="middle" data-name="QueuedItem" data-compartment="0">QueuedItem</text></a>
+
+</g>
+</g>
+<g transform="translate(5909, 287.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="QueuedItem" data-compartment="1">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="QueuedItem" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="QueuedItem" data-compartment="1">+itemId: string</text>
+<text x="0.0" y="30.3" stroke="none" data-name="QueuedItem" data-compartment="1">+jobId: string</text>
+<text x="0.0" y="46.5" stroke="none" data-name="QueuedItem" data-compartment="1">+fileName: string</text>
+<text x="0.0" y="62.7" stroke="none" data-name="QueuedItem" data-compartment="1">+audioPath: string</text>
+<text x="0.0" y="78.9" stroke="none" data-name="QueuedItem" data-compartment="1">+startTime: number</text>
+
+</g>
+</g>
+<g transform="translate(5909, 384.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="QueuedItem" data-compartment="2">
+<g transform="translate(8, 8)" fill="#33322E" data-name="QueuedItem" data-compartment="2">
+
+</g>
+</g>
+</g>
+<g data-name="HybridTranscriptionService">
+<g fill="#eee8d5" stroke="#33322E" data-name="HybridTranscriptionService">
+<rect x="6736.5" y="49.0" height="550.0" width="575.0" data-name="HybridTranscriptionService"></rect>
+<path d="M6736.5 81.0 L7311.5 81.0" fill="none" data-name="HybridTranscriptionService"></path>
+<path d="M6736.5 194.0 L7311.5 194.0" fill="none" data-name="HybridTranscriptionService"></path>
+</g>
+<g transform="translate(6736.5, 49)" font-family="Helvetica" font-size="12pt" font-weight="bold" font-style="normal" data-name="HybridTranscriptionService" data-compartment="0">
+<g transform="translate(8, 8)" fill="#33322E" text-align="center" data-name="HybridTranscriptionService" data-compartment="0">
+<a id="src/services/hybridTranscription.ts.HybridTranscriptionService" xlink:href="src/services/hybridTranscription.ts"><text x="279.5" y="14.1" stroke="none" text-anchor="middle" data-name="HybridTranscriptionService" data-compartment="0">HybridTranscriptionService</text></a>
+
+</g>
+</g>
+<g transform="translate(6736.5, 81)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="HybridTranscriptionService" data-compartment="1">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="HybridTranscriptionService" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="HybridTranscriptionService" data-compartment="1">-static instance: HybridTranscriptionService</text>
+<text x="0.0" y="30.3" stroke="none" data-name="HybridTranscriptionService" data-compartment="1">-whisperLocal?: WhisperServerService</text>
+<text x="0.0" y="46.5" stroke="none" data-name="HybridTranscriptionService" data-compartment="1">-whisperDocker?: WhisperDockerService</text>
+<text x="0.0" y="62.7" stroke="none" data-name="HybridTranscriptionService" data-compartment="1">-performanceMetrics: Map&lt;TranscriptionMethod, MethodPerformance&gt;</text>
+<text x="0.0" y="78.9" stroke="none" data-name="HybridTranscriptionService" data-compartment="1">-config: HybridConfig</text>
+<text x="0.0" y="95.1" stroke="none" data-name="HybridTranscriptionService" data-compartment="1">-lastOpenAiWarning: number</text>
+
+</g>
+</g>
+<g transform="translate(6736.5, 194)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="HybridTranscriptionService" data-compartment="2">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="HybridTranscriptionService" data-compartment="2">
+<text x="0.0" y="14.1" stroke="none" data-name="HybridTranscriptionService" data-compartment="2">+static getInstance(): HybridTranscriptionService</text>
+<text x="0.0" y="30.3" stroke="none" data-name="HybridTranscriptionService" data-compartment="2">+transcribe(): Promise&lt;TranscriptionResult&gt;</text>
+<text x="0.0" y="46.5" stroke="none" data-name="HybridTranscriptionService" data-compartment="2">+getServiceHealth(): Promise&lt;ServiceHealth&gt;</text>
+<text x="0.0" y="62.7" stroke="none" data-name="HybridTranscriptionService" data-compartment="2">+getLocalService(): WhisperServerService</text>
+<text x="0.0" y="78.9" stroke="none" data-name="HybridTranscriptionService" data-compartment="2">+getDockerService(): WhisperDockerService</text>
+<text x="0.0" y="95.1" stroke="none" data-name="HybridTranscriptionService" data-compartment="2">+getPerformanceMetrics(): MethodPerformance[]</text>
+<text x="0.0" y="111.3" stroke="none" data-name="HybridTranscriptionService" data-compartment="2">-selectOptimalMethod(): Promise&lt;TranscriptionMethod&gt;</text>
+<text x="0.0" y="127.5" stroke="none" data-name="HybridTranscriptionService" data-compartment="2">-transcribeWithMethod(): Promise&lt;any&gt;</text>
+<text x="0.0" y="143.7" stroke="none" data-name="HybridTranscriptionService" data-compartment="2">-transcribeWithOpenAI(): Promise&lt;any&gt;</text>
+<text x="0.0" y="159.9" stroke="none" data-name="HybridTranscriptionService" data-compartment="2">-getAvailableMethods(): TranscriptionMethod[]</text>
+<text x="0.0" y="176.1" stroke="none" data-name="HybridTranscriptionService" data-compartment="2">-getMethodsInOrder(): TranscriptionMethod[]</text>
+<text x="0.0" y="192.3" stroke="none" data-name="HybridTranscriptionService" data-compartment="2">-selectForSpeed(): TranscriptionMethod</text>
+<text x="0.0" y="208.5" stroke="none" data-name="HybridTranscriptionService" data-compartment="2">-selectForAccuracy(): TranscriptionMethod</text>
+<text x="0.0" y="224.7" stroke="none" data-name="HybridTranscriptionService" data-compartment="2">-selectForCost(): TranscriptionMethod</text>
+<text x="0.0" y="240.9" stroke="none" data-name="HybridTranscriptionService" data-compartment="2">-selectForPrivacy(): TranscriptionMethod</text>
+<text x="0.0" y="257.1" stroke="none" data-name="HybridTranscriptionService" data-compartment="2">-selectBalanced(): TranscriptionMethod</text>
+<text x="0.0" y="273.3" stroke="none" data-name="HybridTranscriptionService" data-compartment="2">-calculateCost(): number</text>
+<text x="0.0" y="289.5" stroke="none" data-name="HybridTranscriptionService" data-compartment="2">-calculateQualityScore(): number</text>
+<text x="0.0" y="305.7" stroke="none" data-name="HybridTranscriptionService" data-compartment="2">-getProcessingLocation(): &quot;cloud&quot; | &quot;local&quot; | &quot;container&quot;</text>
+<text x="0.0" y="321.9" stroke="none" data-name="HybridTranscriptionService" data-compartment="2">-recordMethodPerformance(): void</text>
+<text x="0.0" y="338.1" stroke="none" data-name="HybridTranscriptionService" data-compartment="2">-initializeMetrics(): void</text>
+<text x="0.0" y="354.3" stroke="none" data-name="HybridTranscriptionService" data-compartment="2">-estimateFileDuration(): number</text>
+<text x="0.0" y="370.5" stroke="none" data-name="HybridTranscriptionService" data-compartment="2">-getSystemLoad(): number</text>
+<text x="0.0" y="386.7" stroke="none" data-name="HybridTranscriptionService" data-compartment="2">-pingOpenAI(): Promise&lt;number&gt;</text>
+
+</g>
+</g>
+</g>
+<g data-name="HybridTranscriptionRequest">
+<g fill="lightblue" stroke="#33322E" data-name="HybridTranscriptionRequest">
+<rect x="6118.0" y="239.5" height="169.0" width="404.0" data-name="HybridTranscriptionRequest"></rect>
+<path d="M6118.0 271.5 L6522.0 271.5" fill="none" data-name="HybridTranscriptionRequest"></path>
+<path d="M6118.0 400.5 L6522.0 400.5" fill="none" data-name="HybridTranscriptionRequest"></path>
+</g>
+<g transform="translate(6118, 239.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="HybridTranscriptionRequest" data-compartment="0">
+<g transform="translate(8, 8)" fill="#33322E" text-align="center" data-name="HybridTranscriptionRequest" data-compartment="0">
+<a id="src/services/hybridTranscription.ts.HybridTranscriptionRequest" xlink:href="src/services/hybridTranscription.ts"><text x="194.0" y="14.1" stroke="none" text-anchor="middle" data-name="HybridTranscriptionRequest" data-compartment="0">HybridTranscriptionRequest</text></a>
+
+</g>
+</g>
+<g transform="translate(6118, 271.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="HybridTranscriptionRequest" data-compartment="1">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="HybridTranscriptionRequest" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="HybridTranscriptionRequest" data-compartment="1">+filePath: string</text>
+<text x="0.0" y="30.3" stroke="none" data-name="HybridTranscriptionRequest" data-compartment="1">+method: TranscriptionMethod</text>
+<text x="0.0" y="46.5" stroke="none" data-name="HybridTranscriptionRequest" data-compartment="1">+options: TranscriptionOptions</text>
+<text x="0.0" y="62.7" stroke="none" data-name="HybridTranscriptionRequest" data-compartment="1">+priority?: &quot;speed&quot; | &quot;accuracy&quot; | &quot;cost&quot; | &quot;privacy&quot;</text>
+<text x="0.0" y="78.9" stroke="none" data-name="HybridTranscriptionRequest" data-compartment="1">+fallbackEnabled?: boolean</text>
+<text x="0.0" y="95.1" stroke="none" data-name="HybridTranscriptionRequest" data-compartment="1">+userId?: string</text>
+<text x="0.0" y="111.3" stroke="none" data-name="HybridTranscriptionRequest" data-compartment="1">+metadata?: Record&lt;string, any&gt;</text>
+
+</g>
+</g>
+<g transform="translate(6118, 400.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="HybridTranscriptionRequest" data-compartment="2">
+<g transform="translate(8, 8)" fill="#33322E" data-name="HybridTranscriptionRequest" data-compartment="2">
+
+</g>
+</g>
+</g>
+<g data-name="TranscriptionOptions">
+<g fill="lightblue" stroke="#33322E" data-name="TranscriptionOptions">
+<rect x="6187.0" y="830.0" height="169.0" width="266.0" data-name="TranscriptionOptions"></rect>
+<path d="M6187.0 862.0 L6453.0 862.0" fill="none" data-name="TranscriptionOptions"></path>
+<path d="M6187.0 991.0 L6453.0 991.0" fill="none" data-name="TranscriptionOptions"></path>
+</g>
+<g transform="translate(6187, 830)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="TranscriptionOptions" data-compartment="0">
+<g transform="translate(8, 8)" fill="#33322E" text-align="center" data-name="TranscriptionOptions" data-compartment="0">
+<a id="src/services/hybridTranscription.ts.TranscriptionOptions" xlink:href="src/services/hybridTranscription.ts"><text x="125.0" y="14.1" stroke="none" text-anchor="middle" data-name="TranscriptionOptions" data-compartment="0">TranscriptionOptions</text></a>
+
+</g>
+</g>
+<g transform="translate(6187, 862)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="TranscriptionOptions" data-compartment="1">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="TranscriptionOptions" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="TranscriptionOptions" data-compartment="1">+model?: WhisperModel</text>
+<text x="0.0" y="30.3" stroke="none" data-name="TranscriptionOptions" data-compartment="1">+language?: string</text>
+<text x="0.0" y="46.5" stroke="none" data-name="TranscriptionOptions" data-compartment="1">+task?: &quot;transcribe&quot; | &quot;translate&quot;</text>
+<text x="0.0" y="62.7" stroke="none" data-name="TranscriptionOptions" data-compartment="1">+wordTimestamps?: boolean</text>
+<text x="0.0" y="78.9" stroke="none" data-name="TranscriptionOptions" data-compartment="1">+temperature?: number</text>
+<text x="0.0" y="95.1" stroke="none" data-name="TranscriptionOptions" data-compartment="1">+maxTokens?: number</text>
+<text x="0.0" y="111.3" stroke="none" data-name="TranscriptionOptions" data-compartment="1">+threads?: number</text>
+
+</g>
+</g>
+<g transform="translate(6187, 991)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="TranscriptionOptions" data-compartment="2">
+<g transform="translate(8, 8)" fill="#33322E" data-name="TranscriptionOptions" data-compartment="2">
+
+</g>
+</g>
+</g>
+<g data-name="TranscriptionResult">
+<g fill="lightblue" stroke="#33322E" data-name="TranscriptionResult">
+<rect x="9886.0" y="797.5" height="234.0" width="306.0" data-name="TranscriptionResult"></rect>
+<path d="M9886.0 829.5 L10192.0 829.5" fill="none" data-name="TranscriptionResult"></path>
+<path d="M9886.0 1023.5 L10192.0 1023.5" fill="none" data-name="TranscriptionResult"></path>
+</g>
+<g transform="translate(9886, 797.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="TranscriptionResult" data-compartment="0">
+<g transform="translate(8, 8)" fill="#33322E" text-align="center" data-name="TranscriptionResult" data-compartment="0">
+<a id="src/services/whisperServer.ts.TranscriptionResult" xlink:href="src/services/whisperServer.ts"><text x="145.0" y="14.1" stroke="none" text-anchor="middle" data-name="TranscriptionResult" data-compartment="0">TranscriptionResult</text></a>
+
+</g>
+</g>
+<g transform="translate(9886, 829.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="TranscriptionResult" data-compartment="1">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="TranscriptionResult" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="TranscriptionResult" data-compartment="1">+id: string</text>
+<text x="0.0" y="30.3" stroke="none" data-name="TranscriptionResult" data-compartment="1">+text: string</text>
+<text x="0.0" y="46.5" stroke="none" data-name="TranscriptionResult" data-compartment="1">+segments?: TranscriptionSegment[]</text>
+<text x="0.0" y="62.7" stroke="none" data-name="TranscriptionResult" data-compartment="1">+language?: string</text>
+<text x="0.0" y="78.9" stroke="none" data-name="TranscriptionResult" data-compartment="1">+duration?: number</text>
+<text x="0.0" y="95.1" stroke="none" data-name="TranscriptionResult" data-compartment="1">+processingTime: number</text>
+<text x="0.0" y="111.3" stroke="none" data-name="TranscriptionResult" data-compartment="1">+method: TranscriptionMethod</text>
+<text x="0.0" y="127.5" stroke="none" data-name="TranscriptionResult" data-compartment="1">+model?: string</text>
+<text x="0.0" y="143.7" stroke="none" data-name="TranscriptionResult" data-compartment="1">+cost?: number</text>
+<text x="0.0" y="159.9" stroke="none" data-name="TranscriptionResult" data-compartment="1">+fallbackUsed?: boolean</text>
+<text x="0.0" y="176.1" stroke="none" data-name="TranscriptionResult" data-compartment="1">+metadata?: TranscriptionMetadata</text>
+
+</g>
+</g>
+<g transform="translate(9886, 1023.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="TranscriptionResult" data-compartment="2">
+<g transform="translate(8, 8)" fill="#33322E" data-name="TranscriptionResult" data-compartment="2">
+
+</g>
+</g>
+</g>
+<g data-name="TranscriptionSegment">
+<g fill="lightblue" stroke="#33322E" data-name="TranscriptionSegment">
+<rect x="10153.5" y="1213.5" height="137.0" width="193.0" data-name="TranscriptionSegment"></rect>
+<path d="M10153.5 1245.5 L10346.5 1245.5" fill="none" data-name="TranscriptionSegment"></path>
+<path d="M10153.5 1342.5 L10346.5 1342.5" fill="none" data-name="TranscriptionSegment"></path>
+</g>
+<g transform="translate(10153.5, 1213.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="TranscriptionSegment" data-compartment="0">
+<g transform="translate(8, 8)" fill="#33322E" text-align="center" data-name="TranscriptionSegment" data-compartment="0">
+<a id="src/services/whisperServer.ts.TranscriptionSegment" xlink:href="src/services/whisperServer.ts"><text x="88.5" y="14.1" stroke="none" text-anchor="middle" data-name="TranscriptionSegment" data-compartment="0">TranscriptionSegment</text></a>
+
+</g>
+</g>
+<g transform="translate(10153.5, 1245.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="TranscriptionSegment" data-compartment="1">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="TranscriptionSegment" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="TranscriptionSegment" data-compartment="1">+id: number</text>
+<text x="0.0" y="30.3" stroke="none" data-name="TranscriptionSegment" data-compartment="1">+start: number</text>
+<text x="0.0" y="46.5" stroke="none" data-name="TranscriptionSegment" data-compartment="1">+end: number</text>
+<text x="0.0" y="62.7" stroke="none" data-name="TranscriptionSegment" data-compartment="1">+text: string</text>
+<text x="0.0" y="78.9" stroke="none" data-name="TranscriptionSegment" data-compartment="1">+confidence?: number</text>
+
+</g>
+</g>
+<g transform="translate(10153.5, 1342.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="TranscriptionSegment" data-compartment="2">
+<g transform="translate(8, 8)" fill="#33322E" data-name="TranscriptionSegment" data-compartment="2">
+
+</g>
+</g>
+</g>
+<g data-name="TranscriptionMetadata">
+<g fill="lightblue" stroke="#33322E" data-name="TranscriptionMetadata">
+<rect x="8702.5" y="1205.5" height="153.0" width="411.0" data-name="TranscriptionMetadata"></rect>
+<path d="M8702.5 1237.5 L9113.5 1237.5" fill="none" data-name="TranscriptionMetadata"></path>
+<path d="M8702.5 1350.5 L9113.5 1350.5" fill="none" data-name="TranscriptionMetadata"></path>
+</g>
+<g transform="translate(8702.5, 1205.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="TranscriptionMetadata" data-compartment="0">
+<g transform="translate(8, 8)" fill="#33322E" text-align="center" data-name="TranscriptionMetadata" data-compartment="0">
+<a id="src/services/hybridTranscription.ts.TranscriptionMetadata" xlink:href="src/services/hybridTranscription.ts"><text x="197.5" y="14.1" stroke="none" text-anchor="middle" data-name="TranscriptionMetadata" data-compartment="0">TranscriptionMetadata</text></a>
+
+</g>
+</g>
+<g transform="translate(8702.5, 1237.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="TranscriptionMetadata" data-compartment="1">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="TranscriptionMetadata" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="TranscriptionMetadata" data-compartment="1">+fileSize: number</text>
+<text x="0.0" y="30.3" stroke="none" data-name="TranscriptionMetadata" data-compartment="1">+fileDuration?: number</text>
+<text x="0.0" y="46.5" stroke="none" data-name="TranscriptionMetadata" data-compartment="1">+processingLocation: &quot;cloud&quot; | &quot;local&quot; | &quot;container&quot;</text>
+<text x="0.0" y="62.7" stroke="none" data-name="TranscriptionMetadata" data-compartment="1">+resourceUsage?: ResourceUsage</text>
+<text x="0.0" y="78.9" stroke="none" data-name="TranscriptionMetadata" data-compartment="1">+qualityScore?: number</text>
+<text x="0.0" y="95.1" stroke="none" data-name="TranscriptionMetadata" data-compartment="1">+errorCount?: number</text>
+
+</g>
+</g>
+<g transform="translate(8702.5, 1350.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="TranscriptionMetadata" data-compartment="2">
+<g transform="translate(8, 8)" fill="#33322E" data-name="TranscriptionMetadata" data-compartment="2">
+
+</g>
+</g>
+</g>
+<g data-name="ResourceUsage">
+<g fill="lightblue" stroke="#33322E" data-name="ResourceUsage">
+<rect x="8803.0" y="1439.0" height="121.0" width="210.0" data-name="ResourceUsage"></rect>
+<path d="M8803.0 1471.0 L9013.0 1471.0" fill="none" data-name="ResourceUsage"></path>
+<path d="M8803.0 1552.0 L9013.0 1552.0" fill="none" data-name="ResourceUsage"></path>
+</g>
+<g transform="translate(8803, 1439)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="ResourceUsage" data-compartment="0">
+<g transform="translate(8, 8)" fill="#33322E" text-align="center" data-name="ResourceUsage" data-compartment="0">
+<a id="src/services/hybridTranscription.ts.ResourceUsage" xlink:href="src/services/hybridTranscription.ts"><text x="97.0" y="14.1" stroke="none" text-anchor="middle" data-name="ResourceUsage" data-compartment="0">ResourceUsage</text></a>
+
+</g>
+</g>
+<g transform="translate(8803, 1471)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="ResourceUsage" data-compartment="1">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="ResourceUsage" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="ResourceUsage" data-compartment="1">+cpuTime?: number</text>
+<text x="0.0" y="30.3" stroke="none" data-name="ResourceUsage" data-compartment="1">+memoryUsed?: number</text>
+<text x="0.0" y="46.5" stroke="none" data-name="ResourceUsage" data-compartment="1">+gpuUsed?: boolean</text>
+<text x="0.0" y="62.7" stroke="none" data-name="ResourceUsage" data-compartment="1">+containerUsed?: string</text>
+
+</g>
+</g>
+<g transform="translate(8803, 1552)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="ResourceUsage" data-compartment="2">
+<g transform="translate(8, 8)" fill="#33322E" data-name="ResourceUsage" data-compartment="2">
+
+</g>
+</g>
+</g>
+<g data-name="ServiceHealth">
+<g fill="lightblue" stroke="#33322E" data-name="ServiceHealth">
+<rect x="7401.5" y="182.5" height="283.0" width="309.0" data-name="ServiceHealth"></rect>
+<path d="M7401.5 214.5 L7710.5 214.5" fill="none" data-name="ServiceHealth"></path>
+<path d="M7401.5 457.5 L7710.5 457.5" fill="none" data-name="ServiceHealth"></path>
+</g>
+<g transform="translate(7401.5, 182.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="ServiceHealth" data-compartment="0">
+<g transform="translate(8, 8)" fill="#33322E" text-align="center" data-name="ServiceHealth" data-compartment="0">
+<a id="src/services/hybridTranscription.ts.ServiceHealth" xlink:href="src/services/hybridTranscription.ts"><text x="146.5" y="14.1" stroke="none" text-anchor="middle" data-name="ServiceHealth" data-compartment="0">ServiceHealth</text></a>
+
+</g>
+</g>
+<g transform="translate(7401.5, 214.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="ServiceHealth" data-compartment="1">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="ServiceHealth" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="ServiceHealth" data-compartment="1">+openai: { available: boolean</text>
+<text x="0.0" y="30.3" stroke="none" data-name="ServiceHealth" data-compartment="1">responseTime?: number</text>
+<text x="0.0" y="46.5" stroke="none" data-name="ServiceHealth" data-compartment="1">rateLimit?: number</text>
+<text x="0.0" y="62.7" stroke="none" data-name="ServiceHealth" data-compartment="1">}</text>
+<text x="0.0" y="78.9" stroke="none" data-name="ServiceHealth" data-compartment="1">+whisperLocal: { available: boolean</text>
+<text x="0.0" y="95.1" stroke="none" data-name="ServiceHealth" data-compartment="1">binaryExists: boolean</text>
+<text x="0.0" y="111.3" stroke="none" data-name="ServiceHealth" data-compartment="1">modelsAvailable: string[]</text>
+<text x="0.0" y="127.5" stroke="none" data-name="ServiceHealth" data-compartment="1">systemLoad?: number</text>
+<text x="0.0" y="143.7" stroke="none" data-name="ServiceHealth" data-compartment="1">}</text>
+<text x="0.0" y="159.9" stroke="none" data-name="ServiceHealth" data-compartment="1">+whisperDocker: { available: boolean</text>
+<text x="0.0" y="176.1" stroke="none" data-name="ServiceHealth" data-compartment="1">containerRunning: boolean</text>
+<text x="0.0" y="192.3" stroke="none" data-name="ServiceHealth" data-compartment="1">containerHealth?: string</text>
+<text x="0.0" y="208.5" stroke="none" data-name="ServiceHealth" data-compartment="1">modelsAvailable: string[]</text>
+<text x="0.0" y="224.7" stroke="none" data-name="ServiceHealth" data-compartment="1">}</text>
+
+</g>
+</g>
+<g transform="translate(7401.5, 457.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="ServiceHealth" data-compartment="2">
+<g transform="translate(8, 8)" fill="#33322E" data-name="ServiceHealth" data-compartment="2">
+
+</g>
+</g>
+</g>
+<g data-name="MethodPerformance">
+<g fill="lightblue" stroke="#33322E" data-name="MethodPerformance">
+<rect x="7750.5" y="239.5" height="169.0" width="257.0" data-name="MethodPerformance"></rect>
+<path d="M7750.5 271.5 L8007.5 271.5" fill="none" data-name="MethodPerformance"></path>
+<path d="M7750.5 400.5 L8007.5 400.5" fill="none" data-name="MethodPerformance"></path>
+</g>
+<g transform="translate(7750.5, 239.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="MethodPerformance" data-compartment="0">
+<g transform="translate(8, 8)" fill="#33322E" text-align="center" data-name="MethodPerformance" data-compartment="0">
+<a id="src/services/hybridTranscription.ts.MethodPerformance" xlink:href="src/services/hybridTranscription.ts"><text x="120.5" y="14.1" stroke="none" text-anchor="middle" data-name="MethodPerformance" data-compartment="0">MethodPerformance</text></a>
+
+</g>
+</g>
+<g transform="translate(7750.5, 271.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="MethodPerformance" data-compartment="1">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="MethodPerformance" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="MethodPerformance" data-compartment="1">+method: TranscriptionMethod</text>
+<text x="0.0" y="30.3" stroke="none" data-name="MethodPerformance" data-compartment="1">+averageTime: number</text>
+<text x="0.0" y="46.5" stroke="none" data-name="MethodPerformance" data-compartment="1">+successRate: number</text>
+<text x="0.0" y="62.7" stroke="none" data-name="MethodPerformance" data-compartment="1">+costPerMinute: number</text>
+<text x="0.0" y="78.9" stroke="none" data-name="MethodPerformance" data-compartment="1">+qualityScore: number</text>
+<text x="0.0" y="95.1" stroke="none" data-name="MethodPerformance" data-compartment="1">+lastUsed: Date</text>
+<text x="0.0" y="111.3" stroke="none" data-name="MethodPerformance" data-compartment="1">+usageCount: number</text>
+
+</g>
+</g>
+<g transform="translate(7750.5, 400.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="MethodPerformance" data-compartment="2">
+<g transform="translate(8, 8)" fill="#33322E" data-name="MethodPerformance" data-compartment="2">
+
+</g>
+</g>
+</g>
+<g data-name="HybridConfig">
+<g fill="lightblue" stroke="#33322E" data-name="HybridConfig">
+<rect x="8426.3" y="789.5" height="250.0" width="314.0" data-name="HybridConfig"></rect>
+<path d="M8426.3 821.5 L8740.3 821.5" fill="none" data-name="HybridConfig"></path>
+<path d="M8426.3 1031.5 L8740.3 1031.5" fill="none" data-name="HybridConfig"></path>
+</g>
+<g transform="translate(8426.25, 789.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="HybridConfig" data-compartment="0">
+<g transform="translate(8, 8)" fill="#33322E" text-align="center" data-name="HybridConfig" data-compartment="0">
+<a id="src/services/hybridTranscription.ts.HybridConfig" xlink:href="src/services/hybridTranscription.ts"><text x="149.0" y="14.1" stroke="none" text-anchor="middle" data-name="HybridConfig" data-compartment="0">HybridConfig</text></a>
+
+</g>
+</g>
+<g transform="translate(8426.25, 821.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="HybridConfig" data-compartment="1">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="HybridConfig" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="HybridConfig" data-compartment="1">+openaiApiKey: string</text>
+<text x="0.0" y="30.3" stroke="none" data-name="HybridConfig" data-compartment="1">+openaiEndpoint: string</text>
+<text x="0.0" y="46.5" stroke="none" data-name="HybridConfig" data-compartment="1">+enableOpenAI: boolean</text>
+<text x="0.0" y="62.7" stroke="none" data-name="HybridConfig" data-compartment="1">+enableWhisperLocal: boolean</text>
+<text x="0.0" y="78.9" stroke="none" data-name="HybridConfig" data-compartment="1">+enableWhisperDocker: boolean</text>
+<text x="0.0" y="95.1" stroke="none" data-name="HybridConfig" data-compartment="1">+defaultMethod: TranscriptionMethod</text>
+<text x="0.0" y="111.3" stroke="none" data-name="HybridConfig" data-compartment="1">+fallbackOrder: TranscriptionMethod[]</text>
+<text x="0.0" y="127.5" stroke="none" data-name="HybridConfig" data-compartment="1">+costOptimization: boolean</text>
+<text x="0.0" y="143.7" stroke="none" data-name="HybridConfig" data-compartment="1">+qualityThreshold: number</text>
+<text x="0.0" y="159.9" stroke="none" data-name="HybridConfig" data-compartment="1">+maxRetries: number</text>
+<text x="0.0" y="176.1" stroke="none" data-name="HybridConfig" data-compartment="1">+localWhisperConfig?: any</text>
+<text x="0.0" y="192.3" stroke="none" data-name="HybridConfig" data-compartment="1">+dockerWhisperConfig?: any</text>
+
+</g>
+</g>
+<g transform="translate(8426.25, 1031.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="HybridConfig" data-compartment="2">
+<g transform="translate(8, 8)" fill="#33322E" data-name="HybridConfig" data-compartment="2">
+
+</g>
+</g>
+</g>
+<g data-name="WhisperServerService">
+<g fill="#eee8d5" stroke="#33322E" data-name="WhisperServerService">
+<rect x="6493.0" y="736.5" height="356.0" width="409.0" data-name="WhisperServerService"></rect>
+<path d="M6493.0 768.5 L6902.0 768.5" fill="none" data-name="WhisperServerService"></path>
+<path d="M6493.0 849.5 L6902.0 849.5" fill="none" data-name="WhisperServerService"></path>
+</g>
+<g transform="translate(6493, 736.5)" font-family="Helvetica" font-size="12pt" font-weight="bold" font-style="normal" data-name="WhisperServerService" data-compartment="0">
+<g transform="translate(8, 8)" fill="#33322E" text-align="center" data-name="WhisperServerService" data-compartment="0">
+<a id="src/services/whisperServer.ts.WhisperServerService" xlink:href="src/services/whisperServer.ts"><text x="196.5" y="14.1" stroke="none" text-anchor="middle" data-name="WhisperServerService" data-compartment="0">WhisperServerService</text></a>
+
+</g>
+</g>
+<g transform="translate(6493, 768.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="WhisperServerService" data-compartment="1">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="WhisperServerService" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="WhisperServerService" data-compartment="1">-config: WhisperServerConfig</text>
+<text x="0.0" y="30.3" stroke="none" data-name="WhisperServerService" data-compartment="1">-processingJobs: Map&lt;string, ProcessingJob&gt;</text>
+<text x="0.0" y="46.5" stroke="none" data-name="WhisperServerService" data-compartment="1">-healthStatus: HealthStatus</text>
+<text x="0.0" y="62.7" stroke="none" data-name="WhisperServerService" data-compartment="1">-startTime: number</text>
+
+</g>
+</g>
+<g transform="translate(6493, 849.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="WhisperServerService" data-compartment="2">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="WhisperServerService" data-compartment="2">
+<text x="0.0" y="14.1" stroke="none" data-name="WhisperServerService" data-compartment="2">-initializeService(): Promise&lt;void&gt;</text>
+<text x="0.0" y="30.3" stroke="none" data-name="WhisperServerService" data-compartment="2">+transcribeFile(): Promise&lt;TranscriptionResult&gt;</text>
+<text x="0.0" y="46.5" stroke="none" data-name="WhisperServerService" data-compartment="2">+getAvailableModels(): Promise&lt;ModelInfo[]&gt;</text>
+<text x="0.0" y="62.7" stroke="none" data-name="WhisperServerService" data-compartment="2">+getHealthStatus(): Promise&lt;HealthStatus&gt;</text>
+<text x="0.0" y="78.9" stroke="none" data-name="WhisperServerService" data-compartment="2">+getJobStatus(): ProcessingJob</text>
+<text x="0.0" y="95.1" stroke="none" data-name="WhisperServerService" data-compartment="2">+getActiveJobs(): ProcessingJob[]</text>
+<text x="0.0" y="111.3" stroke="none" data-name="WhisperServerService" data-compartment="2">+cancelJob(): boolean</text>
+<text x="0.0" y="127.5" stroke="none" data-name="WhisperServerService" data-compartment="2">-buildWhisperCommand(): Promise&lt;string[]&gt;</text>
+<text x="0.0" y="143.7" stroke="none" data-name="WhisperServerService" data-compartment="2">-executeWhisper(): Promise&lt;TranscriptionResult&gt;</text>
+<text x="0.0" y="159.9" stroke="none" data-name="WhisperServerService" data-compartment="2">-locateWhisperJsonForInput(): Promise&lt;string&gt;</text>
+<text x="0.0" y="176.1" stroke="none" data-name="WhisperServerService" data-compartment="2">-parseWhisperOutput(): TranscriptionResult</text>
+<text x="0.0" y="192.3" stroke="none" data-name="WhisperServerService" data-compartment="2">-updateHealthStatus(): Promise&lt;void&gt;</text>
+<text x="0.0" y="208.5" stroke="none" data-name="WhisperServerService" data-compartment="2">-findWhisperBinary(): string</text>
+<text x="0.0" y="224.7" stroke="none" data-name="WhisperServerService" data-compartment="2">-getDefaultModelsPath(): string</text>
+
+</g>
+</g>
+</g>
+<g data-name="WhisperDockerService">
+<g fill="#eee8d5" stroke="#33322E" data-name="WhisperDockerService">
+<rect x="7031.5" y="688.0" height="453.0" width="513.0" data-name="WhisperDockerService"></rect>
+<path d="M7031.5 720.0 L7544.5 720.0" fill="none" data-name="WhisperDockerService"></path>
+<path d="M7031.5 817.0 L7544.5 817.0" fill="none" data-name="WhisperDockerService"></path>
+</g>
+<g transform="translate(7031.5, 688)" font-family="Helvetica" font-size="12pt" font-weight="bold" font-style="normal" data-name="WhisperDockerService" data-compartment="0">
+<g transform="translate(8, 8)" fill="#33322E" text-align="center" data-name="WhisperDockerService" data-compartment="0">
+<a id="src/services/whisperDocker.ts.WhisperDockerService" xlink:href="src/services/whisperDocker.ts"><text x="248.5" y="14.1" stroke="none" text-anchor="middle" data-name="WhisperDockerService" data-compartment="0">WhisperDockerService</text></a>
+
+</g>
+</g>
+<g transform="translate(7031.5, 720)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="WhisperDockerService" data-compartment="1">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="WhisperDockerService" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="WhisperDockerService" data-compartment="1">-config: WhisperDockerConfig</text>
+<text x="0.0" y="30.3" stroke="none" data-name="WhisperDockerService" data-compartment="1">-processingJobs: Map&lt;string, ProcessingJob&gt;</text>
+<text x="0.0" y="46.5" stroke="none" data-name="WhisperDockerService" data-compartment="1">-healthStatus: HealthStatus</text>
+<text x="0.0" y="62.7" stroke="none" data-name="WhisperDockerService" data-compartment="1">-startTime: number</text>
+<text x="0.0" y="78.9" stroke="none" data-name="WhisperDockerService" data-compartment="1">-containerUrl: string</text>
+
+</g>
+</g>
+<g transform="translate(7031.5, 817)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="WhisperDockerService" data-compartment="2">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="WhisperDockerService" data-compartment="2">
+<text x="0.0" y="14.1" stroke="none" data-name="WhisperDockerService" data-compartment="2">-initializeService(): Promise&lt;void&gt;</text>
+<text x="0.0" y="30.3" stroke="none" data-name="WhisperDockerService" data-compartment="2">+transcribeFile(): Promise&lt;TranscriptionResult&gt;</text>
+<text x="0.0" y="46.5" stroke="none" data-name="WhisperDockerService" data-compartment="2">+getHealthStatus(): Promise&lt;HealthStatus&gt;</text>
+<text x="0.0" y="62.7" stroke="none" data-name="WhisperDockerService" data-compartment="2">+startContainer(): Promise&lt;void&gt;</text>
+<text x="0.0" y="78.9" stroke="none" data-name="WhisperDockerService" data-compartment="2">+stopContainer(): Promise&lt;void&gt;</text>
+<text x="0.0" y="95.1" stroke="none" data-name="WhisperDockerService" data-compartment="2">+removeContainer(): Promise&lt;void&gt;</text>
+<text x="0.0" y="111.3" stroke="none" data-name="WhisperDockerService" data-compartment="2">+getJobStatus(): ProcessingJob</text>
+<text x="0.0" y="127.5" stroke="none" data-name="WhisperDockerService" data-compartment="2">+getActiveJobs(): ProcessingJob[]</text>
+<text x="0.0" y="143.7" stroke="none" data-name="WhisperDockerService" data-compartment="2">-checkDockerAvailability(): Promise&lt;void&gt;</text>
+<text x="0.0" y="159.9" stroke="none" data-name="WhisperDockerService" data-compartment="2">-ensureContainerRunning(): Promise&lt;void&gt;</text>
+<text x="0.0" y="176.1" stroke="none" data-name="WhisperDockerService" data-compartment="2">-createAndRunContainer(): Promise&lt;void&gt;</text>
+<text x="0.0" y="192.3" stroke="none" data-name="WhisperDockerService" data-compartment="2">-waitForContainerReady(): Promise&lt;void&gt;</text>
+<text x="0.0" y="208.5" stroke="none" data-name="WhisperDockerService" data-compartment="2">-getContainerInfo(): Promise&lt;DockerContainerInfo&gt;</text>
+<text x="0.0" y="224.7" stroke="none" data-name="WhisperDockerService" data-compartment="2">-getContainerId(): Promise&lt;string&gt;</text>
+<text x="0.0" y="240.9" stroke="none" data-name="WhisperDockerService" data-compartment="2">-copyFileToContainer(): Promise&lt;string&gt;</text>
+<text x="0.0" y="257.1" stroke="none" data-name="WhisperDockerService" data-compartment="2">-cleanupFile(): Promise&lt;void&gt;</text>
+<text x="0.0" y="273.3" stroke="none" data-name="WhisperDockerService" data-compartment="2">-executeTranscriptionRequest(): Promise&lt;TranscriptionResult&gt;</text>
+<text x="0.0" y="289.5" stroke="none" data-name="WhisperDockerService" data-compartment="2">-execDockerCommand(): Promise&lt;string&gt;</text>
+<text x="0.0" y="305.7" stroke="none" data-name="WhisperDockerService" data-compartment="2">-updateHealthStatus(): Promise&lt;void&gt;</text>
+
+</g>
+</g>
+</g>
+<g data-name="TranscriptionQueue">
+<g fill="#eee8d5" stroke="#33322E" data-name="TranscriptionQueue">
+<rect x="8047.5" y="195.0" height="258.0" width="317.0" data-name="TranscriptionQueue"></rect>
+<path d="M8047.5 227.0 L8364.5 227.0" fill="none" data-name="TranscriptionQueue"></path>
+<path d="M8047.5 275.0 L8364.5 275.0" fill="none" data-name="TranscriptionQueue"></path>
+</g>
+<g transform="translate(8047.5, 195)" font-family="Helvetica" font-size="12pt" font-weight="bold" font-style="normal" data-name="TranscriptionQueue" data-compartment="0">
+<g transform="translate(8, 8)" fill="#33322E" text-align="center" data-name="TranscriptionQueue" data-compartment="0">
+<a id="src/services/queue.ts.TranscriptionQueue" xlink:href="src/services/queue.ts"><text x="150.5" y="14.1" stroke="none" text-anchor="middle" data-name="TranscriptionQueue" data-compartment="0">TranscriptionQueue</text></a>
+
+</g>
+</g>
+<g transform="translate(8047.5, 227)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="TranscriptionQueue" data-compartment="1">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="TranscriptionQueue" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="TranscriptionQueue" data-compartment="1">-queue: Map&lt;string, any&gt;</text>
+<text x="0.0" y="30.3" stroke="none" data-name="TranscriptionQueue" data-compartment="1">-processing: Set&lt;string&gt;</text>
+
+</g>
+</g>
+<g transform="translate(8047.5, 275)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="TranscriptionQueue" data-compartment="2">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="TranscriptionQueue" data-compartment="2">
+<text x="0.0" y="14.1" stroke="none" data-name="TranscriptionQueue" data-compartment="2">+addJob(): Promise&lt;void&gt;</text>
+<text x="0.0" y="30.3" stroke="none" data-name="TranscriptionQueue" data-compartment="2">-processNext(): Promise&lt;void&gt;</text>
+<text x="0.0" y="46.5" stroke="none" data-name="TranscriptionQueue" data-compartment="2">-processJob(): Promise&lt;void&gt;</text>
+<text x="0.0" y="62.7" stroke="none" data-name="TranscriptionQueue" data-compartment="2">+getQueueStatus(): { queued: number</text>
+<text x="0.0" y="78.9" stroke="none" data-name="TranscriptionQueue" data-compartment="2">processing: number</text>
+<text x="0.0" y="95.1" stroke="none" data-name="TranscriptionQueue" data-compartment="2">jobs: { transcriptId: any</text>
+<text x="0.0" y="111.3" stroke="none" data-name="TranscriptionQueue" data-compartment="2">attempts: any</text>
+<text x="0.0" y="127.5" stroke="none" data-name="TranscriptionQueue" data-compartment="2">addedAt: any</text>
+<text x="0.0" y="143.7" stroke="none" data-name="TranscriptionQueue" data-compartment="2">}[]</text>
+<text x="0.0" y="159.9" stroke="none" data-name="TranscriptionQueue" data-compartment="2">}</text>
+
+</g>
+</g>
+</g>
+<g data-name="StorageService">
+<g fill="#eee8d5" stroke="#33322E" data-name="StorageService">
+<rect x="8404.5" y="231.0" height="186.0" width="495.0" data-name="StorageService"></rect>
+<path d="M8404.5 263.0 L8899.5 263.0" fill="none" data-name="StorageService"></path>
+<path d="M8404.5 271.0 L8899.5 271.0" fill="none" data-name="StorageService"></path>
+</g>
+<g transform="translate(8404.5, 231)" font-family="Helvetica" font-size="12pt" font-weight="bold" font-style="normal" data-name="StorageService" data-compartment="0">
+<g transform="translate(8, 8)" fill="#33322E" text-align="center" data-name="StorageService" data-compartment="0">
+<a id="src/services/storage.ts.StorageService" xlink:href="src/services/storage.ts"><text x="239.5" y="14.1" stroke="none" text-anchor="middle" data-name="StorageService" data-compartment="0">StorageService</text></a>
+
+</g>
+</g>
+<g transform="translate(8404.5, 263)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="StorageService" data-compartment="1">
+<g transform="translate(8, 8)" fill="#33322E" data-name="StorageService" data-compartment="1">
+
+</g>
+</g>
+<g transform="translate(8404.5, 271)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="StorageService" data-compartment="2">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="StorageService" data-compartment="2">
+<text x="0.0" y="14.1" stroke="none" data-name="StorageService" data-compartment="2">+static uploadAudioFile(): Promise&lt;{ path: string</text>
+<text x="0.0" y="30.3" stroke="none" data-name="StorageService" data-compartment="2">signedUrl: string</text>
+<text x="0.0" y="46.5" stroke="none" data-name="StorageService" data-compartment="2">}&gt;</text>
+<text x="0.0" y="62.7" stroke="none" data-name="StorageService" data-compartment="2">+static getFileUrl(): Promise&lt;string&gt;</text>
+<text x="0.0" y="78.9" stroke="none" data-name="StorageService" data-compartment="2">+static deleteAudioFile(): Promise&lt;void&gt;</text>
+<text x="0.0" y="95.1" stroke="none" data-name="StorageService" data-compartment="2">+static getUserStorageUsage(): Promise&lt;{ fileCount: number</text>
+<text x="0.0" y="111.3" stroke="none" data-name="StorageService" data-compartment="2">totalSize: number</text>
+<text x="0.0" y="127.5" stroke="none" data-name="StorageService" data-compartment="2">}&gt;</text>
+
+</g>
+</g>
+</g>
+<g data-name="TranscriptionService">
+<g fill="#eee8d5" stroke="#33322E" data-name="TranscriptionService">
+<rect x="8939.5" y="106.0" height="436.0" width="460.0" data-name="TranscriptionService"></rect>
+<path d="M8939.5 138.0 L9399.5 138.0" fill="none" data-name="TranscriptionService"></path>
+<path d="M8939.5 186.0 L9399.5 186.0" fill="none" data-name="TranscriptionService"></path>
+</g>
+<g transform="translate(8939.5, 106)" font-family="Helvetica" font-size="12pt" font-weight="bold" font-style="normal" data-name="TranscriptionService" data-compartment="0">
+<g transform="translate(8, 8)" fill="#33322E" text-align="center" data-name="TranscriptionService" data-compartment="0">
+<a id="src/services/transcription.ts.TranscriptionService" xlink:href="src/services/transcription.ts"><text x="222.0" y="14.1" stroke="none" text-anchor="middle" data-name="TranscriptionService" data-compartment="0">TranscriptionService</text></a>
+
+</g>
+</g>
+<g transform="translate(8939.5, 138)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="TranscriptionService" data-compartment="1">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="TranscriptionService" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="TranscriptionService" data-compartment="1">-static MAX_FILE_SIZE: number</text>
+<text x="0.0" y="30.3" stroke="none" data-name="TranscriptionService" data-compartment="1">-static SUPPORTED_FORMATS: string[]</text>
+
+</g>
+</g>
+<g transform="translate(8939.5, 186)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="TranscriptionService" data-compartment="2">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="TranscriptionService" data-compartment="2">
+<text x="0.0" y="14.1" stroke="none" data-name="TranscriptionService" data-compartment="2">+static transcribeFile(): Promise&lt;{ transcriptId: string</text>
+<text x="0.0" y="30.3" stroke="none" data-name="TranscriptionService" data-compartment="2">segments: any[]</text>
+<text x="0.0" y="46.5" stroke="none" data-name="TranscriptionService" data-compartment="2">language: string</text>
+<text x="0.0" y="62.7" stroke="none" data-name="TranscriptionService" data-compartment="2">duration: number</text>
+<text x="0.0" y="78.9" stroke="none" data-name="TranscriptionService" data-compartment="2">text: string</text>
+<text x="0.0" y="95.1" stroke="none" data-name="TranscriptionService" data-compartment="2">resourceUsage: ResourceUsage</text>
+<text x="0.0" y="111.3" stroke="none" data-name="TranscriptionService" data-compartment="2">model: string</text>
+<text x="0.0" y="127.5" stroke="none" data-name="TranscriptionService" data-compartment="2">}&gt;</text>
+<text x="0.0" y="143.7" stroke="none" data-name="TranscriptionService" data-compartment="2">-static processTranscriptionResponse(): Promise&lt;any[]&gt;</text>
+<text x="0.0" y="159.9" stroke="none" data-name="TranscriptionService" data-compartment="2">-static updateTranscriptStatus(): Promise&lt;void&gt;</text>
+<text x="0.0" y="176.1" stroke="none" data-name="TranscriptionService" data-compartment="2">+static estimateCost(): number</text>
+<text x="0.0" y="192.3" stroke="none" data-name="TranscriptionService" data-compartment="2">+static validateAudioFile(): { valid: boolean</text>
+<text x="0.0" y="208.5" stroke="none" data-name="TranscriptionService" data-compartment="2">error?: string</text>
+<text x="0.0" y="224.7" stroke="none" data-name="TranscriptionService" data-compartment="2">}</text>
+<text x="0.0" y="240.9" stroke="none" data-name="TranscriptionService" data-compartment="2">+static extractMetadata(): Promise&lt;{ duration?: number</text>
+<text x="0.0" y="257.1" stroke="none" data-name="TranscriptionService" data-compartment="2">bitrate?: number</text>
+<text x="0.0" y="273.3" stroke="none" data-name="TranscriptionService" data-compartment="2">sampleRate?: number</text>
+<text x="0.0" y="289.5" stroke="none" data-name="TranscriptionService" data-compartment="2">channels?: number</text>
+<text x="0.0" y="305.7" stroke="none" data-name="TranscriptionService" data-compartment="2">}&gt;</text>
+<text x="0.0" y="321.9" stroke="none" data-name="TranscriptionService" data-compartment="2">+static retryTranscription(): Promise&lt;{ message: string</text>
+<text x="0.0" y="338.1" stroke="none" data-name="TranscriptionService" data-compartment="2">}&gt;</text>
+
+</g>
+</g>
+</g>
+<g data-name="WhisperDockerOptions">
+<g fill="lightblue" stroke="#33322E" data-name="WhisperDockerOptions">
+<rect x="9439.5" y="215.0" height="218.0" width="335.0" data-name="WhisperDockerOptions"></rect>
+<path d="M9439.5 247.0 L9774.5 247.0" fill="none" data-name="WhisperDockerOptions"></path>
+<path d="M9439.5 425.0 L9774.5 425.0" fill="none" data-name="WhisperDockerOptions"></path>
+</g>
+<g transform="translate(9439.5, 215)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="WhisperDockerOptions" data-compartment="0">
+<g transform="translate(8, 8)" fill="#33322E" text-align="center" data-name="WhisperDockerOptions" data-compartment="0">
+<a id="src/services/whisperDocker.ts.WhisperDockerOptions" xlink:href="src/services/whisperDocker.ts"><text x="159.5" y="14.1" stroke="none" text-anchor="middle" data-name="WhisperDockerOptions" data-compartment="0">WhisperDockerOptions</text></a>
+
+</g>
+</g>
+<g transform="translate(9439.5, 247)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="WhisperDockerOptions" data-compartment="1">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="WhisperDockerOptions" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="WhisperDockerOptions" data-compartment="1">+model?: WhisperModel</text>
+<text x="0.0" y="30.3" stroke="none" data-name="WhisperDockerOptions" data-compartment="1">+language?: string</text>
+<text x="0.0" y="46.5" stroke="none" data-name="WhisperDockerOptions" data-compartment="1">+task?: &quot;transcribe&quot; | &quot;translate&quot;</text>
+<text x="0.0" y="62.7" stroke="none" data-name="WhisperDockerOptions" data-compartment="1">+threads?: number</text>
+<text x="0.0" y="78.9" stroke="none" data-name="WhisperDockerOptions" data-compartment="1">+outputFormat?: &quot;txt&quot; | &quot;vtt&quot; | &quot;srt&quot; | &quot;json&quot;</text>
+<text x="0.0" y="95.1" stroke="none" data-name="WhisperDockerOptions" data-compartment="1">+wordTimestamps?: boolean</text>
+<text x="0.0" y="111.3" stroke="none" data-name="WhisperDockerOptions" data-compartment="1">+temperature?: number</text>
+<text x="0.0" y="127.5" stroke="none" data-name="WhisperDockerOptions" data-compartment="1">+maxTokens?: number</text>
+<text x="0.0" y="143.7" stroke="none" data-name="WhisperDockerOptions" data-compartment="1">+containerName?: string</text>
+<text x="0.0" y="159.9" stroke="none" data-name="WhisperDockerOptions" data-compartment="1">+timeout?: number</text>
+
+</g>
+</g>
+<g transform="translate(9439.5, 425)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="WhisperDockerOptions" data-compartment="2">
+<g transform="translate(8, 8)" fill="#33322E" data-name="WhisperDockerOptions" data-compartment="2">
+
+</g>
+</g>
+</g>
+<g data-name="DockerContainerInfo">
+<g fill="lightblue" stroke="#33322E" data-name="DockerContainerInfo">
+<rect x="7028.5" y="1423.0" height="153.0" width="179.0" data-name="DockerContainerInfo"></rect>
+<path d="M7028.5 1455.0 L7207.5 1455.0" fill="none" data-name="DockerContainerInfo"></path>
+<path d="M7028.5 1568.0 L7207.5 1568.0" fill="none" data-name="DockerContainerInfo"></path>
+</g>
+<g transform="translate(7028.5, 1423)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="DockerContainerInfo" data-compartment="0">
+<g transform="translate(8, 8)" fill="#33322E" text-align="center" data-name="DockerContainerInfo" data-compartment="0">
+<a id="src/services/whisperDocker.ts.DockerContainerInfo" xlink:href="src/services/whisperDocker.ts"><text x="81.5" y="14.1" stroke="none" text-anchor="middle" data-name="DockerContainerInfo" data-compartment="0">DockerContainerInfo</text></a>
+
+</g>
+</g>
+<g transform="translate(7028.5, 1455)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="DockerContainerInfo" data-compartment="1">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="DockerContainerInfo" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="DockerContainerInfo" data-compartment="1">+id: string</text>
+<text x="0.0" y="30.3" stroke="none" data-name="DockerContainerInfo" data-compartment="1">+name: string</text>
+<text x="0.0" y="46.5" stroke="none" data-name="DockerContainerInfo" data-compartment="1">+status: string</text>
+<text x="0.0" y="62.7" stroke="none" data-name="DockerContainerInfo" data-compartment="1">+created: string</text>
+<text x="0.0" y="78.9" stroke="none" data-name="DockerContainerInfo" data-compartment="1">+ports: string[]</text>
+<text x="0.0" y="95.1" stroke="none" data-name="DockerContainerInfo" data-compartment="1">+image: string</text>
+
+</g>
+</g>
+<g transform="translate(7028.5, 1568)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="DockerContainerInfo" data-compartment="2">
+<g transform="translate(8, 8)" fill="#33322E" data-name="DockerContainerInfo" data-compartment="2">
+
+</g>
+</g>
+</g>
+<g data-name="HealthStatus">
+<g fill="lightblue" stroke="#33322E" data-name="HealthStatus">
+<rect x="6945.5" y="1181.0" height="202.0" width="345.0" data-name="HealthStatus"></rect>
+<path d="M6945.5 1213.0 L7290.5 1213.0" fill="none" data-name="HealthStatus"></path>
+<path d="M6945.5 1375.0 L7290.5 1375.0" fill="none" data-name="HealthStatus"></path>
+</g>
+<g transform="translate(6945.5, 1181)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="HealthStatus" data-compartment="0">
+<g transform="translate(8, 8)" fill="#33322E" text-align="center" data-name="HealthStatus" data-compartment="0">
+<a id="src/services/whisperServer.ts.HealthStatus" xlink:href="src/services/whisperServer.ts"><text x="164.5" y="14.1" stroke="none" text-anchor="middle" data-name="HealthStatus" data-compartment="0">HealthStatus</text></a>
+
+</g>
+</g>
+<g transform="translate(6945.5, 1213)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="HealthStatus" data-compartment="1">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="HealthStatus" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="HealthStatus" data-compartment="1">+status: &quot;healthy&quot; | &quot;unhealthy&quot; | &quot;starting&quot;</text>
+<text x="0.0" y="30.3" stroke="none" data-name="HealthStatus" data-compartment="1">+dockerAvailable: boolean</text>
+<text x="0.0" y="46.5" stroke="none" data-name="HealthStatus" data-compartment="1">+containerRunning: boolean</text>
+<text x="0.0" y="62.7" stroke="none" data-name="HealthStatus" data-compartment="1">+containerInfo?: DockerContainerInfo</text>
+<text x="0.0" y="78.9" stroke="none" data-name="HealthStatus" data-compartment="1">+availableModels: string[]</text>
+<text x="0.0" y="95.1" stroke="none" data-name="HealthStatus" data-compartment="1">+systemInfo: { dockerVersion?: string</text>
+<text x="0.0" y="111.3" stroke="none" data-name="HealthStatus" data-compartment="1">containerRuntime?: string</text>
+<text x="0.0" y="127.5" stroke="none" data-name="HealthStatus" data-compartment="1">}</text>
+<text x="0.0" y="143.7" stroke="none" data-name="HealthStatus" data-compartment="1">+uptime: number</text>
+
+</g>
+</g>
+<g transform="translate(6945.5, 1375)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="HealthStatus" data-compartment="2">
+<g transform="translate(8, 8)" fill="#33322E" data-name="HealthStatus" data-compartment="2">
+
+</g>
+</g>
+</g>
+<g data-name="ProcessingJob">
+<g fill="lightblue" stroke="#33322E" data-name="ProcessingJob">
+<rect x="9814.5" y="231.0" height="186.0" width="449.0" data-name="ProcessingJob"></rect>
+<path d="M9814.5 263.0 L10263.5 263.0" fill="none" data-name="ProcessingJob"></path>
+<path d="M9814.5 409.0 L10263.5 409.0" fill="none" data-name="ProcessingJob"></path>
+</g>
+<g transform="translate(9814.5, 231)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="ProcessingJob" data-compartment="0">
+<g transform="translate(8, 8)" fill="#33322E" text-align="center" data-name="ProcessingJob" data-compartment="0">
+<a id="src/services/whisperServer.ts.ProcessingJob" xlink:href="src/services/whisperServer.ts"><text x="216.5" y="14.1" stroke="none" text-anchor="middle" data-name="ProcessingJob" data-compartment="0">ProcessingJob</text></a>
+
+</g>
+</g>
+<g transform="translate(9814.5, 263)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="ProcessingJob" data-compartment="1">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="ProcessingJob" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="ProcessingJob" data-compartment="1">+id: string</text>
+<text x="0.0" y="30.3" stroke="none" data-name="ProcessingJob" data-compartment="1">+status: &quot;queued&quot; | &quot;processing&quot; | &quot;completed&quot; | &quot;failed&quot;</text>
+<text x="0.0" y="46.5" stroke="none" data-name="ProcessingJob" data-compartment="1">+progress: number</text>
+<text x="0.0" y="62.7" stroke="none" data-name="ProcessingJob" data-compartment="1">+startTime: number</text>
+<text x="0.0" y="78.9" stroke="none" data-name="ProcessingJob" data-compartment="1">+endTime?: number</text>
+<text x="0.0" y="95.1" stroke="none" data-name="ProcessingJob" data-compartment="1">+error?: string</text>
+<text x="0.0" y="111.3" stroke="none" data-name="ProcessingJob" data-compartment="1">+result?: TranscriptionResult</text>
+<text x="0.0" y="127.5" stroke="none" data-name="ProcessingJob" data-compartment="1">+containerId?: string</text>
+
+</g>
+</g>
+<g transform="translate(9814.5, 409)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="ProcessingJob" data-compartment="2">
+<g transform="translate(8, 8)" fill="#33322E" data-name="ProcessingJob" data-compartment="2">
+
+</g>
+</g>
+</g>
+<g data-name="WhisperDockerConfig">
+<g fill="lightblue" stroke="#33322E" data-name="WhisperDockerConfig">
+<rect x="7330.5" y="1181.0" height="202.0" width="255.0" data-name="WhisperDockerConfig"></rect>
+<path d="M7330.5 1213.0 L7585.5 1213.0" fill="none" data-name="WhisperDockerConfig"></path>
+<path d="M7330.5 1375.0 L7585.5 1375.0" fill="none" data-name="WhisperDockerConfig"></path>
+</g>
+<g transform="translate(7330.5, 1181)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="WhisperDockerConfig" data-compartment="0">
+<g transform="translate(8, 8)" fill="#33322E" text-align="center" data-name="WhisperDockerConfig" data-compartment="0">
+<a id="src/services/whisperDocker.ts.WhisperDockerConfig" xlink:href="src/services/whisperDocker.ts"><text x="119.5" y="14.1" stroke="none" text-anchor="middle" data-name="WhisperDockerConfig" data-compartment="0">WhisperDockerConfig</text></a>
+
+</g>
+</g>
+<g transform="translate(7330.5, 1213)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="WhisperDockerConfig" data-compartment="1">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="WhisperDockerConfig" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="WhisperDockerConfig" data-compartment="1">+containerImage: string</text>
+<text x="0.0" y="30.3" stroke="none" data-name="WhisperDockerConfig" data-compartment="1">+containerName: string</text>
+<text x="0.0" y="46.5" stroke="none" data-name="WhisperDockerConfig" data-compartment="1">+containerPort: number</text>
+<text x="0.0" y="62.7" stroke="none" data-name="WhisperDockerConfig" data-compartment="1">+hostPort: number</text>
+<text x="0.0" y="78.9" stroke="none" data-name="WhisperDockerConfig" data-compartment="1">+defaultModel: WhisperModel</text>
+<text x="0.0" y="95.1" stroke="none" data-name="WhisperDockerConfig" data-compartment="1">+maxConcurrentJobs: number</text>
+<text x="0.0" y="111.3" stroke="none" data-name="WhisperDockerConfig" data-compartment="1">+timeout: number</text>
+<text x="0.0" y="127.5" stroke="none" data-name="WhisperDockerConfig" data-compartment="1">+autoStart: boolean</text>
+<text x="0.0" y="143.7" stroke="none" data-name="WhisperDockerConfig" data-compartment="1">+volumePath: string</text>
+
+</g>
+</g>
+<g transform="translate(7330.5, 1375)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="WhisperDockerConfig" data-compartment="2">
+<g transform="translate(8, 8)" fill="#33322E" data-name="WhisperDockerConfig" data-compartment="2">
+
+</g>
+</g>
+</g>
+<g data-name="WhisperOptions">
+<g fill="lightblue" stroke="#33322E" data-name="WhisperOptions">
+<rect x="10303.5" y="215.0" height="218.0" width="335.0" data-name="WhisperOptions"></rect>
+<path d="M10303.5 247.0 L10638.5 247.0" fill="none" data-name="WhisperOptions"></path>
+<path d="M10303.5 425.0 L10638.5 425.0" fill="none" data-name="WhisperOptions"></path>
+</g>
+<g transform="translate(10303.5, 215)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="WhisperOptions" data-compartment="0">
+<g transform="translate(8, 8)" fill="#33322E" text-align="center" data-name="WhisperOptions" data-compartment="0">
+<a id="src/services/whisperServer.ts.WhisperOptions" xlink:href="src/services/whisperServer.ts"><text x="159.5" y="14.1" stroke="none" text-anchor="middle" data-name="WhisperOptions" data-compartment="0">WhisperOptions</text></a>
+
+</g>
+</g>
+<g transform="translate(10303.5, 247)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="WhisperOptions" data-compartment="1">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="WhisperOptions" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="WhisperOptions" data-compartment="1">+model?: WhisperModel</text>
+<text x="0.0" y="30.3" stroke="none" data-name="WhisperOptions" data-compartment="1">+language?: string</text>
+<text x="0.0" y="46.5" stroke="none" data-name="WhisperOptions" data-compartment="1">+task?: &quot;transcribe&quot; | &quot;translate&quot;</text>
+<text x="0.0" y="62.7" stroke="none" data-name="WhisperOptions" data-compartment="1">+threads?: number</text>
+<text x="0.0" y="78.9" stroke="none" data-name="WhisperOptions" data-compartment="1">+outputFormat?: &quot;txt&quot; | &quot;vtt&quot; | &quot;srt&quot; | &quot;json&quot;</text>
+<text x="0.0" y="95.1" stroke="none" data-name="WhisperOptions" data-compartment="1">+wordTimestamps?: boolean</text>
+<text x="0.0" y="111.3" stroke="none" data-name="WhisperOptions" data-compartment="1">+temperature?: number</text>
+<text x="0.0" y="127.5" stroke="none" data-name="WhisperOptions" data-compartment="1">+maxTokens?: number</text>
+<text x="0.0" y="143.7" stroke="none" data-name="WhisperOptions" data-compartment="1">+noSpeech?: number</text>
+<text x="0.0" y="159.9" stroke="none" data-name="WhisperOptions" data-compartment="1">+logLevel?: number</text>
+
+</g>
+</g>
+<g transform="translate(10303.5, 425)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="WhisperOptions" data-compartment="2">
+<g transform="translate(8, 8)" fill="#33322E" data-name="WhisperOptions" data-compartment="2">
+
+</g>
+</g>
+</g>
+<g data-name="WordSegment">
+<g fill="lightblue" stroke="#33322E" data-name="WordSegment">
+<rect x="10158.5" y="1439.0" height="121.0" width="183.0" data-name="WordSegment"></rect>
+<path d="M10158.5 1471.0 L10341.5 1471.0" fill="none" data-name="WordSegment"></path>
+<path d="M10158.5 1552.0 L10341.5 1552.0" fill="none" data-name="WordSegment"></path>
+</g>
+<g transform="translate(10158.5, 1439)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="WordSegment" data-compartment="0">
+<g transform="translate(8, 8)" fill="#33322E" text-align="center" data-name="WordSegment" data-compartment="0">
+<a id="src/services/whisperServer.ts.WordSegment" xlink:href="src/services/whisperServer.ts"><text x="83.5" y="14.1" stroke="none" text-anchor="middle" data-name="WordSegment" data-compartment="0">WordSegment</text></a>
+
+</g>
+</g>
+<g transform="translate(10158.5, 1471)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="WordSegment" data-compartment="1">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="WordSegment" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="WordSegment" data-compartment="1">+word: string</text>
+<text x="0.0" y="30.3" stroke="none" data-name="WordSegment" data-compartment="1">+start: number</text>
+<text x="0.0" y="46.5" stroke="none" data-name="WordSegment" data-compartment="1">+end: number</text>
+<text x="0.0" y="62.7" stroke="none" data-name="WordSegment" data-compartment="1">+confidence: number</text>
+
+</g>
+</g>
+<g transform="translate(10158.5, 1552)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="WordSegment" data-compartment="2">
+<g transform="translate(8, 8)" fill="#33322E" data-name="WordSegment" data-compartment="2">
+
+</g>
+</g>
+</g>
+<g data-name="ModelInfo">
+<g fill="lightblue" stroke="#33322E" data-name="ModelInfo">
+<rect x="10678.5" y="263.5" height="121.0" width="146.0" data-name="ModelInfo"></rect>
+<path d="M10678.5 295.5 L10824.5 295.5" fill="none" data-name="ModelInfo"></path>
+<path d="M10678.5 376.5 L10824.5 376.5" fill="none" data-name="ModelInfo"></path>
+</g>
+<g transform="translate(10678.5, 263.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="ModelInfo" data-compartment="0">
+<g transform="translate(8, 8)" fill="#33322E" text-align="center" data-name="ModelInfo" data-compartment="0">
+<a id="src/services/whisperServer.ts.ModelInfo" xlink:href="src/services/whisperServer.ts"><text x="65.0" y="14.1" stroke="none" text-anchor="middle" data-name="ModelInfo" data-compartment="0">ModelInfo</text></a>
+
+</g>
+</g>
+<g transform="translate(10678.5, 295.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="ModelInfo" data-compartment="1">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="ModelInfo" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="ModelInfo" data-compartment="1">+name: string</text>
+<text x="0.0" y="30.3" stroke="none" data-name="ModelInfo" data-compartment="1">+size: number</text>
+<text x="0.0" y="46.5" stroke="none" data-name="ModelInfo" data-compartment="1">+exists: boolean</text>
+<text x="0.0" y="62.7" stroke="none" data-name="ModelInfo" data-compartment="1">+path: string</text>
+
+</g>
+</g>
+<g transform="translate(10678.5, 376.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="ModelInfo" data-compartment="2">
+<g transform="translate(8, 8)" fill="#33322E" data-name="ModelInfo" data-compartment="2">
+
+</g>
+</g>
+</g>
+<g data-name="WhisperServerConfig">
+<g fill="lightblue" stroke="#33322E" data-name="WhisperServerConfig">
+<rect x="6550.0" y="1197.5" height="169.0" width="255.0" data-name="WhisperServerConfig"></rect>
+<path d="M6550.0 1229.5 L6805.0 1229.5" fill="none" data-name="WhisperServerConfig"></path>
+<path d="M6550.0 1358.5 L6805.0 1358.5" fill="none" data-name="WhisperServerConfig"></path>
+</g>
+<g transform="translate(6550, 1197.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="WhisperServerConfig" data-compartment="0">
+<g transform="translate(8, 8)" fill="#33322E" text-align="center" data-name="WhisperServerConfig" data-compartment="0">
+<a id="src/services/whisperServer.ts.WhisperServerConfig" xlink:href="src/services/whisperServer.ts"><text x="119.5" y="14.1" stroke="none" text-anchor="middle" data-name="WhisperServerConfig" data-compartment="0">WhisperServerConfig</text></a>
+
+</g>
+</g>
+<g transform="translate(6550, 1229.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="WhisperServerConfig" data-compartment="1">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="WhisperServerConfig" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="WhisperServerConfig" data-compartment="1">+whisperBinaryPath: string</text>
+<text x="0.0" y="30.3" stroke="none" data-name="WhisperServerConfig" data-compartment="1">+modelsPath: string</text>
+<text x="0.0" y="46.5" stroke="none" data-name="WhisperServerConfig" data-compartment="1">+tempPath: string</text>
+<text x="0.0" y="62.7" stroke="none" data-name="WhisperServerConfig" data-compartment="1">+defaultModel: WhisperModel</text>
+<text x="0.0" y="78.9" stroke="none" data-name="WhisperServerConfig" data-compartment="1">+maxConcurrentJobs: number</text>
+<text x="0.0" y="95.1" stroke="none" data-name="WhisperServerConfig" data-compartment="1">+cleanupTempFiles: boolean</text>
+<text x="0.0" y="111.3" stroke="none" data-name="WhisperServerConfig" data-compartment="1">+logLevel: number</text>
+
+</g>
+</g>
+<g transform="translate(6550, 1358.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="WhisperServerConfig" data-compartment="2">
+<g transform="translate(8, 8)" fill="#33322E" data-name="WhisperServerConfig" data-compartment="2">
+
+</g>
+</g>
+</g>
+</g>
+</g>
+</g>
+</g>
+</svg>
