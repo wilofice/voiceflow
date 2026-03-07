@@ -102,15 +102,11 @@ async function start() {
     });
 
     // Log Socket.IO connection events
-    server.ready((err) => {
-      if (err) throw err;
+    server.io.on('connection', (socket: Socket) => {
+      console.log('✅ WebSocket client connected:', socket.id);
 
-      server.io.on('connection', (socket: Socket) => {
-        console.log('✅ WebSocket client connected:', socket.id);
-
-        socket.on('disconnect', () => {
-          console.log('❌ WebSocket client disconnected:', socket.id);
-        });
+      socket.on('disconnect', () => {
+        console.log('❌ WebSocket client disconnected:', socket.id);
       });
     });
 
