@@ -4,8 +4,14 @@ import cors from '@fastify/cors';
 import multipart from '@fastify/multipart';
 import rateLimit from '@fastify/rate-limit';
 import fastifyJwt from '@fastify/jwt';
-import socketio from 'socket.io';
-import socketioFastify from 'fastify-socket';
+import fastifySocketIO from 'fastify-socket.io';
+import { Server, Socket } from 'socket.io';
+
+declare module 'fastify' {
+  interface FastifyInstance {
+    io: Server;
+  }
+}
 
 // Routes
 import { authRoutes } from './routes/auth';
@@ -26,7 +32,7 @@ import swaggerUi from '@fastify/swagger-ui';
 const server = Fastify({
   logger: {
     level: process.env.LOG_LEVEL || 'info',
-    transport: process.env.NODE_ENV === 'development' 
+    transport: process.env.NODE_ENV === 'development'
       ? { target: 'pino-pretty' }
       : undefined,
   },
@@ -62,8 +68,8 @@ async function start() {
 
     // Register plugins
     await server.register(cors, {
-      origin: process.env.NODE_ENV === 'development' 
-        ? ['http://localhost:3000'] 
+      origin: process.env.NODE_ENV === 'development'
+        ? ['http://localhost:3000']
         : [process.env.NEXT_PUBLIC_APP_URL || ''],
       credentials: true,
     });
@@ -85,7 +91,7 @@ async function start() {
     });
 
     // Register Socket.IO for real-time updates
-    await server.register(socketio, {
+    await server.register(fastifySocketIO, {
       cors: {
         origin: process.env.NODE_ENV === 'development'
           ? 'http://localhost:3000'
@@ -96,11 +102,15 @@ async function start() {
     });
 
     // Log Socket.IO connection events
-    server.io.on('connection', (socket) => {
-      console.log('✅ WebSocket client connected:', socket.id);
+    server.ready((err) => {
+      if (err) throw err;
 
-      socket.on('disconnect', () => {
-        console.log('❌ WebSocket client disconnected:', socket.id);
+      server.io.on('connection', (socket: Socket) => {
+        console.log('✅ WebSocket client connected:', socket.id);
+
+        socket.on('disconnect', () => {
+          console.log('❌ WebSocket client disconnected:', socket.id);
+        });
       });
     });
 
