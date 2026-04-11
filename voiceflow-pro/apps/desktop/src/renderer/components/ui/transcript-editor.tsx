@@ -65,47 +65,6 @@ interface TranscriptEditorProps {
   onSpeakerAssign?: (segmentId: string, speakerId: string) => void;
 }
 
-const mockSpeakers: Speaker[] = [
-  { id: 'speaker-1', label: 'John Smith', color: '#3B82F6', segmentCount: 47 },
-  { id: 'speaker-2', label: 'Sarah Johnson', color: '#10B981', segmentCount: 32 },
-  { id: 'speaker-3', label: 'Mike Chen', color: '#F59E0B', segmentCount: 18 },
-];
-
-const mockSegments: Segment[] = [
-  {
-    id: '1',
-    startMs: 0,
-    endMs: 3500,
-    text: "Welcome everyone to today's product strategy meeting. I'm excited to discuss our roadmap for the next quarter.",
-    speakerId: 'speaker-1',
-    confidence: 0.96,
-  },
-  {
-    id: '2',
-    startMs: 3500,
-    endMs: 8200,
-    text: "Thank you John. I've been analyzing the user feedback from our recent feature releases, and there are some interesting patterns emerging.",
-    speakerId: 'speaker-2',
-    confidence: 0.94,
-  },
-  {
-    id: '3',
-    startMs: 8200,
-    endMs: 12800,
-    text: "That's great Sarah. From the engineering perspective, we've been able to reduce processing time by 30% with the new algorithms.",
-    speakerId: 'speaker-3',
-    confidence: 0.98,
-  },
-  {
-    id: '4',
-    startMs: 12800,
-    endMs: 18500,
-    text: "Excellent progress Mike. Now, let's dive into the specific features we want to prioritize. I think AI-powered summaries should be at the top of our list.",
-    speakerId: 'speaker-1',
-    confidence: 0.95,
-  },
-];
-
 export const TranscriptEditor: React.FC<TranscriptEditorProps> = ({
   className,
   transcript,
@@ -126,13 +85,13 @@ export const TranscriptEditor: React.FC<TranscriptEditorProps> = ({
   const [volume, setVolume] = useState([0.8]);
   const [loading, setLoading] = useState(false);
   const [fullTranscript, setFullTranscript] = useState<Transcript | null>(null);
-  const [mappedSegments, setMappedSegments] = useState<Segment[]>(mockSegments);
-  const [mappedSpeakers, setMappedSpeakers] = useState<Speaker[]>(mockSpeakers);
+  const [mappedSegments, setMappedSegments] = useState<Segment[]>([]);
+  const [mappedSpeakers, setMappedSpeakers] = useState<Speaker[]>([]);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [internalIsPlaying, setInternalIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
 
-  const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const scrollAreaRef = useRef<any>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
 
   const formatTime = (ms: number) => {
@@ -148,8 +107,8 @@ export const TranscriptEditor: React.FC<TranscriptEditorProps> = ({
   useEffect(() => {
     if (!transcript?.id) {
       setFullTranscript(null);
-      setMappedSegments(mockSegments);
-      setMappedSpeakers(mockSpeakers);
+      setMappedSegments([]);
+      setMappedSpeakers([]);
       return;
     }
 
@@ -345,7 +304,7 @@ export const TranscriptEditor: React.FC<TranscriptEditorProps> = ({
             )}
           </div>
         </div>
-        
+
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" className="focus-ring">
             <Search className="w-4 h-4 mr-2" />
@@ -507,14 +466,14 @@ export const TranscriptEditor: React.FC<TranscriptEditorProps> = ({
                             rows={Math.max(2, Math.ceil(segment.text.length / 80))}
                           />
                         ) : (
-                          <p 
+                          <p
                             className="text-text-primary leading-relaxed cursor-pointer"
                             onDoubleClick={() => setEditingSegment(segment.id)}
                           >
                             {segment.text}
                           </p>
                         )}
-                        
+
                         {/* Segment Metadata */}
                         <div className="flex items-center justify-between mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
                           <div className="flex items-center gap-2 text-xs text-text-secondary">
@@ -525,7 +484,7 @@ export const TranscriptEditor: React.FC<TranscriptEditorProps> = ({
                               </Badge>
                             )}
                           </div>
-                          
+
                           <div className="flex items-center gap-1">
                             <Button variant="ghost" size="sm" className="w-6 h-6 p-0">
                               <Edit3 className="w-3 h-3" />
@@ -556,7 +515,7 @@ export const TranscriptEditor: React.FC<TranscriptEditorProps> = ({
               {speakers.map((speaker) => (
                 <div key={speaker.id} className="flex items-center justify-between p-2 rounded hover:bg-surface-alt/50">
                   <div className="flex items-center gap-2">
-                    <div 
+                    <div
                       className="w-4 h-4 rounded-full"
                       style={{ backgroundColor: speaker.color }}
                     />

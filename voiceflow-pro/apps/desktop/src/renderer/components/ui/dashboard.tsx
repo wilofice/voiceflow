@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { 
+import {
   Upload,
   Mic,
   Zap,
@@ -104,49 +104,6 @@ const quickActions: QuickAction[] = [
   },
 ];
 
-const mockTranscripts: TranscriptItem[] = [
-  {
-    id: '1',
-    title: 'Team Standup Meeting - March 15th',
-    duration: '23:45',
-    timestamp: '2 hours ago',
-    status: 'completed',
-    confidence: 96,
-    starred: true,
-  },
-  {
-    id: '2',
-    title: 'Customer Interview Session #47',
-    duration: '45:22',
-    timestamp: '4 hours ago',
-    status: 'completed',
-    confidence: 94,
-  },
-  {
-    id: '3',
-    title: 'Podcast Episode - Future of AI',
-    duration: '1:12:33',
-    timestamp: '1 day ago',
-    status: 'processing',
-  },
-  {
-    id: '4',
-    title: 'Research Call with Dr. Sarah Kim',
-    duration: '37:18',
-    timestamp: '2 days ago',
-    status: 'completed',
-    confidence: 98,
-    starred: true,
-  },
-  {
-    id: '5',
-    title: 'Product Strategy Brainstorm',
-    duration: '56:09',
-    timestamp: '3 days ago',
-    status: 'error',
-  },
-];
-
 export const Dashboard: React.FC<DashboardProps> = ({
   className,
   onUrlSubmit,
@@ -154,7 +111,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
   onTranscriptSelect,
   onFilesDrop,
   onBrowseFiles,
-  recentTranscripts = mockTranscripts,
+  recentTranscripts = [],
 }) => {
   const [urlInput, setUrlInput] = useState('');
   const [isDragOver, setIsDragOver] = useState(false);
@@ -211,14 +168,14 @@ export const Dashboard: React.FC<DashboardProps> = ({
     <div className={cn("min-h-full bg-background", className)}>
       {/* Hero Section */}
       <section className="relative overflow-hidden">
-        <div 
+        <div
           className="h-80 bg-cover bg-center bg-no-repeat"
           style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}
         >
           <div className="absolute inset-0 bg-gradient-to-r from-background/90 via-background/50 to-transparent" />
           <div className="relative h-full flex items-center px-8">
             <div className="max-w-2xl">
-              <motion.h1 
+              <motion.h1
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6 }}
@@ -226,18 +183,18 @@ export const Dashboard: React.FC<DashboardProps> = ({
               >
                 Transform Audio into Intelligence
               </motion.h1>
-              <motion.p 
+              <motion.p
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.2 }}
                 className="text-lg text-text-secondary mb-8"
               >
-                Professional-grade transcription with AI-powered summaries, 
+                Professional-grade transcription with AI-powered summaries,
                 speaker identification, and batch processing.
               </motion.p>
-              
+
               {/* URL Input */}
-              <motion.form 
+              <motion.form
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.4 }}
@@ -251,7 +208,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                   onChange={(e) => setUrlInput(e.target.value)}
                   className="bg-surface-alt/80 backdrop-blur-sm border-border focus-ring"
                 />
-                <Button 
+                <Button
                   type="submit"
                   className="bg-gradient-primary hover:opacity-90 focus-ring"
                 >
@@ -271,7 +228,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.6 }}
         >
-          <Card 
+          <Card
             className={cn(
               "border-2 border-dashed transition-all duration-200 cursor-pointer hover:border-primary/50",
               isDragOver ? "border-primary bg-primary/5 scale-[1.02]" : "border-border"
@@ -289,8 +246,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
               <p className="text-text-secondary mb-4 text-center">
                 Supports MP3, WAV, M4A, MP4, MOV, AIFF, CAF, OGG
               </p>
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 className="focus-ring"
                 onClick={onBrowseFiles}
               >
@@ -313,7 +270,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.4, delay: index * 0.1 }}
                 >
-                  <Card 
+                  <Card
                     className="hover:bg-surface-alt/50 transition-all duration-200 cursor-pointer hover:scale-[1.02] group focus-ring"
                     onClick={() => onQuickAction?.(action)}
                     data-testid={`quick-action-${action.id}`}
@@ -322,7 +279,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                       <div className="flex items-center justify-between mb-2">
                         <Icon className="w-6 h-6 text-primary" />
                         {action.badge && (
-                          <Badge 
+                          <Badge
                             variant={action.badge === 'Pro' ? 'default' : 'secondary'}
                             className="text-xs"
                           >
@@ -360,72 +317,84 @@ export const Dashboard: React.FC<DashboardProps> = ({
               View All
             </Button>
           </div>
-          
-          <div className="space-y-3">
-            {recentTranscripts.map((transcript, index) => (
-              <motion.div
-                key={transcript.id}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.4, delay: index * 0.1 }}
-              >
-                <Card 
-                  className="hover:bg-surface-alt/30 transition-all duration-200 cursor-pointer group focus-ring"
-                  onClick={() => onTranscriptSelect?.(transcript)}
-                  data-testid={`transcript-${transcript.id}`}
+
+          {recentTranscripts.length === 0 ? (
+            <div className="text-center py-12 bg-surface-alt/30 rounded-lg border border-border border-dashed">
+              <FileAudio className="w-12 h-12 text-text-secondary mx-auto mb-4 opacity-50" />
+              <h3 className="text-lg font-medium text-text-primary mb-2">No transcripts yet</h3>
+              <p className="text-text-secondary mb-4">Upload an audio or video file to get started.</p>
+              <Button onClick={onBrowseFiles} className="bg-gradient-primary focus-ring">
+                <Upload className="w-4 h-4 mr-2" />
+                Upload File
+              </Button>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {recentTranscripts.map((transcript, index) => (
+                <motion.div
+                  key={transcript.id}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.4, delay: index * 0.1 }}
                 >
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4 flex-1">
-                        <div className="w-10 h-10 rounded-lg bg-gradient-primary flex items-center justify-center flex-shrink-0">
-                          <FileAudio className="w-5 h-5 text-white" />
-                        </div>
-                        
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            <h3 className="font-semibold text-text-primary truncate">
-                              {transcript.title}
-                            </h3>
-                            {transcript.starred && (
-                              <Star className="w-4 h-4 text-warning fill-current flex-shrink-0" />
-                            )}
+                  <Card
+                    className="hover:bg-surface-alt/30 transition-all duration-200 cursor-pointer group focus-ring"
+                    onClick={() => onTranscriptSelect?.(transcript)}
+                    data-testid={`transcript-${transcript.id}`}
+                  >
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4 flex-1">
+                          <div className="w-10 h-10 rounded-lg bg-gradient-primary flex items-center justify-center flex-shrink-0">
+                            <FileAudio className="w-5 h-5 text-white" />
                           </div>
-                          <div className="flex items-center gap-4 text-sm text-text-secondary">
-                            <div className="flex items-center gap-1">
-                              <Clock className="w-3 h-3" />
-                              <span>{transcript.duration}</span>
+
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <h3 className="font-semibold text-text-primary truncate">
+                                {transcript.title}
+                              </h3>
+                              {transcript.starred && (
+                                <Star className="w-4 h-4 text-warning fill-current flex-shrink-0" />
+                              )}
                             </div>
-                            <span>{transcript.timestamp}</span>
-                            {transcript.confidence && (
-                              <span>Confidence: {transcript.confidence}%</span>
-                            )}
+                            <div className="flex items-center gap-4 text-sm text-text-secondary">
+                              <div className="flex items-center gap-1">
+                                <Clock className="w-3 h-3" />
+                                <span>{transcript.duration}</span>
+                              </div>
+                              <span>{transcript.timestamp}</span>
+                              {transcript.confidence && (
+                                <span>Confidence: {transcript.confidence}%</span>
+                              )}
+                            </div>
                           </div>
                         </div>
+
+                        <div className="flex items-center gap-3 flex-shrink-0">
+                          {getStatusBadge(transcript.status)}
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="opacity-0 group-hover:opacity-100 focus-ring"
+                          >
+                            <Play className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="opacity-0 group-hover:opacity-100 focus-ring"
+                          >
+                            <MoreHorizontal className="w-4 h-4" />
+                          </Button>
+                        </div>
                       </div>
-                      
-                      <div className="flex items-center gap-3 flex-shrink-0">
-                        {getStatusBadge(transcript.status)}
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="opacity-0 group-hover:opacity-100 focus-ring"
-                        >
-                          <Play className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="opacity-0 group-hover:opacity-100 focus-ring"
-                        >
-                          <MoreHorizontal className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ))}
+            </div>
+          )}
         </section>
       </div>
     </div>
