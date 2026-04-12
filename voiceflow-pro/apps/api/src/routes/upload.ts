@@ -22,12 +22,18 @@ const uploadMetadataSchema = z.object({
 });
 
 export async function uploadRoutes(fastify: FastifyInstance) {
+  // Debug route to check env
+  fastify.get('/debug', async () => ({
+    url: process.env.NEXT_PUBLIC_SUPABASE_URL,
+    bucket: AUDIO_BUCKET
+  }));
+
   // Upload audio file
   fastify.post('/audio', {
     preHandler: authenticate,
   }, async (request: AuthenticatedRequest, reply: FastifyReply) => {
     const data = await request.file();
-    
+
     if (!data) {
       return reply.status(400).send({
         error: {
@@ -70,7 +76,7 @@ export async function uploadRoutes(fastify: FastifyInstance) {
       const fields = data.fields;
       const titleField = Array.isArray(fields.title) ? fields.title[0] : fields.title;
       const languageField = Array.isArray(fields.language) ? fields.language[0] : fields.language;
-      
+
       const metadata = uploadMetadataSchema.parse({
         title: titleField && 'value' in titleField ? titleField.value : undefined,
         language: languageField && 'value' in languageField ? languageField.value : 'en',
@@ -80,16 +86,27 @@ export async function uploadRoutes(fastify: FastifyInstance) {
       const fileExtension = filename?.split('.').pop() || 'mp3';
       const uniqueFilename = `${request.user.id}/${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExtension}`;
 
-      // Upload to Supabase Storage
-      await uploadFile(
-        AUDIO_BUCKET,
-        uniqueFilename,
-        buffer,
-        mimetype
-      );
+      // Convert chunked Fastify Buffer to a clean contiguous ArrayBuffer to prevent Node.js fetch 0-byte corruptions
+      request.log.info(`[TRACE] Buffer length from Fastify: ${buffer.length} bytes`);
+      const cleanArrayBuffer = buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength);
 
-      // Get signed URL for the file (valid for 1 hour)
-      const signedUrl = await getSignedUrl(AUDIO_BUCKET, uniqueFilename, 3600);
+      // Upload to Supabase Storage
+      request.log.info(`[TRACE] Starting uploadFile for ${uniqueFilename}...`);
+      try {
+        await uploadFile(
+          AUDIO_BUCKET,
+          uniqueFilename,
+          cleanArrayBuffer as any,
+          mimetype
+        );
+      } catch (uploadErr: any) {
+        throw new Error(`uploadFile failed: ${uploadErr.message || uploadErr}`);
+      }
+      request.log.info(`[TRACE] SUCCESS: uploadFile finished`);
+
+      // Skip getSignedUrl during the immediate upload phase to prevent 404 read-after-write Node fetch bugs
+      // The frontend will receive the signed URL later when querying the transcript natively.
+      const signedUrl = null;
 
       // Create transcript record
       const transcript = await prisma.transcript.create({
@@ -130,13 +147,15 @@ export async function uploadRoutes(fastify: FastifyInstance) {
         validationWarning: validation.error,
       });
 
-    } catch (error) {
+    } catch (error: any) {
       request.log.error(error, 'File upload failed');
-      
+
       return reply.status(500).send({
         error: {
           code: 'UPLOAD_FAILED',
           message: 'Failed to process file upload',
+          details: error.message,
+          stack: error.stack
         },
       });
     }
