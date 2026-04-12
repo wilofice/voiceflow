@@ -113,7 +113,7 @@ export class APIClient extends EventEmitter {
   constructor(baseURL: string = 'http://localhost:3002') {
     super();
     this.baseURL = baseURL;
-    
+
     this.client = axios.create({
       baseURL: this.baseURL,
       timeout: 30000,
@@ -161,10 +161,10 @@ export class APIClient extends EventEmitter {
       (response) => response,
       async (error: AxiosError) => {
         const originalRequest = error.config as AxiosRequestConfig & { _retry?: boolean };
-        
+
         if (error.response?.status === 401 && !originalRequest._retry) {
           originalRequest._retry = true;
-          
+
           try {
             await this.refreshTokens();
             if (this.accessToken) {
@@ -221,7 +221,7 @@ export class APIClient extends EventEmitter {
     this.accessToken = null;
     this.refreshToken = null;
     this.tokenExpiresAt = 0;
-    
+
     // Clear stored tokens
     if (typeof window !== 'undefined' && (window as any).electronAPI?.secureStore) {
       (window as any).electronAPI.secureStore.delete('auth_tokens').catch(console.warn);
@@ -239,7 +239,7 @@ export class APIClient extends EventEmitter {
 
     this.isRefreshing = true;
     this.refreshPromise = this.performTokenRefresh();
-    
+
     try {
       await this.refreshPromise;
     } finally {
@@ -258,7 +258,7 @@ export class APIClient extends EventEmitter {
       this.setTokens(tokens);
       await this.storeTokens(tokens);
       this.connectWebSocket();
-      
+
       this.emit('auth:refreshed');
     } catch (error) {
       this.clearTokens();
@@ -299,8 +299,8 @@ export class APIClient extends EventEmitter {
       ...config,
       onFailedAttempt: (error) => {
         const errorMessage = error instanceof Error ? error.message :
-                           (error as any)?.cause?.message ||
-                           'Unknown error';
+          (error as any)?.cause?.message ||
+          'Unknown error';
         console.warn(`API request failed (attempt ${error.attemptNumber}):`, errorMessage);
 
         // Log more details for debugging
@@ -322,11 +322,11 @@ export class APIClient extends EventEmitter {
     });
 
     const validated = loginResponseSchema.parse(response.data);
-    
+
     this.setTokens(validated.tokens);
     await this.storeTokens(validated.tokens);
     this.connectWebSocket();
-    
+
     this.emit('auth:login', validated.user);
     return validated;
   }
@@ -337,7 +337,7 @@ export class APIClient extends EventEmitter {
     });
 
     const validated = registerResponseSchema.parse(response.data);
-    
+
     // Only set tokens and connect if the user doesn't require confirmation
     if (validated.tokens && validated.user && !validated.requiresConfirmation) {
       this.setTokens(validated.tokens);
@@ -347,7 +347,7 @@ export class APIClient extends EventEmitter {
     } else if (validated.requiresConfirmation) {
       this.emit('auth:confirmation_required', { email, message: validated.message });
     }
-    
+
     return validated;
   }
 
@@ -447,9 +447,6 @@ export class APIClient extends EventEmitter {
     if (metadata.language) formData.append('language', metadata.language);
 
     const response = await this.client.post('/api/upload/audio', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
       onUploadProgress: (progressEvent) => {
         if (onProgress && progressEvent.total) {
           const progress = (progressEvent.loaded / progressEvent.total) * 100;
@@ -581,9 +578,6 @@ export class APIClient extends EventEmitter {
     });
 
     const response = await this.client.post(`/api/batch/jobs/${jobId}/items`, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
       onUploadProgress: (progressEvent) => {
         if (onProgress && progressEvent.total) {
           const progress = (progressEvent.loaded / progressEvent.total) * 100;
@@ -639,7 +633,7 @@ export class APIClient extends EventEmitter {
   // ===== WHISPER TRANSCRIPTION METHODS =====
 
   async transcribeWithWhisper(
-    filePathOrFile: string | File, 
+    filePathOrFile: string | File,
     options: {
       model?: string;
       language?: string;
@@ -655,11 +649,7 @@ export class APIClient extends EventEmitter {
         formData.append('language', options.language || 'auto');
         formData.append('task', options.task || 'transcribe');
 
-        return this.client.post('/api/whisper/transcribe/local', formData, {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        });
+        return this.client.post('/api/whisper/transcribe/local', formData);
       } else {
         // For file paths, send as JSON (for already uploaded files)
         return this.client.post('/api/whisper/transcribe/local', {

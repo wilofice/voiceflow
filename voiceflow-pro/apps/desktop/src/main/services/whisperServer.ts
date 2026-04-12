@@ -91,7 +91,7 @@ export class WhisperServerService {
 
   constructor(config?: Partial<WhisperServerConfig>) {
     this.startTime = Date.now();
-    
+
     this.config = {
       whisperBinaryPath: config?.whisperBinaryPath || this.findWhisperBinary(),
       modelsPath: config?.modelsPath || this.getDefaultModelsPath(),
@@ -111,19 +111,19 @@ export class WhisperServerService {
    */
   private async initializeService(): Promise<void> {
     console.log('🎙️ Initializing Whisper Server Service...');
-    
+
     try {
       // Create temp directory
       await fs.mkdir(this.config.tempPath, { recursive: true });
-      
+
       // Update health status
       await this.updateHealthStatus();
-      
+
       console.log(`✅ Whisper Server Service initialized successfully`);
       console.log(`📍 Binary: ${this.config.whisperBinaryPath}`);
       console.log(`📁 Models: ${this.config.modelsPath}`);
       console.log(`🔧 Default Model: ${this.config.defaultModel}`);
-      
+
     } catch (error) {
       console.error('❌ Failed to initialize Whisper Server Service:', error);
       throw error;
@@ -134,7 +134,7 @@ export class WhisperServerService {
    * Transcribe an audio file using local whisper.cpp
    */
   async transcribeFile(
-    filePath: string, 
+    filePath: string,
     options: WhisperOptions = {}
   ): Promise<TranscriptionResult> {
     const jobId = randomUUID();
@@ -152,7 +152,7 @@ export class WhisperServerService {
     try {
       // Check if file exists
       await fs.access(filePath);
-      
+
       // Update job status
       job.status = 'processing';
       job.progress = 10;
@@ -163,7 +163,7 @@ export class WhisperServerService {
 
       // Execute whisper
       const result = await this.executeWhisper(command, jobId);
-      
+
       // Process results
       const processingTime = Date.now() - startTime;
       const transcriptionResult: TranscriptionResult = {
@@ -192,7 +192,7 @@ export class WhisperServerService {
 
       console.error(`❌ Transcription failed for job ${jobId}:`, error);
       throw new Error(`Whisper transcription failed: ${error.message}`);
-      
+
     } finally {
       // Clean up job after some time
       setTimeout(() => {
@@ -206,18 +206,18 @@ export class WhisperServerService {
    */
   async getAvailableModels(): Promise<ModelInfo[]> {
     const models: ModelInfo[] = [];
-    
+
     const modelNames: WhisperModel[] = [
-      'tiny', 'tiny.en', 'base', 'base.en', 
+      'tiny', 'tiny.en', 'base', 'base.en',
       'small', 'small.en', 'medium', 'medium.en'
     ];
 
     for (const modelName of modelNames) {
       const modelPath = path.join(this.config.modelsPath, `ggml-${modelName}.bin`);
-      
+
       let size = 0;
       let exists = false;
-      
+
       try {
         const stats = await fs.stat(modelPath);
         size = stats.size;
@@ -277,7 +277,7 @@ export class WhisperServerService {
    * Build whisper command arguments
    */
   private async buildWhisperCommand(
-    filePath: string, 
+    filePath: string,
     options: WhisperOptions
   ): Promise<string[]> {
     const model = options.model || this.config.defaultModel;
@@ -326,20 +326,20 @@ export class WhisperServerService {
    * Execute whisper command and parse results
    */
   private async executeWhisper(
-    command: string[], 
+    command: string[],
     jobId: string
   ): Promise<TranscriptionResult> {
     return new Promise((resolve, reject) => {
       let stdout = '';
       let stderr = '';
-      
+
       const process: ChildProcess = spawn(command[0], command.slice(1), {
         stdio: ['pipe', 'pipe', 'pipe']
       });
 
       process.stdout?.on('data', (data) => {
         stdout += data.toString();
-        
+
         // Update progress based on output
         const job = this.processingJobs.get(jobId);
         if (job) {
@@ -395,7 +395,7 @@ export class WhisperServerService {
       }
 
       const parsed = JSON.parse(jsonMatch[0]);
-      
+
       return {
         text: parsed.text || '',
         segments: parsed.segments || [],
@@ -422,7 +422,7 @@ export class WhisperServerService {
    */
   private async updateHealthStatus(): Promise<void> {
     const availableModels = await this.getAvailableModels();
-    
+
     let whisperBinary = false;
     try {
       await fs.access(this.config.whisperBinaryPath);
@@ -444,8 +444,8 @@ export class WhisperServerService {
       .map(m => m.name);
 
     this.healthStatus = {
-      status: whisperBinary && modelsDirectory && existingModels.length > 0 
-        ? 'healthy' 
+      status: whisperBinary && modelsDirectory && existingModels.length > 0
+        ? 'healthy'
         : 'unhealthy',
       whisperBinary,
       modelsDirectory,
@@ -480,7 +480,8 @@ export class WhisperServerService {
       }
     }
 
-    throw new Error('Whisper binary not found. Please install whisper.cpp or set WHISPER_BINARY_PATH');
+    console.warn('⚠️ Whisper binary not found. Backend initialized safely, but transcription features requiring whisper.cpp will be disabled.');
+    return 'whisper-not-found';
   }
 
   /**

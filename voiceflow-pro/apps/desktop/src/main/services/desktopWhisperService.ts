@@ -13,12 +13,12 @@ import * as log from 'electron-log';
 import { WhisperServerService } from './whisperServer';
 
 export interface DesktopWhisperConfig {
-  model: string;
-  language?: string;
-  task?: 'transcribe' | 'translate';
-  wordTimestamps?: boolean;
-  temperature?: number;
-  maxTokens?: number;
+    model: string;
+    language?: string;
+    task?: 'transcribe' | 'translate';
+    wordTimestamps?: boolean;
+    temperature?: number;
+    maxTokens?: number;
 }
 
 export class DesktopWhisperService {
@@ -29,12 +29,12 @@ export class DesktopWhisperService {
 
     constructor() {
         log.info('DesktopWhisperService: Initializing...');
-        
+
         const userDataPath = app.getPath('userData');
-        
+
         // Find the best available whisper binary
         this.whisperBinaryPath = this.findBestWhisperBinary();
-        
+
         // Configure WhisperServerService for desktop use
         this.whisperServer = new WhisperServerService({
             whisperBinaryPath: this.whisperBinaryPath,
@@ -45,7 +45,7 @@ export class DesktopWhisperService {
             cleanupTempFiles: true,
             logLevel: 1
         });
-        
+
         log.info(`DesktopWhisperService: Using ${this.whisperType} whisper at ${this.whisperBinaryPath}`);
     }
 
@@ -54,30 +54,30 @@ export class DesktopWhisperService {
      */
     private findBestWhisperBinary(): string {
         const userDataPath = app.getPath('userData');
-        
+
         // Try whisper binaries in order of preference
         const candidates = [
             // 1. Local whisper.cpp installation (fastest)
             path.join(userDataPath, 'whisper', 'whisper'),
             '/opt/whisper/whisper',
-            
+
             // 2. Python whisper (current working setup)
             '/Users/galahassa/.local/bin/whisper',
             path.join(process.env.HOME || '', '.local', 'bin', 'whisper'),
-            
+
             // 3. System PATH
             'whisper'
         ];
-        
+
         for (const candidate of candidates) {
             try {
                 // Test if binary exists and works
-                const result = execSync(`"${candidate}" --help`, { 
+                const result = execSync(`"${candidate}" --help`, {
                     timeout: 5000,
                     encoding: 'utf8',
                     stdio: 'pipe'
                 });
-                
+
                 // Determine binary type from help output
                 if (result.includes('whisper.cpp') || result.includes('ggerganov')) {
                     this.whisperType = 'cpp';
@@ -89,17 +89,18 @@ export class DesktopWhisperService {
                     this.whisperType = 'unknown';
                     log.info(`DesktopWhisperService: Found unknown whisper binary: ${candidate}`);
                 }
-                
+
                 return candidate;
-                
+
             } catch (_error) {
                 log.debug(`DesktopWhisperService: Binary not available: ${candidate}`);
                 continue;
             }
         }
-        
+
         // No working binary found
-        throw new Error('No whisper binary found. Please install whisper via pip or run the whisper.cpp setup script.');
+        log.warn('⚠️ No whisper binary found. Desktop app will initialize without local transcription capabilities.');
+        return 'whisper-not-found';
     }
 
     /**
@@ -113,21 +114,21 @@ export class DesktopWhisperService {
 
         try {
             log.info('DesktopWhisperService: Testing whisper binary availability...');
-            
+
             // Test whisper server health
             const healthStatus = await this.whisperServer.getHealthStatus();
-            
+
             if (!healthStatus.whisperBinary) {
-                throw new Error(`Whisper binary not accessible at ${this.whisperBinaryPath}`);
+                log.warn(`⚠️ DesktopWhisperService: Whisper binary not accessible at ${this.whisperBinaryPath}. Transcription will fail if attempted.`);
+            } else {
+                log.info('DesktopWhisperService: Health check passed');
+                log.info(`Available models: ${healthStatus.availableModels.join(', ')}`);
+                log.info(`System info: ${healthStatus.systemInfo.platform} ${healthStatus.systemInfo.arch}, ${healthStatus.systemInfo.cpus} CPUs`);
             }
-            
-            log.info('DesktopWhisperService: Health check passed');
-            log.info(`Available models: ${healthStatus.availableModels.join(', ')}`);
-            log.info(`System info: ${healthStatus.systemInfo.platform} ${healthStatus.systemInfo.arch}, ${healthStatus.systemInfo.cpus} CPUs`);
-            
+
             this.initialized = true;
-            log.info('DesktopWhisperService: Initialized successfully');
-            
+            log.info(`DesktopWhisperService: Initialized successfully (binary working: ${healthStatus.whisperBinary})`);
+
         } catch (error) {
             log.error('DesktopWhisperService: Failed to initialize:', error);
             throw new Error(`DesktopWhisperService initialization failed: ${error instanceof Error ? error.message : String(error)}`);
@@ -144,22 +145,22 @@ export class DesktopWhisperService {
 
         try {
             log.info(`DesktopWhisperService: Model ${config.model} requested - no pre-loading needed`);
-            
+
             // For whisper binaries, models are loaded on-demand during transcription
             // Just verify the model is available
             const availableModels = await this.whisperServer.getAvailableModels();
             const modelExists = availableModels.some((m: any) => m.name === config.model && m.exists);
-            
+
             if (!modelExists) {
                 const availableNames = availableModels.filter((m: any) => m.exists).map((m: any) => m.name);
-                return { 
-                    success: false, 
-                    error: `Model '${config.model}' not found. Available models: ${availableNames.join(', ')}` 
+                return {
+                    success: false,
+                    error: `Model '${config.model}' not found. Available models: ${availableNames.join(', ')}`
                 };
             }
-            
+
             return { success: true };
-            
+
         } catch (error) {
             const message = error instanceof Error ? error.message : String(error);
             log.error(`DesktopWhisperService: Model initialization failed:`, error);
@@ -171,7 +172,7 @@ export class DesktopWhisperService {
      * Transcribe an audio file
      */
     async transcribeFile(
-        filePath: string, 
+        filePath: string,
         config: DesktopWhisperConfig
     ): Promise<{ success: boolean; result?: any; error?: string }> {
         if (!this.initialized) {
@@ -181,7 +182,7 @@ export class DesktopWhisperService {
         try {
             log.info(`DesktopWhisperService: Starting transcription of ${filePath}`);
             log.info(`Config: model=${config.model}, language=${config.language || 'auto'}, task=${config.task || 'transcribe'}`);
-            
+
             // Convert our config to WhisperServerService format
             const serverConfig = {
                 model: config.model as any,
@@ -192,21 +193,21 @@ export class DesktopWhisperService {
                 maxTokens: config.maxTokens,
                 outputFormat: 'json' as const
             };
-            
+
             // Use the existing WhisperServerService
             const result = await this.whisperServer.transcribeFile(filePath, serverConfig);
-            
+
             log.info(`DesktopWhisperService: Transcription completed in ${result.processingTime}ms`);
-            
-            return { 
-                success: true, 
+
+            return {
+                success: true,
                 result: {
                     ...result,
                     method: `whisper-desktop-${this.whisperType}`,
                     binaryPath: this.whisperBinaryPath
                 }
             };
-            
+
         } catch (error) {
             const message = error instanceof Error ? error.message : String(error);
             log.error(`DesktopWhisperService: Transcription failed:`, error);
@@ -259,8 +260,8 @@ export class DesktopWhisperService {
     async getHealthStatus(): Promise<{ success: boolean; status?: any; error?: string }> {
         try {
             const status = await this.whisperServer.getHealthStatus();
-            return { 
-                success: true, 
+            return {
+                success: true,
                 status: {
                     ...status,
                     whisperType: this.whisperType,
@@ -299,7 +300,7 @@ export class DesktopWhisperService {
      */
     async cleanup(): Promise<void> {
         log.info('DesktopWhisperService: Cleaning up...');
-        
+
         try {
             // Cancel all active jobs
             const jobs = await this.whisperServer.getActiveJobs();
@@ -308,10 +309,10 @@ export class DesktopWhisperService {
                     await this.whisperServer.cancelJob(job.id);
                 }
             }
-            
+
             this.initialized = false;
             log.info('DesktopWhisperService: Cleanup completed');
-            
+
         } catch (error) {
             log.error('DesktopWhisperService: Error during cleanup:', error);
         }

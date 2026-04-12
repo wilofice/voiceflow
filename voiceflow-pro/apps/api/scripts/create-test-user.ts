@@ -3,8 +3,8 @@ import { supabaseAdmin } from '../src/lib/supabase'; // adjust path if you put t
 
 async function createTestUser() {
   const { data, error } = await supabaseAdmin.auth.admin.createUser({
-    email: 'tuser@example.com',
-    password: 'Azerty123!',
+    email: 'user@flow.com',
+    password: 'azerty123',
     email_confirm: true,           // marks the user as verified immediately
     user_metadata: {
       name: 'Test User',
