@@ -131,6 +131,14 @@ export class APIClient extends EventEmitter {
     // Request interceptor for auth
     this.client.interceptors.request.use(
       async (config) => {
+        // Strip the global 'application/json' header for file uploads
+        // so the browser can natively inject 'multipart/form-data; boundary=---'
+        if (config.data instanceof FormData) {
+          if (config.headers) {
+            delete config.headers['Content-Type'];
+          }
+        }
+
         // Add auth token if available
         if (this.accessToken) {
           // Check if token is expired (with 1 minute buffer)
