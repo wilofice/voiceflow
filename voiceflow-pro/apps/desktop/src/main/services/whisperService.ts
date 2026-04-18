@@ -94,8 +94,13 @@ export class WhisperService {
     }
 
     async transcribeFile(filePath: string, config: WhisperConfig): Promise<TranscriptionResult> {
-        if (!this.initialized || !this.engine) {
-            throw new Error('WhisperService not initialized or no model loaded');
+        if (!this.initialized) {
+            await this.initialize();
+        }
+
+        if (!this.engine || this.currentModel !== config.model) {
+            log.info(`Model ${config.model} not loaded. Initializing now...`);
+            await this.initializeModel(config);
         }
 
         const jobId = this.generateJobId();
