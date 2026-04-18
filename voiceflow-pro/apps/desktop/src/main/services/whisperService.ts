@@ -8,8 +8,9 @@ import ffmpegInstaller from '@ffmpeg-installer/ffmpeg';
 
 ffmpeg.setFfmpegPath(ffmpegInstaller.path);
 
-// Import the existing WhisperWebEngine from the web app
-// We'll adapt it for Node.js/Electron environment
+// Helper to bypass transpilation of dynamic import() to require() in CommonJS environments
+const dynamicImport = new Function('specifier', 'return import(specifier)');
+
 import { WhisperConfig, TranscriptionResult, TranscriptionSegment } from '../types/whisper';
 
 /**
@@ -36,10 +37,9 @@ export class WhisperService {
             log.info('Initializing WhisperService...');
 
             // Dynamically import the transformers.js library
-            const { pipeline } = await import('@xenova/transformers');
+            const { pipeline, env } = await dynamicImport('@xenova/transformers');
 
             // Set up transformers for Node.js environment
-            const { env } = await import('@xenova/transformers');
             env.allowRemoteModels = true;
             env.allowLocalModels = false;
 
@@ -82,7 +82,7 @@ export class WhisperService {
             const modelId = modelMapping[config.model] || modelMapping['base'];
 
             // Create the transcriber pipeline
-            const { pipeline } = await import('@xenova/transformers');
+            const { pipeline } = await dynamicImport('@xenova/transformers');
             this.engine = await pipeline('automatic-speech-recognition', modelId);
 
             this.currentModel = config.model;
