@@ -2,7 +2,7 @@ import { ipcMain, IpcMainInvokeEvent, dialog, shell } from 'electron';
 import * as log from 'electron-log';
 import Store from 'electron-store';
 
-import { DesktopWhisperService } from '../services/desktopWhisperService';
+import { WhisperService } from '../services/whisperService';
 import { FileImportService } from '../services/fileImportService';
 import { SecureStorageService } from '../services/secureStorageService';
 import { WatchFolderService } from '../services/watchFolderService';
@@ -10,7 +10,7 @@ import { WindowManager } from '../services/windowManager';
 import { WatchRule } from '../types/whisper';
 
 interface Services {
-  whisper: DesktopWhisperService;
+  whisper: WhisperService;
   fileImport: FileImportService;
   watchFolder: WatchFolderService;
   store: Store<any>;
@@ -23,22 +23,22 @@ export function setupIPC(services: Services) {
 
   // App-related handlers
   setupAppHandlers(services);
-  
+
   // Whisper-related handlers
   setupWhisperHandlers(services);
-  
+
   // Watch folder handlers
   setupWatchFolderHandlers(services);
-  
+
   // File system handlers
   setupFileSystemHandlers(services);
-  
+
   // Settings handlers
   setupSettingsHandlers(services);
-  
+
   // Secure storage handlers
   setupSecureStorageHandlers(services);
-  
+
   // Window management handlers
   setupWindowHandlers(services);
 
@@ -64,7 +64,7 @@ function setupAppHandlers(_services: Services) {
   // Show about dialog
   ipcMain.handle('app:show-about', async () => {
     const { version } = require('../../../../package.json');
-    
+
     return dialog.showMessageBox({
       type: 'info',
       title: 'About VoiceFlow Pro',
@@ -211,7 +211,7 @@ function setupWatchFolderHandlers(services: Services) {
 
 function setupFileSystemHandlers(services: Services) {
   const { fileImport } = services;
-  
+
   // Import files using FileImportService
   ipcMain.handle('file-import:open-dialog', async () => {
     try {
@@ -222,7 +222,7 @@ function setupFileSystemHandlers(services: Services) {
       return { success: false, files: [], totalSize: 0, errors: [error instanceof Error ? error.message : String(error)] };
     }
   });
-  
+
   // Import folder
   ipcMain.handle('file-import:open-folder', async () => {
     try {
@@ -233,12 +233,12 @@ function setupFileSystemHandlers(services: Services) {
       return { success: false, files: [], totalSize: 0, errors: [error instanceof Error ? error.message : String(error)] };
     }
   });
-  
+
   // Get supported formats
   ipcMain.handle('file-import:get-formats', () => {
     return fileImport.getSupportedFormats();
   });
-  
+
   // Validate dropped files
   ipcMain.handle('file-import:validate-paths', async (event: IpcMainInvokeEvent, filePaths: string[]) => {
     const validPaths = filePaths.filter(p => fileImport.isFormatSupported(p));
@@ -247,12 +247,12 @@ function setupFileSystemHandlers(services: Services) {
       invalid: filePaths.filter(p => !validPaths.includes(p))
     };
   });
-  
+
   // Process dropped files
   ipcMain.handle('file-import:process-dropped', async (event: IpcMainInvokeEvent, filePaths: string[]) => {
     return fileImport.importFiles(filePaths);
   });
-  
+
   // Show open dialog (legacy)
   ipcMain.handle('fs:show-open-dialog', async (event: IpcMainInvokeEvent, options?: any) => {
     try {
@@ -265,7 +265,7 @@ function setupFileSystemHandlers(services: Services) {
         ],
         ...options
       });
-      
+
       return { success: true, ...result };
     } catch (error) {
       log.error('IPC: Failed to show open dialog:', error);
@@ -284,7 +284,7 @@ function setupFileSystemHandlers(services: Services) {
         ],
         ...options
       });
-      
+
       return { success: true, ...result };
     } catch (error) {
       log.error('IPC: Failed to show save dialog:', error);
@@ -298,7 +298,7 @@ function setupFileSystemHandlers(services: Services) {
       const result = await dialog.showOpenDialog({
         properties: ['openDirectory']
       });
-      
+
       return { success: true, ...result };
     } catch (error) {
       log.error('IPC: Failed to show folder dialog:', error);

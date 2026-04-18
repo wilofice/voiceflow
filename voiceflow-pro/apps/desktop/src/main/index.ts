@@ -16,7 +16,7 @@ if (isDevelopment && process.env.NODE_ENV !== 'development') {
 // Import our services
 import { setupIPC } from './ipc/handlers';
 import { setupURLIngestHandlers } from './ipc/urlIngestHandlers';
-import { DesktopWhisperService } from './services/desktopWhisperService';
+import { WhisperService } from './services/whisperService';
 import { FileImportService } from './services/fileImportService';
 import { SecureStorageService } from './services/secureStorageService';
 import { URLIngestService } from './services/urlIngest/urlIngestService';
@@ -29,7 +29,7 @@ log.transports.file.level = 'info';
 
 class VoiceFlowProApp {
     private windowManager: WindowManager;
-    private whisperService: DesktopWhisperService;
+    private whisperService: WhisperService;
     private fileImportService: FileImportService;
     private watchFolderService: WatchFolderService;
     private urlIngestService: URLIngestService;
@@ -52,7 +52,7 @@ class VoiceFlowProApp {
         });
 
         this.windowManager = new WindowManager(this.store);
-        this.whisperService = new DesktopWhisperService();
+        this.whisperService = new WhisperService();
         this.fileImportService = new FileImportService();
         this.watchFolderService = new WatchFolderService();
         this.urlIngestService = new URLIngestService();
@@ -119,7 +119,7 @@ class VoiceFlowProApp {
                 log.warn('WhisperService initialization failed (will retry on first use):', error);
                 // Continue - we can initialize it later when actually needed
             }
-            
+
             try {
                 await this.watchFolderService.initialize();
                 log.info('WatchFolderService initialized successfully');
@@ -130,7 +130,7 @@ class VoiceFlowProApp {
             // Initialize URL ingest service with whisper
             this.urlIngestService.setWhisperService(this.whisperService);
             log.info('URLIngestService initialized with WhisperService');
-            
+
             log.info('Services initialization completed');
         } catch (error) {
             log.error('Critical error during services initialization:', error);
@@ -155,7 +155,7 @@ class VoiceFlowProApp {
 
     private async createMainWindow() {
         const mainWindow = await this.windowManager.createMainWindow();
-        
+
         // Load the app
         if (isDevelopment) {
             // In development, load from the web dev server if available
@@ -320,7 +320,7 @@ class VoiceFlowProApp {
 
     private setupAutoUpdater() {
         autoUpdater.logger = log;
-        
+
         autoUpdater.on('checking-for-update', () => {
             log.info('Checking for update...');
         });

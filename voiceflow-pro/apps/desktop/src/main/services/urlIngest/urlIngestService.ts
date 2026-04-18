@@ -10,7 +10,7 @@ import { app } from 'electron';
 import * as log from 'electron-log';
 import * as fs from 'fs-extra';
 
-import { DesktopWhisperService } from '../desktopWhisperService';
+import { WhisperService } from '../whisperService';
 
 import { DownloadManager, DownloadOptions, DownloadResult } from './downloadManager';
 import { URLValidatorService, ValidationResult } from './urlValidatorService';
@@ -47,21 +47,21 @@ export interface IngestProgress {
 export class URLIngestService extends EventEmitter {
   private validator: URLValidatorService;
   private downloadManager: DownloadManager;
-  private whisperService: DesktopWhisperService | null;
+  private whisperService: WhisperService | null;
   private activeJobs = new Map<string, IngestResult>();
   private transcriptDir: string;
 
-  constructor(whisperService?: DesktopWhisperService) {
+  constructor(whisperService?: WhisperService) {
     super();
-    
+
     this.validator = new URLValidatorService();
     this.downloadManager = new DownloadManager();
     this.whisperService = whisperService || null;
-    
+
     // Set up transcript directory
     this.transcriptDir = path.join(app.getPath('userData'), 'transcripts');
     fs.ensureDirSync(this.transcriptDir);
-    
+
     // Forward download progress events
     this.downloadManager.on('progress', (progress) => {
       this.emit('progress', {
@@ -72,7 +72,7 @@ export class URLIngestService extends EventEmitter {
         details: progress
       });
     });
-    
+
     log.info('URLIngestService: Initialized');
   }
 
@@ -82,7 +82,7 @@ export class URLIngestService extends EventEmitter {
   async processURL(url: string, options: IngestOptions = {}): Promise<IngestResult> {
     const startTime = Date.now();
     const jobId = this.generateJobId(url);
-    
+
     // Initialize result
     const result: IngestResult = {
       success: false,
@@ -90,60 +90,60 @@ export class URLIngestService extends EventEmitter {
       url,
       provider: null
     };
-    
+
     this.activeJobs.set(jobId, result);
-    
+
     try {
       // Step 1: Validate URL
       log.info(`URLIngestService: Validating URL - ${url}`);
       this.emitProgress(jobId, 'validating', 10, 'Validating URL...');
-      
+
       const validation = await this.validator.validateURL(url);
-      
+
       if (!validation.valid) {
         throw new Error(validation.error || 'Invalid URL');
       }
-      
+
       result.provider = validation.provider;
       result.metadata = validation.metadata;
-      
+
       // Step 2: Download media
       log.info(`URLIngestService: Downloading from ${validation.provider}`);
       this.emitProgress(jobId, 'downloading', 20, 'Starting download...');
-      
+
       const downloadResult = await this.downloadManager.download(
-        url, 
-        validation.provider!, 
+        url,
+        validation.provider!,
         options
       );
-      
+
       if (!downloadResult.success) {
         throw new Error(downloadResult.error || 'Download failed');
       }
-      
+
       result.downloadPath = downloadResult.filePath;
-      
+
       // Merge metadata
       if (downloadResult.metadata) {
         result.metadata = { ...result.metadata, ...downloadResult.metadata };
       }
-      
+
       // Step 3: Transcribe (if requested and whisper is available)
       if (options.autoTranscribe !== false && this.whisperService && result.downloadPath) {
         log.info(`URLIngestService: Starting transcription`);
         this.emitProgress(jobId, 'transcribing', 70, 'Transcribing audio...');
-        
+
         const transcriptResult = await this.transcribeFile(
           result.downloadPath,
           jobId,
           options
         );
-        
+
         if (transcriptResult.success) {
           result.transcriptPath = transcriptResult.outputPath;
           result.transcript = transcriptResult.text;
         }
-        
+
         // Delete original file if requested
         if (options.deleteAfterTranscribe && result.downloadPath) {
           try {
@@ -154,25 +154,25 @@ export class URLIngestService extends EventEmitter {
           }
         }
       }
-      
+
       // Success!
       result.success = true;
       result.duration = Date.now() - startTime;
-      
+
       this.emitProgress(jobId, 'complete', 100, 'Processing complete!');
       log.info(`URLIngestService: Successfully processed ${url} in ${result.duration}ms`);
-      
+
       return result;
-      
+
     } catch (error) {
       log.error(`URLIngestService: Failed to process URL:`, error);
       result.success = false;
       result.error = error instanceof Error ? error.message : 'Processing failed';
       result.duration = Date.now() - startTime;
-      
+
       this.emit('error', { jobId, error: result.error });
       return result;
-      
+
     } finally {
       this.activeJobs.set(jobId, result);
       this.emit('complete', result);
@@ -183,14 +183,14 @@ export class URLIngestService extends EventEmitter {
    * Transcribe a downloaded file
    */
   private async transcribeFile(
-    filePath: string, 
+    filePath: string,
     jobId: string,
     options: IngestOptions
   ): Promise<any> {
     if (!this.whisperService) {
       throw new Error('Whisper service not available');
     }
-    
+
     try {
       // Prepare transcription config
       const config = {
@@ -199,33 +199,33 @@ export class URLIngestService extends EventEmitter {
         task: 'transcribe' as const,
         outputFormat: 'json'
       };
-      
+
       // Start transcription
       const result = await this.whisperService.transcribeFile(filePath, config);
-      
-      if (result.success && result.result) {
+
+      if (result && result.text) {
         // Save transcript to file
         const transcriptName = `${path.basename(filePath, path.extname(filePath))}_transcript.json`;
         const transcriptPath = path.join(this.transcriptDir, transcriptName);
-        
+
         await fs.writeJson(transcriptPath, {
           jobId,
           url: this.activeJobs.get(jobId)?.url,
           filePath,
-          ...result.result,
+          ...result,
           timestamp: new Date().toISOString()
         }, { spaces: 2 });
-        
+
         return {
           success: true,
-          text: result.result.text,
+          text: result.text,
           outputPath: transcriptPath,
-          segments: result.result.segments
+          segments: result.segments
         };
       }
-      
-      throw new Error(result.error || 'Transcription failed');
-      
+
+      throw new Error('Transcription returned empty results or failed');
+
     } catch (error) {
       log.error('URLIngestService: Transcription failed:', error);
       throw error;
@@ -252,7 +252,7 @@ export class URLIngestService extends EventEmitter {
    */
   cancelJob(jobId: string): void {
     this.downloadManager.cancelDownload(jobId);
-    
+
     const job = this.activeJobs.get(jobId);
     if (job) {
       job.success = false;
@@ -289,7 +289,7 @@ export class URLIngestService extends EventEmitter {
   /**
    * Set WhisperService
    */
-  setWhisperService(whisperService: DesktopWhisperService): void {
+  setWhisperService(whisperService: WhisperService): void {
     this.whisperService = whisperService;
   }
 
@@ -318,9 +318,9 @@ export class URLIngestService extends EventEmitter {
    * Emit progress event
    */
   private emitProgress(
-    jobId: string, 
-    stage: IngestProgress['stage'], 
-    percent: number, 
+    jobId: string,
+    stage: IngestProgress['stage'],
+    percent: number,
     message: string,
     details?: any
   ): void {
@@ -331,7 +331,7 @@ export class URLIngestService extends EventEmitter {
       message,
       details
     };
-    
+
     this.emit('progress', progress);
   }
 
