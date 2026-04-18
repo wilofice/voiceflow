@@ -172,7 +172,7 @@ export const VoiceFlowPro: React.FC = () => {
         break;
       case 'record':
         toast({
-          title: "Recording Started", 
+          title: "Recording Started",
           description: "Microphone recording has begun.",
         });
         break;
@@ -201,14 +201,14 @@ export const VoiceFlowPro: React.FC = () => {
     input.multiple = true;
     input.accept = 'audio/*,video/*,.mp3,.wav,.m4a,.mp4,.mov,.aiff,.caf,.ogg,.opus';
     input.style.display = 'none';
-    
+
     input.onchange = (event) => {
       const files = Array.from((event.target as HTMLInputElement).files || []);
       if (files.length > 0) {
         handleFilesDrop(files);
       }
     };
-    
+
     document.body.appendChild(input);
     input.click();
     document.body.removeChild(input);
@@ -234,7 +234,35 @@ export const VoiceFlowPro: React.FC = () => {
 
         console.log('Upload completed:', uploadResponse);
         console.log('Transcript ID:', uploadResponse.transcriptId);
-        console.log('Status:', uploadResponse.status);
+
+        // Native Electron Local Transcription Step
+        if (window.electronAPI && typeof (file as any).path === 'string') {
+          try {
+            console.log('Dispatching native transcription to Electron WhisperService for:', (file as any).path);
+            const transcriptResult = await window.electronAPI.whisper.transcribeFile((file as any).path, {
+              model: 'base',
+              language: 'auto',
+              transcriptId: uploadResponse.transcriptId
+            });
+
+            if (transcriptResult.success && transcriptResult.result) {
+              console.log('Local transcription complete. Updating backend record...');
+              // Update backend API with finalized text and segments
+              await apiClient.updateTranscript(uploadResponse.transcriptId, {
+                text: transcriptResult.result.text,
+                segments: transcriptResult.result.segments,
+                status: 'COMPLETED'
+              });
+              console.log('Backend record updated successfully!');
+            } else {
+              console.warn('Native transcription failed:', transcriptResult.error);
+            }
+          } catch (e) {
+            console.error('Failed to dispatch native transcription:', e);
+          }
+        } else {
+          console.log('Web mode active or file path hidden. Relying on backend transcription entirely.');
+        }
       }
 
       // Refresh transcript list to show the new uploads
@@ -280,7 +308,7 @@ export const VoiceFlowPro: React.FC = () => {
               transcript={selectedTranscript}
               onPlay={() => toast({ title: "Audio", description: "Playback started" })}
               onPause={() => toast({ title: "Audio", description: "Playback paused" })}
-              onSeek={(_time) => {/* Audio seek */}}
+              onSeek={(_time) => {/* Audio seek */ }}
             />
             <AIRecipePanel
               className="w-96"
@@ -312,7 +340,7 @@ export const VoiceFlowPro: React.FC = () => {
         );
       case 'ai-recipes':
         return (
-          <AIRecipePanel 
+          <AIRecipePanel
             onExecute={(recipe, variables) => {
               toast({
                 title: "AI Recipe Executing",
@@ -336,7 +364,7 @@ export const VoiceFlowPro: React.FC = () => {
         );
       default:
         return (
-          <Dashboard 
+          <Dashboard
             onUrlSubmit={handleUrlSubmit}
             onQuickAction={handleQuickAction}
             onTranscriptSelect={handleTranscriptSelect}
@@ -351,7 +379,7 @@ export const VoiceFlowPro: React.FC = () => {
   return (
     <AppShell
       sidebar={
-        <NavigationSidebar 
+        <NavigationSidebar
           onNavigate={handleNavigation}
         />
       }

@@ -66,9 +66,13 @@ export interface CreateTranscriptRequest {
 
 export interface UpdateTranscriptRequest {
   title?: string;
+  status?: 'QUEUED' | 'PROCESSING' | 'COMPLETED' | 'FAILED';
+  text?: string;
   segments?: Array<{
-    id: string;
     text: string;
+    start?: number;
+    end?: number;
+    confidence?: number;
   }>;
 }
 
@@ -122,8 +126,8 @@ export interface RequestConfig {
 
 export interface WebSocketMessage {
   type: 'transcript_progress' | 'transcript_completed' | 'transcript_error' |
-        'batch_job_progress' | 'batch_item_progress' | 'batch_item_completed' |
-        'batch_item_error' | 'batch_job_completed' | 'batch_job_paused' | 'batch_job_resumed';
+  'batch_job_progress' | 'batch_item_progress' | 'batch_item_completed' |
+  'batch_item_error' | 'batch_job_completed' | 'batch_job_paused' | 'batch_job_resumed';
   data: any;
   timestamp: string;
 }

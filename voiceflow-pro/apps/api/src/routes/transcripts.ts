@@ -13,9 +13,12 @@ const createTranscriptSchema = z.object({
 
 const updateTranscriptSchema = z.object({
   title: z.string().optional(),
+  status: z.enum(['QUEUED', 'PROCESSING', 'COMPLETED', 'FAILED']).optional(),
   segments: z.array(z.object({
-    id: z.string().uuid(),
     text: z.string(),
+    start: z.number().optional(),
+    end: z.number().optional(),
+    confidence: z.number().optional(),
   })).optional(),
 });
 
@@ -31,7 +34,7 @@ export async function transcriptRoutes(fastify: FastifyInstance) {
     preHandler: authenticate,
   }, async (request: AuthenticatedRequest, reply: FastifyReply) => {
     const query = querySchema.parse(request.query);
-    
+
     const where = {
       userId: request.user.id,
       deletedAt: null,
@@ -194,24 +197,31 @@ export async function transcriptRoutes(fastify: FastifyInstance) {
       where: { id },
       data: {
         ...(updates.title && { title: updates.title }),
+        ...(updates.status && { status: updates.status }),
       },
       select: {
         id: true,
         title: true,
+        status: true,
         updatedAt: true,
       },
     });
 
-    // Update segments if provided
-    if (updates.segments) {
-      await Promise.all(
-        updates.segments.map(segment =>
-          prisma.transcriptSegment.update({
-            where: { id: segment.id },
-            data: { text: segment.text },
-          })
-        )
-      );
+    // Update segments if provided by deleting old and creating new Xenova results
+    if (updates.segments && updates.segments.length > 0) {
+      await prisma.transcriptSegment.deleteMany({
+        where: { transcriptId: id }
+      });
+
+      await prisma.transcriptSegment.createMany({
+        data: updates.segments.map((segment) => ({
+          transcriptId: id,
+          text: segment.text,
+          startTime: segment.start || 0,
+          endTime: segment.end || 0,
+          confidence: segment.confidence || 1.0
+        }))
+      });
     }
 
     return reply.send({
@@ -319,7 +329,7 @@ export async function transcriptRoutes(fastify: FastifyInstance) {
     try {
       // Queue for retry
       await transcriptionQueue.addJob(transcript.id, transcript.audioUrl!);
-      
+
       // Update status to queued
       await prisma.transcript.update({
         where: { id },
@@ -380,7 +390,7 @@ export async function transcriptRoutes(fastify: FastifyInstance) {
     preHandler: authenticate,
   }, async (request: AuthenticatedRequest, reply: FastifyReply) => {
     const queueStatus = transcriptionQueue.getQueueStatus();
-    
+
     return reply.send({
       queue: queueStatus,
       timestamp: new Date().toISOString(),

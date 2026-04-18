@@ -106,7 +106,7 @@ function setupWhisperHandlers(services: Services) {
     try {
       log.info('IPC: Transcribing file', { filePath, config });
       const result = await whisper.transcribeFile(filePath, config);
-      return result;
+      return { success: true, result };
     } catch (error) {
       log.error('IPC: Failed to transcribe file:', error);
       return { success: false, error: error instanceof Error ? error.message : String(error) };
