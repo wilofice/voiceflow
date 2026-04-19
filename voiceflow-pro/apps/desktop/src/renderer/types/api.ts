@@ -188,6 +188,7 @@ export interface CreateBatchJobRequest {
 export interface UpdateBatchJobRequest {
   name?: string;
   concurrency?: number;
+  status?: BatchJobStatus;
 }
 
 export interface BatchProgressCallback {

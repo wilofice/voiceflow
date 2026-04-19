@@ -24,6 +24,7 @@ interface BatchState {
   isCreating: boolean;
   isUpdating: boolean;
   error: string | null;
+  localFilePaths: Record<string, string>;
 
   // Actions
   fetchJobs: (page?: number, limit?: number, status?: string) => Promise<void>;
@@ -40,6 +41,7 @@ interface BatchState {
   retryItem: (jobId: string, itemId: string) => Promise<void>;
   setCurrentJob: (jobId: string | null) => void;
   clearError: () => void;
+  processJobLocally: (jobId: string) => Promise<void>;
 }
 
 export const useBatchStore = create<BatchState>((set, get) => ({
@@ -51,6 +53,7 @@ export const useBatchStore = create<BatchState>((set, get) => ({
   isCreating: false,
   isUpdating: false,
   error: null,
+  localFilePaths: {},
 
   fetchJobs: async (page = 1, limit = 20, status) => {
     set({ isLoading: true, error: null });
@@ -174,6 +177,9 @@ export const useBatchStore = create<BatchState>((set, get) => ({
         currentJob: currentJob?.id === id ? { ...currentJob, ...updated } : currentJob,
         isLoading: false,
       });
+
+      // FIRE NATIVE ITERATOR LOOP!
+      get().processJobLocally(id);
     } catch (error: any) {
       set({
         isLoading: false,
@@ -248,6 +254,15 @@ export const useBatchStore = create<BatchState>((set, get) => ({
 
   addFiles: async (jobId: string, files: File[]) => {
     set({ isLoading: true, error: null });
+
+    // Store local file paths for local processing MVP capability
+    const newPaths = { ...get().localFilePaths };
+    files.forEach(f => {
+      const path = (f as any).path;
+      if (path) newPaths[`${jobId}_${f.name}`] = path;
+    });
+    set({ localFilePaths: newPaths });
+
     try {
       const result = await apiClient.addFilesToBatch(jobId, files);
 
@@ -353,6 +368,75 @@ export const useBatchStore = create<BatchState>((set, get) => ({
 
   clearError: () => {
     set({ error: null });
+  },
+
+  processJobLocally: async (jobId: string) => {
+    if (!window.electronAPI) {
+      console.warn('Electron API not found, cannot run local batch ingestion.');
+      return;
+    }
+
+    const { jobs, localFilePaths } = get();
+    const job = jobs[jobId];
+    if (!job) return;
+
+    for (const item of job.items) {
+      // Must fetch fresh state on every iteration in case it was cancelled/paused
+      const currentJobState = get().jobs[jobId];
+      if (!currentJobState || currentJobState.status !== 'RUNNING') {
+        console.log('Job is no longer running, stopping local process loop.');
+        break;
+      }
+
+      if (item.status === 'COMPLETED' || item.status === 'PROCESSING') continue;
+
+      const localPath = localFilePaths[`${jobId}_${item.fileName}`];
+      if (!localPath) {
+        console.warn(`Missing local file path for ${item.fileName}, skipping locally...`);
+        continue;
+      }
+
+      try {
+        console.log(`Starting local transcription for: ${item.fileName}`);
+
+        // Optimistic UI state locally + Send to DB: 
+        await apiClient.updateBatchItem(jobId, item.id, { status: 'PROCESSING', progress: 0 });
+
+        const transcriptResult = await window.electronAPI.whisper.transcribeFile(localPath, {
+          model: 'base',
+          language: 'auto',
+          transcriptId: item.transcriptId || undefined
+        });
+
+        if (transcriptResult.success && transcriptResult.result) {
+          if (item.transcriptId) {
+            await apiClient.updateTranscript(item.transcriptId, {
+              status: 'COMPLETED',
+              text: transcriptResult.result.text,
+              segments: transcriptResult.result.segments || []
+            });
+          }
+
+          // Mark batch item as completed
+          await apiClient.updateBatchItem(jobId, item.id, { status: 'COMPLETED', progress: 100 });
+        } else {
+          await apiClient.updateBatchItem(jobId, item.id, { status: 'ERROR', errorMessage: transcriptResult.error });
+        }
+      } catch (err: any) {
+        console.error('Error in processJobLocally item', err);
+        await apiClient.updateBatchItem(jobId, item.id, { status: 'ERROR', errorMessage: err.message });
+      }
+    }
+
+    // Check if the loop finished because all items are completed
+    try {
+      const finalJobCheck = await apiClient.getBatchJob(jobId);
+      if (finalJobCheck && finalJobCheck.items.length > 0 && finalJobCheck.items.every(i => i.status === 'COMPLETED')) {
+        await apiClient.updateBatchJob(jobId, { status: 'COMPLETED' });
+      }
+    } catch (e) {
+      console.error('Failed to auto-complete job', e);
+    }
   },
 }));
 

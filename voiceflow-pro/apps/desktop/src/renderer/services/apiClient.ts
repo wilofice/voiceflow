@@ -618,6 +618,23 @@ export class APIClient extends EventEmitter {
     return item;
   }
 
+  async updateBatchItem(jobId: string, itemId: string, data: Partial<BatchItem>): Promise<BatchItem> {
+    const response = await this.retryableRequest(async () => {
+      return this.client.put(`/api/batch/jobs/${jobId}/items/${itemId}`, data);
+    });
+
+    // Simulate what the websocket used to do directly on the client side:
+    if (data.status === 'COMPLETED') {
+      this.emit('batch:item_completed', { jobId, itemId, item: response.data });
+    } else if (data.status === 'ERROR') {
+      this.emit('batch:item_error', { jobId, itemId, error: data.errorMessage });
+    } else {
+      this.emit('batch:item_progress', { jobId, itemId, progress: data.progress });
+    }
+
+    return response.data;
+  }
+
   // ===== MODEL METHODS =====
 
   async getAvailableModels(): Promise<ModelInfo[]> {

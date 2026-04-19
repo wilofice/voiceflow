@@ -14,6 +14,7 @@ const createBatchJobSchema = z.object({
 const updateBatchJobSchema = z.object({
   name: z.string().min(1).max(255).optional(),
   concurrency: z.number().int().min(1).max(10).optional(),
+  status: z.enum(['DRAFT', 'RUNNING', 'PAUSED', 'COMPLETED', 'ERROR']).optional(),
 });
 
 const addFilesToBatchSchema = z.object({
@@ -295,11 +296,11 @@ export async function batchRoutes(fastify: FastifyInstance) {
         });
       }
 
-      // Start the job
-      await batchQueue.startBatchJob(id);
-
-      const updated = await prisma.batchJob.findUnique({
+      // Instead of dropping it on the backend queue (which requires whisper.cpp),
+      // we strictly set it to RUNNING locally in the DB and let the frontend Electron loop pick it up.
+      const updated = await prisma.batchJob.update({
         where: { id },
+        data: { status: 'RUNNING' }
       });
 
       return reply.send(updated);
@@ -625,6 +626,35 @@ export async function batchRoutes(fastify: FastifyInstance) {
           message: 'Failed to remove item from batch job',
         },
       });
+    }
+  });
+
+  // 11.b Update batch item (Added for local processing support)
+  fastify.put('/jobs/:jobId/items/:itemId', {
+    preHandler: authenticate,
+  }, async (request: AuthenticatedRequest, reply: FastifyReply) => {
+    try {
+      const { jobId, itemId } = request.params as { jobId: string; itemId: string };
+      const data = request.body as any;
+
+      // Verify ownership
+      const batchJob = await prisma.batchJob.findFirst({
+        where: { id: jobId, userId: request.user.id }
+      });
+      if (!batchJob) return reply.status(404).send();
+
+      const updated = await prisma.batchItem.update({
+        where: { id: itemId },
+        data: {
+          status: data.status,
+          progress: data.progress,
+          errorMessage: data.errorMessage
+        }
+      });
+
+      return reply.send(updated);
+    } catch (error) {
+      return reply.status(500).send({ error: 'Failed to update batch item' });
     }
   });
 
