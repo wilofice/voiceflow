@@ -202,41 +202,6 @@ export async function uploadRoutes(fastify: FastifyInstance) {
     }
   });
 
-  // Fast tracking local audio (Offline Electron Mode) to prevent redundant DB Supabase uploads
-  fastify.post('/local-audio', {
-    preHandler: authenticate,
-  }, async (request: AuthenticatedRequest, reply: FastifyReply) => {
-    try {
-      const { fileName, path: absolutePath, metadata } = request.body as any;
-
-      const transcript = await prisma.transcript.create({
-        data: {
-          userId: request.user.id,
-          title: metadata?.title || fileName || 'Untitled',
-          language: metadata?.language || 'en',
-          status: 'QUEUED',
-          audioUrl: absolutePath,
-          duration: 0,
-        },
-        select: { id: true, title: true, status: true, audioUrl: true, createdAt: true },
-      });
-
-      // Place it in Backend Queue for localized running.
-      await transcriptionQueue.addJob(transcript.id, absolutePath);
-
-      return reply.send({
-        uploadId: transcript.id,
-        fileName,
-        fileSize: 0,
-        status: 'QUEUED',
-        transcriptId: transcript.id,
-        audioUrl: null,
-      });
-    } catch (error: any) {
-      return reply.status(500).send({ error: 'Failed to inject local file' });
-    }
-  });
-
   // Get upload status
   fastify.get('/status/:uploadId', {
     preHandler: authenticate,
