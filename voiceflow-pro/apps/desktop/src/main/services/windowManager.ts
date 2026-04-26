@@ -101,6 +101,7 @@ export class WindowManager {
             `style-src-elem ${styleSrc.join(' ')}`,
             `font-src ${fontSrc.join(' ')}`,
             `img-src ${imgSrc.join(' ')}`,
+            `media-src ${connectSrc.join(' ')}`,
             `connect-src ${connectSrc.join(' ')}`
           ].join('; ')
         }
@@ -113,7 +114,7 @@ export class WindowManager {
         mainWindow.maximize();
       }
       mainWindow.show();
-      
+
       // Focus the window
       if (process.platform === 'darwin') {
         mainWindow.focus();
