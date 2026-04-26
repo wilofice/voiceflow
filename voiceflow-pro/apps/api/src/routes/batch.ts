@@ -552,6 +552,58 @@ export async function batchRoutes(fastify: FastifyInstance) {
     }
   });
 
+  // 10.b Add files strictly via absolute paths (Offline Electron Mode) to prevent redundant DB Supabase uploads
+  fastify.post('/jobs/:id/local-items', {
+    preHandler: authenticate,
+  }, async (request: AuthenticatedRequest, reply: FastifyReply) => {
+    try {
+      const { id } = request.params as { id: string };
+      const data = request.body as { items: Array<{ fileName: string, fileSize: number, path: string }> };
+
+      const batchJob = await prisma.batchJob.findFirst({
+        where: { id, userId: request.user.id, deletedAt: null },
+      });
+      if (!batchJob) return reply.status(404).send();
+
+      const createdItems = [];
+
+      for (const item of data.items) {
+        // Fast tracking directly into Database for completely Native-Offline processing
+        const transcript = await prisma.transcript.create({
+          data: {
+            userId: request.user.id,
+            title: item.fileName,
+            language: 'en',
+            status: 'QUEUED',
+            audioUrl: item.path, // We directly use the absolute OS Path here
+            duration: 0,
+          },
+        });
+
+        const batchItem = await prisma.batchItem.create({
+          data: {
+            batchJobId: id,
+            transcriptId: transcript.id,
+            fileName: item.fileName,
+            fileSize: item.fileSize,
+            status: 'PENDING',
+            progress: 0,
+          },
+        });
+        createdItems.push(batchItem);
+      }
+
+      await prisma.batchJob.update({
+        where: { id },
+        data: { totalItems: { increment: createdItems.length } },
+      });
+
+      return reply.send({ added: createdItems.length, items: createdItems });
+    } catch (error) {
+      return reply.status(500).send({ error: 'Failed to inject local files to batch job' });
+    }
+  });
+
   // 11. Remove item from batch
   fastify.delete('/jobs/:jobId/items/:itemId', {
     preHandler: authenticate,

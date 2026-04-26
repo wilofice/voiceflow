@@ -579,6 +579,22 @@ export class APIClient extends EventEmitter {
     files: File[],
     onProgress?: BatchProgressCallback
   ): Promise<{ added: number; items: BatchItem[] }> {
+    // Determine if all files are local OS mapped (Electron injection)
+    const allLocalPaths = files.map(f => (f as any).path).every(path => !!path);
+
+    if (allLocalPaths) {
+      // Offline-First bypass: Write paths exclusively to database without moving 25MB streams memory chunks
+      const payload = files.map(f => ({
+        fileName: f.name,
+        fileSize: f.size,
+        path: (f as any).path
+      }));
+
+      const response = await this.client.post(`/api/batch/jobs/${jobId}/local-items`, { items: payload });
+      this.emit('batch:files_added', { jobId, count: response.data.added });
+      return response.data;
+    }
+
     const formData = new FormData();
 
     files.forEach((file, index) => {

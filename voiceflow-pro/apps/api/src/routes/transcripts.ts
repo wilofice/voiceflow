@@ -5,6 +5,7 @@ import { authenticate, AuthenticatedRequest } from '../middleware/auth';
 import { TranscriptionService } from '../services/transcription';
 import { transcriptionQueue } from '../services/queue';
 import { getSignedUrl, AUDIO_BUCKET } from '../lib/supabase';
+import * as path from 'path';
 import * as fs from 'fs';
 
 const createTranscriptSchema = z.object({
@@ -185,12 +186,12 @@ export async function transcriptRoutes(fastify: FastifyInstance) {
       return reply.status(404).send('Audio not found');
     }
 
-    if (transcript.audioUrl.startsWith('/')) {
+    if (path.isAbsolute(transcript.audioUrl)) {
       if (!fs.existsSync(transcript.audioUrl)) {
-        return reply.status(404).send('Local audio file missing on disk');
+        return reply.status(404).send('Local audio file missing on disk (Offline Mode)');
       }
       const stream = fs.createReadStream(transcript.audioUrl);
-      const ext = transcript.audioUrl.split('.').pop() || 'mpeg';
+      const ext = path.extname(transcript.audioUrl).substring(1) || 'mpeg';
       return reply.type(`audio/${ext}`).send(stream);
     } else if (!transcript.audioUrl.startsWith('http') && !transcript.audioUrl.startsWith('file://')) {
       try {
