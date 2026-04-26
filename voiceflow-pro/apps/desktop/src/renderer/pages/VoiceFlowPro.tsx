@@ -285,12 +285,35 @@ export const VoiceFlowPro: React.FC = () => {
     }
   };
 
-  const handleTranscriptSelect = (transcript: any) => {
-    setSelectedTranscript(transcript);
+  const handleTranscriptSelect = async (transcript: any) => {
+    let transcriptData = transcript;
+
+    // Handle payload from Batch Processor, which only passes a string ID
+    if (typeof transcript === 'string') {
+      try {
+        const found = transcripts.find(t => t.id === transcript);
+        if (found) {
+          transcriptData = found;
+        } else {
+          await useTranscriptStore.getState().fetchTranscript(transcript);
+          transcriptData = useTranscriptStore.getState().currentTranscript;
+        }
+      } catch (error) {
+        toast({ title: 'Error', description: 'Could not load transcript details', variant: 'destructive' });
+        return;
+      }
+    }
+
+    if (!transcriptData) {
+      toast({ title: 'Error', description: 'Transcript not found', variant: 'destructive' });
+      return;
+    }
+
+    setSelectedTranscript(transcriptData);
     setCurrentView('transcript-editor');
     toast({
       title: "Opening Transcript",
-      description: `Loading: ${transcript.title}`,
+      description: `Loading: ${transcriptData.title}`,
     });
   };
 
