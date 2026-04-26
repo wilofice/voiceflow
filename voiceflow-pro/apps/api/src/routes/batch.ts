@@ -17,11 +17,6 @@ const updateBatchJobSchema = z.object({
   status: z.enum(['DRAFT', 'RUNNING', 'PAUSED', 'COMPLETED', 'ERROR']).optional(),
 });
 
-const addFilesToBatchSchema = z.object({
-  // Files will come as multipart form data
-  // Metadata will be in fields
-});
-
 export async function batchRoutes(fastify: FastifyInstance) {
 
   // 1. Create batch job
@@ -79,7 +74,7 @@ export async function batchRoutes(fastify: FastifyInstance) {
 
       const skip = (Number(page) - 1) * Number(limit);
 
-      const where = {
+      const where: any = {
         userId: request.user.id,
         deletedAt: null,
         ...(status && { status }),
