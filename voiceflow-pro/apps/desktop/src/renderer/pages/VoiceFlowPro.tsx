@@ -381,6 +381,14 @@ export const VoiceFlowPro: React.FC = () => {
       sidebar={
         <NavigationSidebar
           onNavigate={handleNavigation}
+          recentFiles={dashboardTranscripts}
+          projects={[]}
+          libraryMetrics={{
+            allTranscripts: transcripts.length,
+            starred: 0, // Coming soon: database starred field
+            recent: dashboardTranscripts.length,
+            watchFolders: 0 // Will map to watchFolderStore later
+          }}
         />
       }
     >

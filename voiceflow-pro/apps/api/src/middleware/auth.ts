@@ -1,13 +1,15 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { prisma } from '@voiceflow-pro/database';
 
+export interface AuthenticatedUser {
+  id: string;
+  email: string;
+  name: string;
+  subscriptionTier: string;
+}
+
 export interface AuthenticatedRequest extends FastifyRequest {
-  user: {
-    id: string;
-    email: string;
-    name: string;
-    subscriptionTier: string;
-  };
+  user: AuthenticatedUser | any;
 }
 
 export async function authenticate(

@@ -4,6 +4,7 @@ import { prisma } from '@voiceflow-pro/database';
 import { authenticate, AuthenticatedRequest } from '../middleware/auth';
 import { TranscriptionService } from '../services/transcription';
 import { transcriptionQueue } from '../services/queue';
+import { getSignedUrl, AUDIO_BUCKET } from '../lib/supabase';
 
 const createTranscriptSchema = z.object({
   uploadId: z.string().uuid(),
@@ -160,6 +161,17 @@ export async function transcriptRoutes(fastify: FastifyInstance) {
           message: 'Transcript not found',
         },
       });
+    }
+
+    // Generate signed URL dynamically for playback if a raw path is stored
+    if (transcript.audioUrl && !transcript.audioUrl.startsWith('http') && !transcript.audioUrl.startsWith('file://')) {
+      try {
+        const signedUrl = await getSignedUrl(AUDIO_BUCKET, transcript.audioUrl);
+        transcript.audioUrl = signedUrl;
+      } catch (error: any) {
+        request.log.error(error, `Failed to generate signed URL for path: ${transcript.audioUrl}`);
+        // Optionally nullify to prevent broken players, or leave it and let player 404 naturally
+      }
     }
 
     return reply.send({

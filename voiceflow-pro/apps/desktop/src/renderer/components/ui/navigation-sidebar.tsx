@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { 
+import {
   Home,
   Mic,
   FileAudio,
@@ -46,7 +46,7 @@ interface Project {
   isActive?: boolean;
 }
 
-interface RecentFile {
+export interface RecentFile {
   id: string;
   title: string;
   status: 'completed' | 'processing' | 'error' | 'queued';
@@ -54,10 +54,18 @@ interface RecentFile {
   timestamp: string;
 }
 
+export interface LibraryMetrics {
+  allTranscripts: number;
+  starred: number;
+  recent: number;
+  watchFolders: number;
+}
+
 interface NavigationSidebarProps {
   className?: string;
   projects?: Project[];
   recentFiles?: RecentFile[];
+  libraryMetrics?: LibraryMetrics;
   onNavigate?: (item: NavigationItem) => void;
 }
 
@@ -68,35 +76,22 @@ const mainNavItems: NavigationItem[] = [
   { id: 'realtime', label: 'Live Transcription', icon: Play, badge: 'Beta' },
 ];
 
-const libraryItems: NavigationItem[] = [
-  { id: 'all-transcripts', label: 'All Transcripts', icon: FileText, badge: 247 },
-  { id: 'starred', label: 'Starred', icon: Star, badge: 12 },
-  { id: 'recent', label: 'Recent', icon: Clock, badge: 8 },
-  { id: 'watch-folders', label: 'Watch Folders', icon: FolderOpen, badge: 3 },
-];
-
-const mockProjects: Project[] = [
-  { id: '1', name: 'Podcast Interviews', color: '#3B82F6', transcriptCount: 45, isActive: true },
-  { id: '2', name: 'Research Sessions', color: '#10B981', transcriptCount: 23 },
-  { id: '3', name: 'Meeting Notes', color: '#F59E0B', transcriptCount: 67 },
-  { id: '4', name: 'Client Calls', color: '#EF4444', transcriptCount: 31 },
-];
-
-const mockRecentFiles: RecentFile[] = [
-  { id: '1', title: 'Team Standup 03-15', status: 'completed', duration: '23:45', timestamp: '2 hours ago' },
-  { id: '2', title: 'Customer Interview #12', status: 'processing', timestamp: '1 hour ago' },
-  { id: '3', title: 'Podcast Episode 47', status: 'completed', duration: '1:12:33', timestamp: '3 hours ago' },
-  { id: '4', title: 'Research Call - Sarah', status: 'error', timestamp: '5 hours ago' },
-];
-
 export const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
   className,
-  projects = mockProjects,
-  recentFiles = mockRecentFiles,
+  projects = [],
+  recentFiles = [],
+  libraryMetrics = { allTranscripts: 0, starred: 0, recent: 0, watchFolders: 0 },
   onNavigate,
 }) => {
   const [expandedProjects, setExpandedProjects] = useState(true);
   const [expandedRecent, setExpandedRecent] = useState(true);
+
+  const libraryItems: NavigationItem[] = [
+    { id: 'all-transcripts', label: 'All Transcripts', icon: FileText, badge: libraryMetrics.allTranscripts },
+    { id: 'starred', label: 'Starred', icon: Star, badge: libraryMetrics.starred },
+    { id: 'recent', label: 'Recent', icon: Clock, badge: libraryMetrics.recent },
+    { id: 'watch-folders', label: 'Watch Folders', icon: FolderOpen, badge: libraryMetrics.watchFolders },
+  ];
 
   const getStatusColor = (status: RecentFile['status']) => {
     switch (status) {
@@ -143,8 +138,8 @@ export const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
                     variant={item.isActive ? "default" : "ghost"}
                     className={cn(
                       "w-full justify-start gap-3 h-10 focus-ring",
-                      item.isActive 
-                        ? "bg-sidebar-accent text-sidebar-accent-foreground" 
+                      item.isActive
+                        ? "bg-sidebar-accent text-sidebar-accent-foreground"
                         : "hover:bg-sidebar-accent/50 text-sidebar-foreground"
                     )}
                     onClick={() => onNavigate?.(item)}
@@ -153,7 +148,7 @@ export const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
                     <Icon className="w-4 h-4" />
                     <span className="flex-1 text-left">{item.label}</span>
                     {item.badge && (
-                      <Badge 
+                      <Badge
                         variant={typeof item.badge === 'string' ? 'secondary' : 'outline'}
                         className="text-xs"
                       >
@@ -215,7 +210,7 @@ export const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
                 Projects
               </h3>
             </Button>
-            
+
             <motion.div
               initial={false}
               animate={{ height: expandedProjects ? 'auto' : 0, opacity: expandedProjects ? 1 : 0 }}
@@ -229,15 +224,15 @@ export const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
                     variant="ghost"
                     className={cn(
                       "w-full justify-start gap-3 h-9 hover:bg-sidebar-accent/50 focus-ring",
-                      project.isActive 
-                        ? "bg-sidebar-accent/30 text-sidebar-accent-foreground" 
+                      project.isActive
+                        ? "bg-sidebar-accent/30 text-sidebar-accent-foreground"
                         : "text-sidebar-foreground"
                     )}
                     onClick={() => onNavigate?.({ id: project.id, label: project.name, icon: Folder })}
                     data-testid={`project-${project.id}`}
                   >
-                    <div 
-                      className="w-3 h-3 rounded-full flex-shrink-0" 
+                    <div
+                      className="w-3 h-3 rounded-full flex-shrink-0"
                       style={{ backgroundColor: project.color }}
                     />
                     <span className="flex-1 text-left truncate">{project.name}</span>
@@ -268,7 +263,7 @@ export const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
                 Recent Files
               </h3>
             </Button>
-            
+
             <motion.div
               initial={false}
               animate={{ height: expandedRecent ? 'auto' : 0, opacity: expandedRecent ? 1 : 0 }}
