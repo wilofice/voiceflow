@@ -334,6 +334,7 @@ export const VoiceFlowPro: React.FC = () => {
               <BatchProcessor
                 jobId={selectedBatchJobId}
                 onJobChange={setSelectedBatchJobId}
+                onTranscriptClick={handleTranscriptSelect}
               />
             </div>
           </div>

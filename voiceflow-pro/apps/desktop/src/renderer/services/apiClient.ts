@@ -448,6 +448,32 @@ export class APIClient extends EventEmitter {
     metadata: UploadMetadata = {},
     onProgress?: ProgressCallback
   ): Promise<UploadResponse> {
+    const filePath = (file as any).path;
+
+    // Offline-First bypass for native Desktop usage
+    if (filePath) {
+      if (onProgress) onProgress(10, 0, file.size); // Fake init
+      const response = await this.client.post('/api/upload/local-audio', {
+        fileName: file.name,
+        fileSize: file.size,
+        path: filePath,
+        metadata
+      });
+      if (onProgress) onProgress(100, file.size, file.size); // Fake finish
+
+      const upload = response.data;
+      const normalizedUpload: UploadResponse = {
+        ...upload,
+        id: upload.uploadId || upload.transcriptId,
+        filename: upload.fileName,
+        size: upload.fileSize,
+        url: upload.audioUrl,
+      };
+
+      this.emit('upload:completed', normalizedUpload);
+      return normalizedUpload;
+    }
+
     const formData = new FormData();
     formData.append('file', file);
 

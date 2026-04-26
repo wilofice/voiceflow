@@ -36,12 +36,14 @@ interface BatchProcessorProps {
   className?: string;
   jobId?: string | null;
   onJobChange?: (jobId: string | null) => void;
+  onTranscriptClick?: (transcriptId: string) => void;
 }
 
 export const BatchProcessor: React.FC<BatchProcessorProps> = ({
   className,
   jobId,
   onJobChange,
+  onTranscriptClick,
 }) => {
   const { toast } = useToast();
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
@@ -320,7 +322,7 @@ export const BatchProcessor: React.FC<BatchProcessorProps> = ({
             )}
           </div>
         </div>
-        
+
         <div className="flex items-center gap-3">
           {job.status === 'DRAFT' && (
             <div {...getRootProps()}>
@@ -394,7 +396,7 @@ export const BatchProcessor: React.FC<BatchProcessorProps> = ({
               <Progress value={overallProgress} className="mt-2" />
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
@@ -408,7 +410,7 @@ export const BatchProcessor: React.FC<BatchProcessorProps> = ({
               </div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
@@ -427,7 +429,7 @@ export const BatchProcessor: React.FC<BatchProcessorProps> = ({
               </div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
@@ -522,7 +524,7 @@ export const BatchProcessor: React.FC<BatchProcessorProps> = ({
               </div>
             )}
           </div>
-          
+
           <div className="space-y-2">
             {items.map((item, index) => (
               <motion.div
@@ -531,7 +533,7 @@ export const BatchProcessor: React.FC<BatchProcessorProps> = ({
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.05 }}
               >
-                <Card 
+                <Card
                   className={cn(
                     "hover:bg-surface-alt/30 transition-colors cursor-pointer",
                     selectedItems.has(item.id) && "bg-surface-alt/50 ring-1 ring-primary"
@@ -550,6 +552,11 @@ export const BatchProcessor: React.FC<BatchProcessorProps> = ({
                     }
                     setSelectedItems(newSelected);
                   }}
+                  onDoubleClick={(e) => {
+                    if (item.status === 'COMPLETED' && onTranscriptClick && item.transcriptId) {
+                      onTranscriptClick(item.transcriptId);
+                    }
+                  }}
                   data-testid={`batch-item-${item.id}`}
                 >
                   <CardContent className="p-4">
@@ -558,7 +565,7 @@ export const BatchProcessor: React.FC<BatchProcessorProps> = ({
                       <div className="flex-shrink-0">
                         {getStatusIcon(item.status)}
                       </div>
-                      
+
                       {/* File Icon & Name */}
                       <div className="flex items-center gap-3 flex-1 min-w-0">
                         <div className="w-10 h-10 rounded-lg bg-gradient-surface flex items-center justify-center flex-shrink-0">
@@ -581,7 +588,7 @@ export const BatchProcessor: React.FC<BatchProcessorProps> = ({
                           </div>
                         </div>
                       </div>
-                      
+
                       {/* Progress & Status */}
                       <div className="flex items-center gap-4 flex-shrink-0">
                         {item.status === 'PROCESSING' && (
@@ -595,6 +602,20 @@ export const BatchProcessor: React.FC<BatchProcessorProps> = ({
                         )}
 
                         {getStatusBadge(item.status)}
+
+                        {item.status === 'COMPLETED' && onTranscriptClick && item.transcriptId && (
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            className="ml-2 focus-ring"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onTranscriptClick(item.transcriptId!);
+                            }}
+                          >
+                            Open
+                          </Button>
+                        )}
 
                         {/* Remove button - only show for DRAFT jobs */}
                         {job.status === 'DRAFT' && (
@@ -612,7 +633,7 @@ export const BatchProcessor: React.FC<BatchProcessorProps> = ({
                         )}
                       </div>
                     </div>
-                    
+
                     {/* Error Message */}
                     {item.status === 'ERROR' && item.errorMessage && (
                       <div className="mt-3 p-3 rounded-md bg-danger/10 border border-danger/20">
