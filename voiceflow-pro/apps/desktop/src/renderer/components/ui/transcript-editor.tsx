@@ -30,6 +30,7 @@ import { Slider } from '@/components/ui/slider';
 import { cn } from '@/lib/utils';
 import { apiClient } from '../../services/apiClient';
 import type { Transcript } from '../../types/api';
+import { useToast } from '../../hooks/use-toast';
 
 
 interface Segment {
@@ -84,6 +85,7 @@ export const TranscriptEditor: React.FC<TranscriptEditorProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [volume, setVolume] = useState([0.8]);
   const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
   const [fullTranscript, setFullTranscript] = useState<Transcript | null>(null);
   const [mappedSegments, setMappedSegments] = useState<Segment[]>([]);
   const [mappedSpeakers, setMappedSpeakers] = useState<Speaker[]>([]);
@@ -212,14 +214,31 @@ export const TranscriptEditor: React.FC<TranscriptEditorProps> = ({
     const audio = audioRef.current;
     if (!audio) return;
 
+    if (!audioUrl) {
+      toast({
+        title: "Audio Unavailable",
+        description: "No audio file is attached to this transcript. Was it processed locally or deleted?",
+        variant: "destructive"
+      });
+      return;
+    }
+
     if (internalIsPlaying) {
       audio.pause();
       onPause?.();
     } else {
-      audio.play().catch(error => console.error('Failed to play audio:', error));
-      onPlay?.();
+      audio.play().then(() => {
+        onPlay?.();
+      }).catch(error => {
+        console.error('Failed to play audio:', error);
+        toast({
+          title: "Playback Error",
+          description: `Cannot play audio. URL: ${audioUrl?.substring(0, 50)}...`,
+          variant: "destructive"
+        });
+      });
     }
-  }, [internalIsPlaying, onPlay, onPause]);
+  }, [internalIsPlaying, onPlay, onPause, audioUrl, toast]);
 
   // Handle seek
   const handleSeekInternal = useCallback((ms: number) => {

@@ -1,4 +1,5 @@
 import * as path from 'path';
+import * as os from 'os';
 
 import { BrowserWindow } from 'electron';
 import * as log from 'electron-log';
@@ -199,42 +200,41 @@ export class WhisperService {
     }
 
     async loadAudioFile(filePath: string): Promise<Float32Array> {
-        return new Promise((resolve, reject) => {
+        return new Promise(async (resolve, reject) => {
             try {
-                const chunks: Buffer[] = [];
                 log.info(`Decoding audio from ${filePath} using FFmpeg...`);
 
+                // We use a temporary file to bypass Node.js stream backpressure that crashes fluent-ffmpeg natively
+                const tempFilePath = path.join(os.tmpdir(), `whisper_${Date.now()}_${Math.random().toString(36).substring(2)}.pcm`);
+
                 // Whisper expects: 16kHz, 1 channel (mono), 32-bit float Little Endian
-                const command = ffmpeg(filePath)
+                ffmpeg(filePath)
                     .audioChannels(1)
                     .audioFrequency(16000)
                     .format('f32le')
+                    .on('end', async () => {
+                        try {
+                            log.info(`FFmpeg decoding finished. Reading temp PCM file for ${filePath}`);
+                            const buffer = await fs.readFile(tempFilePath);
+                            const audioData = new Float32Array(
+                                buffer.buffer,
+                                buffer.byteOffset,
+                                buffer.byteLength / 4
+                            );
+                            // Safely clean up
+                            await fs.remove(tempFilePath).catch(e => log.warn("Temp cleanup failed", e));
+                            resolve(audioData);
+                        } catch (e) {
+                            reject(e);
+                        }
+                    })
                     .on('error', (err: Error) => {
                         log.error(`FFmpeg processing failed for ${filePath}:`, err);
+                        fs.remove(tempFilePath).catch(() => { });
                         reject(new Error(`FFmpeg error: ${err.message}`));
-                    });
+                    })
+                    .save(tempFilePath);
 
-                const stream = command.pipe();
-
-                stream.on('data', (chunk: Buffer) => {
-                    chunks.push(chunk);
-                });
-
-                stream.on('end', () => {
-                    log.info(`FFmpeg decoding finished for ${filePath}`);
-                    const mergedBuffer = Buffer.concat(chunks);
-                    const audioData = new Float32Array(
-                        mergedBuffer.buffer,
-                        mergedBuffer.byteOffset,
-                        mergedBuffer.byteLength / 4
-                    );
-                    resolve(audioData);
-                });
-
-                stream.on('error', (err: Error) => {
-                    log.error(`FFmpeg stream error for ${filePath}:`, err);
-                    reject(err);
-                });
             } catch (error) {
                 log.error(`Failed to setup audio pipeline for ${filePath}:`, error);
                 reject(new Error(`Audio pipeline error: ${error instanceof Error ? error.message : String(error)}`));

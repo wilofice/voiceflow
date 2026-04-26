@@ -5,6 +5,7 @@ import { authenticate, AuthenticatedRequest } from '../middleware/auth';
 import { TranscriptionService } from '../services/transcription';
 import { transcriptionQueue } from '../services/queue';
 import { getSignedUrl, AUDIO_BUCKET } from '../lib/supabase';
+import * as fs from 'fs';
 
 const createTranscriptSchema = z.object({
   uploadId: z.string().uuid(),
@@ -163,20 +164,45 @@ export async function transcriptRoutes(fastify: FastifyInstance) {
       });
     }
 
-    // Generate signed URL dynamically for playback if a raw path is stored
-    if (transcript.audioUrl && !transcript.audioUrl.startsWith('http') && !transcript.audioUrl.startsWith('file://')) {
-      try {
-        const signedUrl = await getSignedUrl(AUDIO_BUCKET, transcript.audioUrl);
-        transcript.audioUrl = signedUrl;
-      } catch (error: any) {
-        request.log.error(error, `Failed to generate signed URL for path: ${transcript.audioUrl}`);
-        // Optionally nullify to prevent broken players, or leave it and let player 404 naturally
-      }
+    if (transcript.audioUrl) {
+      transcript.audioUrl = `http://localhost:3002/api/transcripts/${transcript.id}/audio`;
     }
 
     return reply.send({
       transcript,
     });
+  });
+
+  // Proxy endpoint to stream or secure-redirect the audio media directly to the React Audio Tag
+  fastify.get('/:id/audio', async (request: FastifyRequest, reply: FastifyReply) => {
+    const { id } = request.params as { id: string };
+
+    const transcript = await prisma.transcript.findUnique({
+      where: { id },
+    });
+
+    if (!transcript || !transcript.audioUrl) {
+      return reply.status(404).send('Audio not found');
+    }
+
+    if (transcript.audioUrl.startsWith('/')) {
+      if (!fs.existsSync(transcript.audioUrl)) {
+        return reply.status(404).send('Local audio file missing on disk');
+      }
+      const stream = fs.createReadStream(transcript.audioUrl);
+      const ext = transcript.audioUrl.split('.').pop() || 'mpeg';
+      return reply.type(`audio/${ext}`).send(stream);
+    } else if (!transcript.audioUrl.startsWith('http') && !transcript.audioUrl.startsWith('file://')) {
+      try {
+        const signedUrl = await getSignedUrl(AUDIO_BUCKET, transcript.audioUrl);
+        return reply.redirect(signedUrl);
+      } catch (err: any) {
+        request.log.error(err, 'Supabase signed URL error');
+        return reply.status(404).send('Audio media unreachable in bucket');
+      }
+    } else {
+      return reply.redirect(transcript.audioUrl);
+    }
   });
 
   // Update transcript

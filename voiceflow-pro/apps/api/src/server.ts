@@ -82,7 +82,7 @@ async function start() {
     });
 
     await server.register(rateLimit, {
-      max: parseInt(process.env.RATE_LIMIT_MAX || '100'),
+      max: parseInt(process.env.RATE_LIMIT_MAX || '1000'), // Increased to support 5s dashboard polling
       timeWindow: process.env.RATE_LIMIT_WINDOW || '15 minutes',
     });
 
