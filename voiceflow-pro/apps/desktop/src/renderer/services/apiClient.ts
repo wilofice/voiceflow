@@ -1,6 +1,6 @@
 import axios, { AxiosInstance, AxiosError, AxiosRequestConfig } from 'axios';
 import { EventEmitter } from 'eventemitter3';
-import pRetry from 'p-retry';
+import pRetry, { AbortError } from 'p-retry';
 import { io, Socket } from 'socket.io-client';
 import { z } from 'zod';
 
@@ -306,6 +306,14 @@ export class APIClient extends EventEmitter {
       ...this.retryConfig,
       ...config,
       onFailedAttempt: (error) => {
+        const statusCode = (error as any)?.cause?.response?.status;
+        if (statusCode === 429) {
+          throw new AbortError('Rate limited (429). Bailing out to save the server.');
+        }
+        if (statusCode === 401 || statusCode === 403) {
+          throw new AbortError('Authentication error. Not retrying.');
+        }
+
         const errorMessage = error instanceof Error ? error.message :
           (error as any)?.cause?.message ||
           'Unknown error';
