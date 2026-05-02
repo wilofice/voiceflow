@@ -30,13 +30,14 @@ import { cn } from '@/lib/utils';
 import { useBatchStore } from '@/stores/batchStore';
 import { useToast } from '@/hooks/use-toast';
 import { BatchItem as BatchItemType } from '@/types/api';
+import { Transcript } from '../../types/api';
 
 
 interface BatchProcessorProps {
   className?: string;
   jobId?: string | null;
   onJobChange?: (jobId: string | null) => void;
-  onTranscriptClick?: (transcriptId: string) => void;
+  onTranscriptClick?: (transcript: Transcript) => void;
 }
 
 export const BatchProcessor: React.FC<BatchProcessorProps> = ({
@@ -554,7 +555,7 @@ export const BatchProcessor: React.FC<BatchProcessorProps> = ({
                   }}
                   onDoubleClick={(e) => {
                     if (item.status === 'COMPLETED' && onTranscriptClick && item.transcriptId) {
-                      onTranscriptClick(item.transcriptId);
+                      onTranscriptClick(item);
                     }
                   }}
                   data-testid={`batch-item-${item.id}`}
@@ -610,7 +611,7 @@ export const BatchProcessor: React.FC<BatchProcessorProps> = ({
                             className="ml-2 focus-ring"
                             onClick={(e) => {
                               e.stopPropagation();
-                              onTranscriptClick(item.transcriptId!);
+                              onTranscriptClick(item as any);
                             }}
                           >
                             Open

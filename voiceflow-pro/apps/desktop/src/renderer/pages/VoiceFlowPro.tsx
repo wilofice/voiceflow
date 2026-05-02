@@ -288,11 +288,19 @@ export const VoiceFlowPro: React.FC = () => {
   const handleTranscriptSelect = async (transcript: any) => {
     let transcriptData = transcript;
 
-    // Handle string IDs from Batch Processor or shallow lists by forcing a deep hydration fetch
-    if (typeof transcript === 'string' || !transcript.audioUrl) {
+    // Determine the ID to fetch:
+    // - BatchItem has a `transcriptId` field
+    // - A string is passed directly as an ID
+    // - A shallow Transcript object may be missing audioUrl
+    const idToFetch: string | null =
+      typeof transcript === 'string'
+        ? transcript
+        : transcript?.transcriptId   // BatchItem shape
+        ?? (transcript?.audioUrl ? null : transcript?.id); // shallow Transcript
+
+    if (idToFetch) {
       try {
-        const idToFetch = typeof transcript === 'string' ? transcript : transcript.id;
-        toast({ title: "Loading", description: "Fetching full transcript data..." });
+        toast({ title: 'Loading', description: 'Fetching transcript…' });
         await useTranscriptStore.getState().fetchTranscript(idToFetch);
         transcriptData = useTranscriptStore.getState().currentTranscript;
       } catch (error) {
@@ -309,7 +317,7 @@ export const VoiceFlowPro: React.FC = () => {
     setSelectedTranscript(transcriptData);
     setCurrentView('transcript-editor');
     toast({
-      title: "Opening Transcript",
+      title: 'Opening Transcript',
       description: `Loading: ${transcriptData.title}`,
     });
   };

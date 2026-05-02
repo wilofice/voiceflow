@@ -418,7 +418,7 @@ export class APIClient extends EventEmitter {
       return this.client.get(`/api/transcripts/${id}`);
     });
 
-    return response.data;
+    return response.data?.transcript || response.data;
   }
 
   async createTranscript(data: CreateTranscriptRequest): Promise<Transcript> {
