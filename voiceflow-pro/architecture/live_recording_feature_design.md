@@ -74,7 +74,7 @@ sequenceDiagram
         UI-->>User: Show error toast "Microphone access denied"
     else Permission Granted
         UI->>Store: setState({ isRecording: true, startTime: Date.now() })
-        UI->>MediaRec: new MediaRecorder(stream, { mimeType: 'audio/webm;codecs=opus' })
+        UI->>MediaRec: new MediaRecorder(stream, mimeType=audio/webm+opus)
         UI->>MediaRec: recorder.start(1000)
 
         loop Every 1000ms
