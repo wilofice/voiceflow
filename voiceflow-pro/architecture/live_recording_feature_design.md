@@ -178,7 +178,7 @@ graph LR
         G["VoiceFlowPro.tsx — wire up Live Recording view/panel"]
     end
 
-    subgraph "Existing Infrastructure (no changes)"]
+    subgraph "Existing Infrastructure (no changes)"
         H["apiClient.ts — createTranscript() + updateTranscript()"]
         I["transcriptRoutes.ts — existing POST/PUT endpoints"]
         J["TranscriptEditor.tsx — receives completed transcript"]
