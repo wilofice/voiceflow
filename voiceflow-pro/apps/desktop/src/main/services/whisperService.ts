@@ -314,50 +314,66 @@ export class WhisperService {
     }
 
     private parseTranscriptionResult(result: any, fileSizeMB: number, processingTimeMs: number): TranscriptionResult {
-        log.info('Parsing transcription result:', result);
+        log.info('Parsing transcription result type:', typeof result, Array.isArray(result) ? '(array)' : '');
 
         let text = '';
         let segments: TranscriptionSegment[] = [];
+        let language: string | undefined;
 
-        if (typeof result === 'string') {
-            text = result;
-            segments = [{
-                text: result,
-                start: 0,
-                end: 0, // We don't have duration info in this simple implementation
-                confidence: 1.0
-            }];
-        } else if (result.text) {
-            text = result.text;
+        // Normalise the result: Xenova can return an array (batch mode) or a single object
+        let normalised: any;
+        if (Array.isArray(result)) {
+            // Batch output – take the first element
+            normalised = result[0] ?? {};
+        } else {
+            normalised = result;
+        }
 
-            if (result.chunks && Array.isArray(result.chunks)) {
-                segments = result.chunks.map((chunk: any) => ({
-                    text: chunk.text,
-                    start: chunk.timestamp?.[0] || 0,
-                    end: chunk.timestamp?.[1] || 0,
-                    confidence: chunk.confidence || 1.0
-                }));
+        if (typeof normalised === 'string') {
+            // Plain string output
+            text = normalised;
+            segments = [{ text, start: 0, end: 0, confidence: 1.0 }];
+
+        } else if (normalised && typeof normalised === 'object') {
+            // Standard { text, chunks?, language? } shape
+            if (normalised.text != null) {
+                text = String(normalised.text);
+                language = normalised.language;
+
+                if (normalised.chunks && Array.isArray(normalised.chunks)) {
+                    segments = normalised.chunks.map((chunk: any) => ({
+                        text: chunk.text ?? '',
+                        // timestamp is [start, end|null] – null means "clip end"
+                        start: chunk.timestamp?.[0] ?? 0,
+                        end:   chunk.timestamp?.[1] ?? 0,
+                        confidence: chunk.confidence ?? 1.0
+                    }));
+                } else {
+                    segments = [{ text, start: 0, end: 0, confidence: 1.0 }];
+                }
             } else {
-                segments = [{
-                    text: result.text,
-                    start: 0,
-                    end: 0,
-                    confidence: 1.0
-                }];
+                // Unknown shape – log and fall back to JSON string so we never crash
+                log.warn('Unknown transcription result shape, falling back:', JSON.stringify(normalised).slice(0, 200));
+                text = JSON.stringify(normalised);
+                segments = [{ text, start: 0, end: 0, confidence: 1.0 }];
             }
         } else {
-            throw new Error('Unexpected transcription result format');
+            // Completely unexpected – don't crash, emit empty transcript
+            log.error('Unrecognisable transcription result, emitting empty transcript. Raw:', normalised);
+            text = '';
+            segments = [];
         }
 
         return {
             text: text.trim(),
             segments,
-            language: result.language,
+            language,
             processingTime: processingTimeMs,
             fileSizeMB,
             model: this.currentModel || 'unknown'
         };
     }
+
 
     private generateJobId(): string {
         return `whisper_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
