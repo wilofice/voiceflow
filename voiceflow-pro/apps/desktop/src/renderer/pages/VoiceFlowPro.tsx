@@ -5,6 +5,7 @@ import { AppShell } from '../components/ui/app-shell';
 import { BatchJobSelector } from '../components/ui/batch-job-selector';
 import { BatchProcessor } from '../components/ui/batch-processor';
 import { Dashboard } from '../components/ui/dashboard';
+import { LiveRecordingPanel } from '../components/ui/LiveRecordingPanel';
 import { NavigationSidebar } from '../components/ui/navigation-sidebar';
 import { TranscriptEditor } from '../components/ui/transcript-editor';
 import { useToast } from '../hooks/use-toast';
@@ -15,7 +16,7 @@ import { useUploadStore } from '../stores/uploadStore';
 import { TranscriptionPage } from './TranscriptionPage';
 
 
-type View = 'dashboard' | 'transcripts' | 'transcript-editor' | 'batch-processing' | 'ai-recipes' | 'settings';
+type View = 'dashboard' | 'transcripts' | 'transcript-editor' | 'batch-processing' | 'ai-recipes' | 'settings' | 'live-recording';
 
 interface NavigationItem {
   id: string;
@@ -127,10 +128,7 @@ export const VoiceFlowPro: React.FC = () => {
         setCurrentView('batch-processing');
         break;
       case 'realtime':
-        toast({
-          title: "Live Transcription",
-          description: "Opening realtime transcription console...",
-        });
+        setCurrentView('live-recording');
         break;
       case 'starred':
         setCurrentView('transcripts');
@@ -365,6 +363,23 @@ export const VoiceFlowPro: React.FC = () => {
                 onTranscriptClick={handleTranscriptSelect}
               />
             </div>
+          </div>
+        );
+      case 'live-recording':
+        return (
+          <div className="flex items-center justify-center h-full">
+            <LiveRecordingPanel
+              onTranscriptReady={async (transcriptId) => {
+                // Hydrate transcript and navigate to editor
+                try {
+                  const transcript = await apiClient.getTranscript(transcriptId);
+                  setSelectedTranscript(transcript);
+                  setCurrentView('transcript-editor');
+                } catch {
+                  setCurrentView('transcripts');
+                }
+              }}
+            />
           </div>
         );
       case 'ai-recipes':

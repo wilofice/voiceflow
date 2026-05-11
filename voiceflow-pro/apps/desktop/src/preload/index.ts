@@ -14,6 +14,7 @@ interface ElectronAPI {
   whisper: {
     initializeModel: (config: any) => Promise<{ success: boolean; error?: string }>;
     transcribeFile: (filePath: string, config: any) => Promise<{ success: boolean; result?: any; error?: string }>;
+    transcribeBuffer: (buffer: ArrayBuffer, config: any) => Promise<{ success: boolean; result?: any; error?: string }>;
     getProcessingJobs: () => Promise<{ success: boolean; jobs?: any[]; error?: string }>;
     cancelJob: (jobId: string) => Promise<{ success: boolean; error?: string }>;
     onProgress: (callback: (data: any) => void) => void;
@@ -116,14 +117,14 @@ const ALLOWED_CHANNELS = {
     'app:get-info',
     'app:show-about',
     'app:open-external',
-    
+
     // File import channels
     'file-import:open-dialog',
     'file-import:open-folder',
     'file-import:get-formats',
     'file-import:validate-paths',
     'file-import:process-dropped',
-    
+
     // URL ingest channels
     'url-ingest:validate',
     'url-ingest:process',
@@ -134,13 +135,14 @@ const ALLOWED_CHANNELS = {
     'url-ingest:get-download-dir',
     'url-ingest:set-download-dir',
     'url-ingest:check-transcription',
-    
+
     // Whisper channels
     'whisper:initialize-model',
     'whisper:transcribe-file',
+    'whisper:transcribe-buffer',
     'whisper:get-processing-jobs',
     'whisper:cancel-job',
-    
+
     // Watch folder channels
     'watch-folder:add',
     'watch-folder:remove',
@@ -148,26 +150,26 @@ const ALLOWED_CHANNELS = {
     'watch-folder:get-all',
     'watch-folder:pause',
     'watch-folder:resume',
-    
+
     // File system channels
     'fs:show-open-dialog',
     'fs:show-save-dialog',
     'fs:show-folder-dialog',
     'fs:reveal-in-explorer',
-    
+
     // Settings channels
     'settings:get',
     'settings:set',
     'settings:get-all',
     'settings:reset',
-    
+
     // Secure storage channels
     'secure-store:get',
     'secure-store:set',
     'secure-store:delete',
     'secure-store:has',
     'secure-store:clear',
-    
+
     // Window channels
     'window:create-transcript',
     'window:create-settings',
@@ -208,6 +210,7 @@ const electronAPI: ElectronAPI = {
   whisper: {
     initializeModel: (config: any) => ipcRenderer.invoke('whisper:initialize-model', config),
     transcribeFile: (filePath: string, config: any) => ipcRenderer.invoke('whisper:transcribe-file', filePath, config),
+    transcribeBuffer: (buffer: ArrayBuffer, config: any) => ipcRenderer.invoke('whisper:transcribe-buffer', buffer, config),
     getProcessingJobs: () => ipcRenderer.invoke('whisper:get-processing-jobs'),
     cancelJob: (jobId: string) => ipcRenderer.invoke('whisper:cancel-job', jobId),
     onProgress: (callback: (data: any) => void) => {

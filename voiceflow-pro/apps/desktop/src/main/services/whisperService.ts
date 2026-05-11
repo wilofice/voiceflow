@@ -199,6 +199,77 @@ export class WhisperService {
         }
     }
 
+    /**
+     * Transcribe a raw audio buffer (from live recording via MediaRecorder).
+     * Writes the buffer to a temp .webm file, reuses the same FFmpeg→Float32Array
+     * pipeline as transcribeFile(), then cleans up both temp files.
+     */
+    async transcribeBuffer(buffer: Buffer, config: WhisperConfig): Promise<TranscriptionResult> {
+        if (!this.initialized) {
+            await this.initialize();
+        }
+
+        if (!this.engine || this.currentModel !== config.model) {
+            await this.initializeModel(config);
+        }
+
+        const jobId = this.generateJobId();
+        const startTime = performance.now();
+        const tempWebmPath = path.join(
+            os.tmpdir(),
+            `whisper_rec_${Date.now()}_${Math.random().toString(36).substring(2)}.webm`
+        );
+
+        try {
+            log.info(`Starting buffer transcription job ${jobId}`);
+
+            // Write the ArrayBuffer to a temp webm file so FFmpeg can process it
+            await fs.writeFile(tempWebmPath, buffer);
+
+            this.processingJobs.set(jobId, { config, startTime, status: 'processing' });
+
+            this.notifyProgress(jobId, { stage: 'loading', progress: 10, message: 'Processing recorded audio...' });
+
+            const audioData = await this.loadAudioFile(tempWebmPath);
+
+            this.notifyProgress(jobId, { stage: 'transcribing', progress: 30, message: 'Transcribing recording...' });
+
+            const transcribeOptions: any = {
+                chunk_length_s: 30,
+                stride_length_s: 5,
+                return_timestamps: true,
+                force_full_sequence: false,
+            };
+
+            if (config.language && config.language !== 'auto') {
+                transcribeOptions.language = config.language;
+            }
+
+            const result = await this.engine(audioData, transcribeOptions);
+            const processingTime = performance.now() - startTime;
+
+            this.notifyProgress(jobId, { stage: 'complete', progress: 100, message: 'Transcription complete' });
+
+            const transcriptionResult = this.parseTranscriptionResult(
+                result,
+                buffer.length / 1024 / 1024,
+                processingTime
+            );
+            this.processingJobs.delete(jobId);
+
+            log.info(`Buffer transcription job ${jobId} completed in ${processingTime.toFixed(2)}ms`);
+            return transcriptionResult;
+
+        } catch (error) {
+            log.error(`Buffer transcription job ${jobId} failed:`, error);
+            this.processingJobs.delete(jobId);
+            throw error;
+        } finally {
+            // Always clean up the temp webm file
+            await fs.remove(tempWebmPath).catch(e => log.warn('Temp webm cleanup failed', e));
+        }
+    }
+
     async loadAudioFile(filePath: string): Promise<Float32Array> {
         return new Promise(async (resolve, reject) => {
             try {

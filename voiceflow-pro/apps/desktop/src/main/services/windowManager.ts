@@ -200,6 +200,16 @@ export class WindowManager {
       });
     }
 
+    // Allow microphone access for live recording – required in Electron's isolated browser context
+    mainWindow.webContents.session.setPermissionRequestHandler((webContents, permission, callback) => {
+      if ((permission as string) === 'media' || (permission as string) === 'microphone' || (permission as string) === 'audioCapture') {
+        log.info(`Granting permission: ${permission}`);
+        callback(true);
+      } else {
+        callback(false);
+      }
+    });
+
     log.info('Main window created successfully');
     return mainWindow;
   }

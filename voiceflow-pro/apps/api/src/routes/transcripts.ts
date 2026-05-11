@@ -125,7 +125,33 @@ export async function transcriptRoutes(fastify: FastifyInstance) {
     });
   });
 
-  // Get specific transcript with segments
+  // Create a transcript from a live microphone recording (no uploadId required)
+  fastify.post('/local', {
+    preHandler: authenticate,
+  }, async (request: AuthenticatedRequest, reply: FastifyReply) => {
+    const { title, language, status, audioUrl, duration } = request.body as {
+      title: string;
+      language?: string;
+      status?: string;
+      audioUrl?: string;
+      duration?: number;
+    };
+
+    const transcript = await prisma.transcript.create({
+      data: {
+        userId: request.user.id,
+        title: title || `Recording – ${new Date().toISOString()}`,
+        language: language || 'en',
+        status: (status as any) || 'COMPLETED',
+        audioUrl: audioUrl || null,
+        duration: duration || 0,
+      },
+    });
+
+    return reply.status(201).send({ transcript });
+  });
+
+
   fastify.get('/:id', {
     preHandler: authenticate,
   }, async (request: AuthenticatedRequest, reply: FastifyReply) => {

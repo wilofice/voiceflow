@@ -1,0 +1,116 @@
+import { create } from 'zustand';
+import { apiClient } from '../services/apiClient';
+
+// ── Types ──────────────────────────────────────────────────────────────────
+
+export type RecordingState =
+    | 'IDLE'
+    | 'REQUESTING_MIC'
+    | 'RECORDING'
+    | 'PAUSED'
+    | 'STOPPING'
+    | 'TRANSCRIBING'
+    | 'SAVING'
+    | 'COMPLETED'
+    | 'ERROR';
+
+interface LiveRecordStore {
+    // State
+    status: RecordingState;
+    error: string | null;
+    elapsedMs: number;
+    transcriptId: string | null;
+    progressMessage: string | null;
+
+    // Actions
+    setStatus: (status: RecordingState) => void;
+    setError: (err: string | null) => void;
+    setElapsedMs: (ms: number) => void;
+    setTranscriptId: (id: string | null) => void;
+    setProgressMessage: (msg: string | null) => void;
+
+    /**
+     * Process the recorded Blob: pipe through IPC → WhisperService → save to DB.
+     * Returns the new transcript ID on success, null on failure.
+     */
+    processRecording: (blob: Blob, model?: string, language?: string) => Promise<string | null>;
+
+    reset: () => void;
+}
+
+// ── Store ──────────────────────────────────────────────────────────────────
+
+export const useLiveRecordStore = create<LiveRecordStore>((set, get) => ({
+    status: 'IDLE',
+    error: null,
+    elapsedMs: 0,
+    transcriptId: null,
+    progressMessage: null,
+
+    setStatus: (status) => set({ status }),
+    setError: (error) => set({ error }),
+    setElapsedMs: (ms) => set({ elapsedMs: ms }),
+    setTranscriptId: (id) => set({ transcriptId: id }),
+    setProgressMessage: (msg) => set({ progressMessage: msg }),
+
+    processRecording: async (blob: Blob, model = 'base', language = 'auto') => {
+        set({ status: 'TRANSCRIBING', progressMessage: 'Sending to Whisper engine…', error: null });
+
+        try {
+            // Convert browser Blob → ArrayBuffer for IPC transfer
+            const arrayBuffer = await blob.arrayBuffer();
+
+            // Call the new IPC channel exposed via preload bridge
+            const ipcResult = await window.electronAPI.whisper.transcribeBuffer(arrayBuffer, {
+                model,
+                language,
+            });
+
+            if (!ipcResult.success || !ipcResult.result) {
+                throw new Error(ipcResult.error || 'Whisper transcription returned no result');
+            }
+
+            const { text, segments } = ipcResult.result;
+
+            set({ status: 'SAVING', progressMessage: 'Saving transcript to database…' });
+
+            // Create a stub transcript record in DB (no audioUrl for live recordings)
+            const title = `Recording – ${new Date().toLocaleString()}`;
+            const newTranscript = await apiClient.createLiveRecordingTranscript({
+                title,
+                language: ipcResult.result.language || language,
+                status: 'COMPLETED',
+                audioUrl: '',
+                duration: 0,
+            });
+
+            // Persist text + segments
+            await apiClient.updateTranscript(newTranscript.id, {
+                status: 'COMPLETED',
+                text,
+                segments: (segments || []).map((s: any) => ({
+                    text: s.text,
+                    startTime: s.start,
+                    endTime: s.end,
+                    confidence: s.confidence ?? 1.0,
+                })),
+            });
+
+            set({ status: 'COMPLETED', transcriptId: newTranscript.id, progressMessage: null });
+            return newTranscript.id;
+
+        } catch (err: any) {
+            console.error('Live recording processing failed:', err);
+            set({ status: 'ERROR', error: err.message || 'Failed to process recording', progressMessage: null });
+            return null;
+        }
+    },
+
+    reset: () => set({
+        status: 'IDLE',
+        error: null,
+        elapsedMs: 0,
+        transcriptId: null,
+        progressMessage: null,
+    }),
+}));

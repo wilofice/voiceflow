@@ -431,6 +431,23 @@ export class APIClient extends EventEmitter {
     return transcript;
   }
 
+  /** Create a transcript from a live microphone recording (no upload step). */
+  async createLiveRecordingTranscript(data: {
+    title: string;
+    language: string;
+    status: Transcript['status'];
+    audioUrl: string;
+    duration: number;
+  }): Promise<Transcript> {
+    const response = await this.retryableRequest(async () => {
+      return this.client.post('/api/transcripts/local', data);
+    });
+
+    const transcript = response.data?.transcript || response.data;
+    this.emit('transcript:created', transcript);
+    return transcript;
+  }
+
   async updateTranscript(id: string, data: UpdateTranscriptRequest): Promise<Transcript> {
     const response = await this.retryableRequest(async () => {
       return this.client.put(`/api/transcripts/${id}`, data);
