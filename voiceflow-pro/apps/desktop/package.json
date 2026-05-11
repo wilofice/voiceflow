@@ -1,6 +1,6 @@
 {
   "name": "@voiceflow-pro/desktop",
-  "version": "1.0.0",
+  "version": "1.0.0-beta.1",
   "description": "VoiceFlowPro Desktop Application",
   "main": "dist/main/index.js",
   "author": "VoiceFlow Pro Team",
@@ -11,14 +11,15 @@
     "dev": "concurrently \"npm run build:watch\" \"npm run dev:renderer\" \"npm run react-devtools\" \"npm run electron:dev\"",
     "dev:renderer": "webpack serve --config webpack.renderer.config.js --port 3000 --hot",
     "react-devtools": "react-devtools",
-    "build": "npm run build:main && npm run build:preload && npm run build:renderer",
+    "build": "npm run build:main && npm run build:renderer",
     "build:main": "tsc -p tsconfig.main.json",
     "build:preload": "tsc -p tsconfig.preload.json",
     "build:renderer": "webpack --config webpack.renderer.config.js",
     "build:watch": "npm run build:main -- --watch",
     "electron:dev": "wait-on dist/main/index.js && electron . --dev",
-    "package": "electron-builder",
-    "package:all": "electron-builder --publish=never",
+    "package": "electron-builder --publish=never",
+    "package:mac": "electron-builder --mac dmg --publish=never",
+    "dist": "npm run build && npm run package:mac",
     "test": "jest",
     "lint": "eslint src --ext .ts,.tsx",
     "typecheck": "tsc --noEmit"
@@ -133,41 +134,54 @@
   "build": {
     "appId": "com.voiceflow.pro.desktop",
     "productName": "VoiceFlow Pro",
+    "copyright": "Copyright © 2024 VoiceFlow Pro Team",
     "directories": {
-      "output": "dist-electron"
+      "output": "dist-electron",
+      "buildResources": "build-resources"
     },
     "files": [
       "dist/**/*",
-      "node_modules/**/*",
-      "package.json"
+      "package.json",
+      "!dist/**/*.map",
+      "!dist-electron/**/*"
     ],
+    "extraMetadata": {
+      "main": "dist/main/index.js"
+    },
     "mac": {
       "category": "public.app-category.productivity",
-      "hardenedRuntime": true,
+      "hardenedRuntime": false,
       "gatekeeperAssess": false,
-      "notarize": {
-        "teamId": "TEAM_ID_HERE"
-      }
+      "identity": null,
+      "target": [
+        {
+          "target": "dmg",
+          "arch": ["arm64", "x64"]
+        }
+      ],
+      "artifactName": "VoiceFlow-Pro-${version}-${arch}.dmg"
+    },
+    "dmg": {
+      "title": "VoiceFlow Pro ${version}",
+      "icon": "build-resources/icon.icns"
     },
     "win": {
       "target": [
         {
           "target": "nsis",
-          "arch": [
-            "x64"
-          ]
+          "arch": ["x64"]
         }
-      ]
+      ],
+      "artifactName": "VoiceFlow-Pro-Setup-${version}.exe"
     },
     "linux": {
       "target": [
         {
           "target": "AppImage",
-          "arch": [
-            "x64"
-          ]
+          "arch": ["x64"]
         }
-      ]
+      ],
+      "artifactName": "VoiceFlow-Pro-${version}.AppImage"
     },
     "nsis": {
       "oneClick": false,
