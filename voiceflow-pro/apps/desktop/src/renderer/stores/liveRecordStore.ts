@@ -63,11 +63,25 @@ export const useLiveRecordStore = create<LiveRecordStore>((set, get) => ({
             const arrayBuffer = await blob.arrayBuffer();
             const uint8 = new Uint8Array(arrayBuffer);
 
-            // Call the new IPC channel exposed via preload bridge
-            const ipcResult = await window.electronAPI.whisper.transcribeBuffer(uint8 as unknown as ArrayBuffer, {
-                model,
-                language,
-            });
+            // Diagnostic: log what the whisper API surface looks like at call time
+            console.log('[LiveRecord] window.electronAPI.whisper keys:',
+                Object.keys((window as any).electronAPI?.whisper ?? {}));
+
+            // Prefer the structured API; fall back to the raw IPC bridge if the
+            // method is absent (can happen with Electron contextBridge caching).
+            let ipcResult: { success: boolean; result?: any; error?: string };
+            const whisperApi = (window as any).electronAPI?.whisper;
+            if (typeof whisperApi?.transcribeBuffer === 'function') {
+                ipcResult = await whisperApi.transcribeBuffer(uint8, { model, language });
+            } else {
+                console.warn('[LiveRecord] transcribeBuffer not found on electronAPI.whisper, using raw IPC bridge');
+                ipcResult = await (window as any).electron.ipcRenderer.invoke(
+                    'whisper:transcribe-buffer',
+                    uint8,
+                    { model, language }
+                );
+            }
+
 
             if (!ipcResult.success || !ipcResult.result) {
                 throw new Error(ipcResult.error || 'Whisper transcription returned no result');

@@ -114,10 +114,10 @@ function setupWhisperHandlers(services: Services) {
   });
 
   // Transcribe a raw audio buffer (from live recording)
-  ipcMain.handle('whisper:transcribe-buffer', async (event: IpcMainInvokeEvent, buffer: ArrayBuffer, config: any) => {
+  ipcMain.handle('whisper:transcribe-buffer', async (event: IpcMainInvokeEvent, buffer: ArrayBuffer | Uint8Array, config: any) => {
     try {
-      log.info('IPC: Transcribing audio buffer, size:', buffer.byteLength);
-      const nodeBuffer = Buffer.from(buffer);
+      const nodeBuffer = Buffer.from(buffer as ArrayBuffer);
+      log.info('IPC: Transcribing audio buffer, size:', nodeBuffer.byteLength, 'bytes');
       const result = await whisper.transcribeBuffer(nodeBuffer, config);
       return { success: true, result };
     } catch (error) {
