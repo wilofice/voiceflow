@@ -149,10 +149,12 @@ export const LiveRecordingPanel: React.FC<LiveRecordingPanelProps> = ({
         reset();
         setElapsed(0);
         useLiveRecordStore.getState().setStatus('REQUESTING_MIC');
-        await recorder.start();
-        if (recorder.state !== 'idle') {
+        const success = await recorder.start();
+        if (success) {
             useLiveRecordStore.getState().setStatus('RECORDING');
             startTimer();
+        } else {
+            useLiveRecordStore.getState().setStatus('IDLE');
         }
     };
 

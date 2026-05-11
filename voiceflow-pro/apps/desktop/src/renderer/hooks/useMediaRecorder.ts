@@ -12,7 +12,7 @@ interface UseMediaRecorderOptions {
 
 interface UseMediaRecorderReturn {
     state: MicState;
-    start: () => Promise<void>;
+    start: () => Promise<boolean>;
     stop: () => void;
     pause: () => void;
     resume: () => void;
@@ -46,7 +46,7 @@ export function useMediaRecorder({
     }, []);
 
     const start = useCallback(async () => {
-        if (state !== 'idle' && state !== 'stopped') return;
+        if (state !== 'idle' && state !== 'stopped') return false;
 
         setState('requesting');
         chunksRef.current = [];
@@ -89,12 +89,14 @@ export function useMediaRecorder({
 
             recorder.start(timeslice);
             setState('recording');
+            return true;
         } catch (err: any) {
             const msg = err?.message?.includes('Permission denied')
                 ? 'Microphone permission was denied. Please allow microphone access and try again.'
                 : err?.message || 'Failed to access microphone';
             onError?.(msg);
             setState('idle');
+            return false;
         }
     }, [state, timeslice, onDataAvailable, onStop, onError]);
 

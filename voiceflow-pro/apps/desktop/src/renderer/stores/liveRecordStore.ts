@@ -57,11 +57,14 @@ export const useLiveRecordStore = create<LiveRecordStore>((set, get) => ({
         set({ status: 'TRANSCRIBING', progressMessage: 'Sending to Whisper engine…', error: null });
 
         try {
-            // Convert browser Blob → ArrayBuffer for IPC transfer
+            // Convert browser Blob → Uint8Array for safe IPC transfer.
+            // Raw ArrayBuffer is NOT reliably transferred by Electron's structured clone;
+            // Uint8Array (a TypedArray view) survives the IPC boundary intact.
             const arrayBuffer = await blob.arrayBuffer();
+            const uint8 = new Uint8Array(arrayBuffer);
 
             // Call the new IPC channel exposed via preload bridge
-            const ipcResult = await window.electronAPI.whisper.transcribeBuffer(arrayBuffer, {
+            const ipcResult = await window.electronAPI.whisper.transcribeBuffer(uint8 as unknown as ArrayBuffer, {
                 model,
                 language,
             });
