@@ -135,10 +135,16 @@
     "appId": "com.voiceflow.pro.desktop",
     "productName": "VoiceFlow Pro",
     "copyright": "Copyright © 2024 VoiceFlow Pro Team",
-    "directories": {
-      "output": "dist-electron",
-      "buildResources": "build-resources"
+    "publish": {
+      "provider": "github",
+      "owner": "galahassa",
+      "repo": "voiceflow-pro",
+      "releaseType": "draft"
     },
+    "directories": {
+      "output": "dist-electron"
+    },
+
     "files": [
       "dist/**/*",
       "package.json",
@@ -162,9 +168,9 @@
       "artifactName": "VoiceFlow-Pro-${version}-${arch}.dmg"
     },
     "dmg": {
-      "title": "VoiceFlow Pro ${version}",
-      "icon": "build-resources/icon.icns"
+      "title": "VoiceFlow Pro ${version}"
     },
+
     "win": {
       "target": [
         {

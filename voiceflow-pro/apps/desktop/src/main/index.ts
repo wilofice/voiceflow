@@ -82,10 +82,10 @@ class VoiceFlowProApp {
         // Set up context menu
         this.setupContextMenu();
 
-        // Set up auto-updater (in production)
-        if (!process.env.NODE_ENV || process.env.NODE_ENV === 'production') {
-            this.setupAutoUpdater();
-        }
+        // Auto-updater disabled for beta — requires code signing + update server.
+        // Re-enable once those are configured (Task 7.5 or later).
+        // if (app.isPackaged) { this.setupAutoUpdater(); }
+
 
         // Handle app activation (macOS)
         app.on('activate', async () => {

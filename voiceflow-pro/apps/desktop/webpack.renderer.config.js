@@ -67,6 +67,10 @@ module.exports = {
     new webpack.DefinePlugin({
       'process.env.NODE_ENV': JSON.stringify(isDevelopment ? 'development' : 'production'),
       '__DEV__': JSON.stringify(isDevelopment),
+      // Bake in the API URL at build time.
+      // In dev: defaults to localhost:3002
+      // In production builds: set API_URL env var before running `npm run dist`
+      '__API_URL__': JSON.stringify(process.env.API_URL || 'http://localhost:3002'),
     }),
     new HtmlWebpackPlugin({
       template: './src/renderer/index.html',

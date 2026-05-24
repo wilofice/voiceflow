@@ -110,7 +110,7 @@ export class APIClient extends EventEmitter {
     maxTimeout: 10000,
   };
 
-  constructor(baseURL: string = 'http://localhost:3002') {
+  constructor(baseURL: string = (typeof __API_URL__ !== 'undefined' ? __API_URL__ : 'http://localhost:3002')) {
     super();
     this.baseURL = baseURL;
 
@@ -923,4 +923,8 @@ export class APIClient extends EventEmitter {
 }
 
 // Singleton instance
-export const apiClient = new APIClient();
+// Read API URL injected by webpack DefinePlugin at build time.
+// Override at build time with: API_URL=https://your-api.com npm run dist
+declare const __API_URL__: string;
+const _apiUrl = typeof __API_URL__ !== 'undefined' ? __API_URL__ : 'http://localhost:3002';
+export const apiClient = new APIClient(_apiUrl);
